@@ -2,7 +2,7 @@
 
 namespace Bpmtk.Bpmn2
 {
-    public class DataObjectReference : FlowElement
+    public class DataObjectReference : FlowElement, IItemAwareElement
     {
         public virtual DataState DataState
         {
@@ -10,13 +10,13 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public virtual string ItemSubjectRef
+        public virtual ItemDefinition ItemSubjectRef
         {
             get;
             set;
         }
 
-        public virtual string DataObjectRef
+        public virtual DataObject DataObjectRef
         {
             get;
             set;

@@ -56,7 +56,7 @@ namespace Bpmtk.Bpmn2
         //In order to initialize a valid multi-instance, either the loopCardinality
         //Expression or the loopDataInput MUST be specified.
         /// </summary>
-        public virtual string LoopDataInputRef
+        public virtual IItemAwareElement LoopDataInputRef
         {
             get;
             set;
@@ -70,7 +70,7 @@ namespace Bpmtk.Bpmn2
         //  For Sub-Processes it is a reference to a collection-valued Data Object
         //  in the context that is visible to the Sub-Processes.
         /// </summary>
-        public virtual string LoopDataOutputRef
+        public virtual IItemAwareElement LoopDataOutputRef
         {
             get;
             set;
@@ -161,7 +161,7 @@ namespace Bpmtk.Bpmn2
         /// The EventDefinition which is thrown when behavior is set to one
         /// and the first internal Activity instance has completed.
         /// </summary>
-        public virtual string OneBehaviorEventRef
+        public virtual EventDefinition OneBehaviorEventRef
         {
             get;
             set;
@@ -171,7 +171,7 @@ namespace Bpmtk.Bpmn2
         /// The EventDefinition which is thrown when the behavior is set to
         /// none and an internal Activity instance has completed.
         /// </summary>
-        public virtual string NoneBehaviorEventRef
+        public virtual EventDefinition NoneBehaviorEventRef
         {
             get;
             set;

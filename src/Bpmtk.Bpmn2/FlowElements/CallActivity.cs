@@ -10,6 +10,12 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
+        public virtual CallableElement CalledElementRef
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// 异步执行
         /// </summary>

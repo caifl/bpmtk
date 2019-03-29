@@ -16,13 +16,13 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public virtual string MessageRef
+        public virtual Message MessageRef
         {
             get;
             set;
         }
 
-        public virtual string OperationRef
+        public virtual Operation OperationRef
         {
             get;
             set;

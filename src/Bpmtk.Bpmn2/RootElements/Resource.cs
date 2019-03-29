@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bpmtk.Bpmn2.Extensions;
 
 namespace Bpmtk.Bpmn2
 {
@@ -40,7 +39,7 @@ namespace Bpmtk.Bpmn2
         /// <summary>
         /// The type of parameter.
         /// </summary>
-        public virtual string Type
+        public virtual ItemDefinition Type
         {
             get;
             set;

@@ -9,25 +9,25 @@ namespace Bpmtk.Bpmn2
             this.IsUnlimited = true;
         }
 
-        public string Name
+        public virtual string Name
         {
             get;
             set;
         }
 
-        public int? Capacity
+        public virtual int? Capacity
         {
             get;
             set;
         }
 
-        public bool IsUnlimited
+        public virtual bool IsUnlimited
         {
             get;
             set;
         }
 
-        public string ItemSubjectRef
+        public virtual ItemDefinition ItemSubjectRef
         {
             get;
             set;

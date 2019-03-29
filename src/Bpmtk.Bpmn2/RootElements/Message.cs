@@ -16,7 +16,7 @@ namespace Bpmtk.Bpmn2
         /// <summary>
         /// 消息类型引用(itemDefinition#id)
         /// </summary>
-        public virtual string ItemRef
+        public virtual ItemDefinition ItemRef
         {
             get;
             set;

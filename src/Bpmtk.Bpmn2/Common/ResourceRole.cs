@@ -14,13 +14,7 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public string ResourceRef
-        {
-            get;
-            set;
-        }
-
-        public virtual Resource Resource
+        public virtual Resource ResourceRef
         {
             get;
             set;
@@ -87,7 +81,7 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public virtual string ParameterRef
+        public virtual ResourceParameter ParameterRef
         {
             get;
             set;

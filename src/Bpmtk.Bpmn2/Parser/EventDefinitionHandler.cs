@@ -38,20 +38,17 @@ namespace Bpmtk.Bpmn2.Parser
 
             this.handlers.Add("timeDuration", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
                 var timerEvent = ((TimerEventDefinition)p);
-                timerEvent.Expression = expr;
-                timerEvent.ExpressionType = TimeExpressionType.TimeDuration;
+                timerEvent.TimeDuration = expr;
             }));
 
             this.handlers.Add("timeDate", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
                 var timerEvent = ((TimerEventDefinition)p);
-                timerEvent.Expression = expr;
-                timerEvent.ExpressionType = TimeExpressionType.TimeDate;
+                timerEvent.TimeDate = expr;
             }));
 
             this.handlers.Add("timeCycle", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
                 var timerEvent = ((TimerEventDefinition)p);
-                timerEvent.Expression = expr;
-                timerEvent.ExpressionType = TimeExpressionType.TimeCycle;
+                timerEvent.TimeCycle = expr;
             }));
         }
 

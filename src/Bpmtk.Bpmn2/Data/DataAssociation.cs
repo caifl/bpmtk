@@ -5,18 +5,18 @@ namespace Bpmtk.Bpmn2
 {
     public abstract class DataAssociation : BaseElement
     {
-        protected readonly List<string> sourceRefs;
+        protected readonly List<IItemAwareElement> sourceRefs;
         protected readonly List<Assignment> assignments;
 
         public DataAssociation()
         {
-            this.sourceRefs = new List<string>();
+            this.sourceRefs = new List<IItemAwareElement>();
             this.assignments = new List<Assignment>();
         }
 
-        public virtual IList<string> SourceRefs => this.sourceRefs;
+        public virtual IList<IItemAwareElement> SourceRefs => this.sourceRefs;
 
-        public virtual string TargetRef
+        public virtual IItemAwareElement TargetRef
         {
             get;
             set;

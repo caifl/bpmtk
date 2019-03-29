@@ -16,7 +16,7 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public virtual string ItemSubjectRef
+        public virtual ItemDefinition ItemSubjectRef
         {
             get;
             set;

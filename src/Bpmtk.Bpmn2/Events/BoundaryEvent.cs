@@ -10,7 +10,7 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public virtual string AttachedToRef
+        public virtual Activity AttachedToRef
         {
             get;
             set;

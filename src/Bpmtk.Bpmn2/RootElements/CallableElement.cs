@@ -27,19 +27,19 @@ namespace Bpmtk.Bpmn2
 
     public class InputOutputBinding : BaseElement
     {
-        public string OperationRef
+        public virtual Operation OperationRef
         {
             get;
             set;
         }
 
-        public string InputDataRef
+        public virtual InputSet InputDataRef
         {
             get;
             set;
         }
 
-        public string OutputDataRef
+        public virtual OutputSet OutputDataRef
         {
             get;
             set;

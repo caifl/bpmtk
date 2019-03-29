@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Bpmtk.Bpmn2
 {
@@ -22,7 +21,7 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public string ItemSubjectRef
+        public virtual ItemDefinition ItemSubjectRef
         {
             get;
             set;

@@ -7,7 +7,7 @@ namespace Bpmtk.Bpmn2
     {
         protected List<DataOutput> dataOutputs = new List<DataOutput>();
         protected List<DataOutputAssociation> dataOutputAssociations = new List<DataOutputAssociation>();
-        protected List<string> eventDefinitionRefs = new List<string>();
+        protected List<EventDefinition> eventDefinitionRefs = new List<EventDefinition>();
         protected List<EventDefinition> eventDefinitions = new List<EventDefinition>();
 
         public CatchEvent()
@@ -28,7 +28,7 @@ namespace Bpmtk.Bpmn2
 
         public virtual IList<EventDefinition> EventDefinitions => this.eventDefinitions;
 
-        public virtual IList<string> EventDefinitionRefs => this.eventDefinitionRefs;
+        public virtual IList<EventDefinition> EventDefinitionRefs => this.eventDefinitionRefs;
 
         public virtual bool ParallelMultiple
         {

@@ -7,7 +7,7 @@ namespace Bpmtk.Bpmn2
     {
         protected List<DataInput> dataInputs = new List<DataInput>();
         protected List<DataInputAssociation> dataInputAssociations = new List<DataInputAssociation>();
-        protected List<string> eventDefinitionRefs = new List<string>();
+        protected List<EventDefinition> eventDefinitionRefs = new List<EventDefinition>();
         protected List<EventDefinition> eventDefinitions = new List<EventDefinition>();
 
         public virtual IList<DataInput> DataInputs => this.dataInputs;
@@ -22,6 +22,6 @@ namespace Bpmtk.Bpmn2
 
         public virtual List<EventDefinition> EventDefinitions => this.eventDefinitions;
 
-        public virtual List<string> EventDefinitionRefs => this.eventDefinitionRefs;
+        public virtual List<EventDefinition> EventDefinitionRefs => this.eventDefinitionRefs;
     }
 }

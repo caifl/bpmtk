@@ -90,7 +90,9 @@ namespace Bpmtk.Bpmn2.Parser
         {
             var binding = base.Create(parent, context, element);
 
-            binding.ParameterRef = element.GetAttribute("parameterRef");
+            var parameterRef = element.GetAttribute("parameterRef");
+
+            //binding.ParameterRef
 
             parent.ParameterBindings.Add(binding);
 

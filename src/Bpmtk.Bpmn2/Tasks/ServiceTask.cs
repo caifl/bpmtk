@@ -10,7 +10,7 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public virtual string OperationRef
+        public virtual Operation OperationRef
         {
             get;
             set;

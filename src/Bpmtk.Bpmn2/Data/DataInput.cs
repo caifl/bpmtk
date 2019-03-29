@@ -26,9 +26,7 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        /// <remarks/>
-        //[XmlAttribute("itemSubjectRef")]
-        public string ItemSubjectRef
+        public virtual ItemDefinition ItemSubjectRef
         {
             get;
             set;
@@ -37,7 +35,7 @@ namespace Bpmtk.Bpmn2
         /// <remarks/>
         //[XmlAttribute("isCollection")]
         //[System.ComponentModel.DefaultValueAttribute(false)]
-        public bool IsCollection
+        public virtual bool IsCollection
         {
             get;
             set;

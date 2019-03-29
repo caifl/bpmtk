@@ -5,7 +5,7 @@ namespace Bpmtk.Bpmn2
 {
     public class Operation : BaseElement
     {
-        protected List<string> errorRefs = new List<string>();
+        protected List<Error> errorRefs = new List<Error>();
 
         public string Name
         {
@@ -31,7 +31,7 @@ namespace Bpmtk.Bpmn2
         /// <summary>
         /// message#id
         /// </summary>
-        public string InMessageRef
+        public virtual Message InMessageRef
         {
             get;
             set;
@@ -40,12 +40,12 @@ namespace Bpmtk.Bpmn2
         /// <summary>
         /// message#id
         /// </summary>
-        public string OutMessageRef
+        public virtual Message OutMessageRef
         {
             get;
             set;
         }
 
-        public virtual IList<string> ErrorRefs => this.errorRefs;
+        public virtual IList<Error> ErrorRefs => this.errorRefs;
     }
 }

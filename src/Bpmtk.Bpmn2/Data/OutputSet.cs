@@ -16,36 +16,36 @@ namespace Bpmtk.Bpmn2
         //private string name;
         public OutputSet()
         {
-            this.DataOutputRefs = new List<string>();
-            this.OptionalOutputRefs = new List<string>();
-            this.WhileExecutingOutputRefs = new List<string>();
-            this.InputSetRefs = new List<string>();
+            this.DataOutputRefs = new List<DataOutput>();
+            this.OptionalOutputRefs = new List<DataOutput>();
+            this.WhileExecutingOutputRefs = new List<DataOutput>();
+            this.InputSetRefs = new List<InputSet>();
         }
 
         /// <remarks/>
         //[XmlElement("dataOutputRefs", DataType = "IDREF", Order = 0)]
-        public ICollection<string> DataOutputRefs
+        public ICollection<DataOutput> DataOutputRefs
         {
             get;
         }
 
         /// <remarks/>
         //[XmlElement("optionalOutputRefs", DataType = "IDREF", Order = 1)]
-        public ICollection<string> OptionalOutputRefs
+        public ICollection<DataOutput> OptionalOutputRefs
         {
             get;
         }
 
         /// <remarks/>
         //[XmlElement("whileExecutingOutputRefs", DataType = "IDREF", Order = 2)]
-        public ICollection<string> WhileExecutingOutputRefs
+        public ICollection<DataOutput> WhileExecutingOutputRefs
         {
             get;
         }
 
         /// <remarks/>
         //[XmlElement("inputSetRefs", DataType = "IDREF", Order = 3)]
-        public ICollection<string> InputSetRefs
+        public ICollection<InputSet> InputSetRefs
         {
             get;
         }

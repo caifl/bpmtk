@@ -7,28 +7,28 @@ namespace Bpmtk.Bpmn2
     {
         public InputSet()
         {
-            this.DataInputRefs = new List<string>();
-            this.OptionalInputRefs = new List<string>();
-            this.WhileExecutingInputRefs = new List<string>();
-            this.OutputSetRefs = new List<string>();
+            this.DataInputRefs = new List<DataInput>();
+            this.OptionalInputRefs = new List<DataInput>();
+            this.WhileExecutingInputRefs = new List<DataInput>();
+            this.OutputSetRefs = new List<OutputSet>();
         }
 
-        public virtual IList<string> DataInputRefs
+        public virtual IList<DataInput> DataInputRefs
         {
             get;
         }
 
-        public virtual IList<string> OptionalInputRefs
+        public virtual IList<DataInput> OptionalInputRefs
         {
             get;
         }
 
-        public virtual IList<string> WhileExecutingInputRefs
+        public virtual IList<DataInput> WhileExecutingInputRefs
         {
             get;
         }
 
-        public virtual IList<string> OutputSetRefs
+        public virtual IList<OutputSet> OutputSetRefs
         {
             get;
         }

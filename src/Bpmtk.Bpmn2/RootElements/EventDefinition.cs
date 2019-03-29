@@ -20,7 +20,7 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        public virtual string ActivityRef
+        public virtual Activity ActivityRef
         {
             get;
             set;
@@ -38,7 +38,7 @@ namespace Bpmtk.Bpmn2
 
     public class ErrorEventDefinition : EventDefinition
     {
-        public virtual string ErrorRef
+        public virtual Error ErrorRef
         {
             get;
             set;
@@ -81,13 +81,13 @@ namespace Bpmtk.Bpmn2
 
     public class MessageEventDefinition : EventDefinition
     {
-        public virtual string OperationRef
+        public virtual Operation OperationRef
         {
             get;
             set;
         }
 
-        public virtual string MessageRef
+        public virtual Message MessageRef
         {
             get;
             set;
@@ -96,7 +96,7 @@ namespace Bpmtk.Bpmn2
 
     public class SignalEventDefinition : EventDefinition
     {
-        public virtual string SignalRef
+        public virtual Signal SignalRef
         {
             get;
             set;
@@ -109,28 +109,46 @@ namespace Bpmtk.Bpmn2
 
     public class TimerEventDefinition : EventDefinition
     {
-        public virtual Expression Expression
+        public virtual Expression TimeDate
         {
             get;
             set;
         }
 
-        public virtual TimeExpressionType ExpressionType
+        public virtual Expression TimeDuration
         {
             get;
             set;
         }
+
+        public virtual Expression TimeCycle
+        {
+            get;
+            set;
+        }
+
+        //public virtual Expression Expression
+        //{
+        //    get;
+        //    set;
+        //}
+
+        //public virtual TimeExpressionType ExpressionType
+        //{
+        //    get;
+        //    set;
+        //}
     }
 
-    public enum TimeExpressionType
-    {
-        /// <remarks/>
-        TimeCycle,
+    //public enum TimeExpressionType
+    //{
+    //    /// <remarks/>
+    //    TimeCycle,
 
-        /// <remarks/>
-        TimeDate,
+    //    /// <remarks/>
+    //    TimeDate,
 
-        /// <remarks/>
-        TimeDuration,
-    }
+    //    /// <remarks/>
+    //    TimeDuration,
+    //}
 }

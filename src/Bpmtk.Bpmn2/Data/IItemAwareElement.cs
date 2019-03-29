@@ -16,17 +16,17 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        string ItemSubjectRef
+        ItemDefinition ItemSubjectRef
         {
             get;
             set;
         }
 
-        bool IsCollection
-        {
-            get;
-            set;
-        }
+        //bool IsCollection
+        //{
+        //    get;
+        //    set;
+        //}
 
         DataState DataState
         {
