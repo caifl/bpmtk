@@ -6,3 +6,10 @@
 /src/Bpmtk.Bpmn2/.vs/Bpmtk.Bpmn2
 /src/Bpmtk.Bpmn2/bin/Debug/netstandard2.0
 /src/Bpmtk.Bpmn2/obj
+/src/Bpmtk.Abstractions/bin/Debug/netstandard2.0
+/src/.vs/Bpmtk/DesignTimeBuild
+/src/Bpmtk.Engine/bin/Debug/netstandard2.0
+/src/Bpmtk.Engine/obj
+/src/Bpmtk.Abstractions/obj
+/src/Bpmtk.Engine.Hibernate/bin/Debug/netstandard2.0
+/src/Bpmtk.Engine.Hibernate/obj

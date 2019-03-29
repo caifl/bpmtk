@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bpmtk.Engine</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NHibernate" Version="5.2.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bpmtk.Abstractions\Bpmtk.Abstractions.csproj" />
+    <ProjectReference Include="..\Bpmtk.Engine\Bpmtk.Engine.csproj" />
+  </ItemGroup>
+
+</Project>
