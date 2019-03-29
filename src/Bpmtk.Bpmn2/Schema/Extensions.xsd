@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<schema targetNamespace="http://www.bpmtk.com/bpmn/extensions"
+    elementFormDefault="qualified"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:bpmtk="http://www.bpmtk.com/bpmn/extensions">
+
+  <import namespace="http://www.omg.org/spec/BPMN/20100524/MODEL" schemaLocation="Semantic.xsd" />
+
+  <!--type of resource-->
+  <attribute name="type">
+    <annotation>
+      <documentation>
+        Attribute used on a humanPerformer, potentialOwner, resourceRole, .
+      </documentation>
+    </annotation>
+    <simpleType>
+      <restriction base="string">
+        <enumeration value="Group" />
+        <enumeration value="User" />
+      </restriction>
+    </simpleType>
+  </attribute>
+
+  <!--collectionRef of multiInstanceLoopCharacteristics-->
+  <attribute name="collectionRef" type="string">
+    <annotation>
+      <documentation>
+        Attribute used on a multiInstanceLoopCharacteristics.
+      </documentation>
+    </annotation>
+  </attribute>
+
+  <!--elementRef of multiInstanceLoopCharacteristics-->
+  <attribute name="elementRef" type="string">
+    <annotation>
+      <documentation>
+        Attribute used on a multiInstanceLoopCharacteristics.
+      </documentation>
+    </annotation>
+  </attribute>
+
+  <!--variable or parameter initial value
+  <attribute name="value" type="string">
+    <annotation>
+      <documentation>
+        Attribute used on a resourceParameter, dataObject, property.
+      </documentation>
+    </annotation>
+  </attribute>-->
+
+  <!--tag of process-->
+  <attribute name="versionTag" type="string">
+    <annotation>
+      <documentation>
+        Attribute used on a Process.
+      </documentation>
+    </annotation>
+  </attribute>
+
+  <!--task allocation strategy-->
+  <attribute name="assignmentStrategy" type="string">
+    <annotation>
+      <documentation>
+        Attribute used on a userTask.
+      </documentation>
+    </annotation>
+  </attribute>
+
+  <attribute name="isCounterSign" type="boolean">
+    <annotation>
+      <documentation>
+        Attribute used on a userTask.
+      </documentation>
+    </annotation>
+  </attribute>
+
+  <attribute name="isAsync" type="boolean">
+    <annotation>
+      <documentation>
+        Attribute used on a callActivity.
+      </documentation>
+    </annotation>
+  </attribute>
+
+  <attribute name="taskName" type="string">
+    <annotation>
+      <documentation>
+        Attribute used on a userTask.
+      </documentation>
+    </annotation>   
+  </attribute>
+
+  <attribute name="duration" type="string">
+    <annotation>
+      <documentation>
+        Attribute used on a userTask.
+      </documentation>
+    </annotation>
+  </attribute>
+  
+  <attribute name="priority">
+    <annotation>
+      <documentation>
+        Attribute used on a userTask.
+      </documentation>
+    </annotation>
+    <simpleType>
+      <restriction base="string">
+        <enumeration value="Normal" />
+        <enumeration value="AboveNormal" />
+        <enumeration value="High" />
+        <enumeration value="VeryHigh" />
+        <enumeration value="Highest" />
+        <enumeration value="Low" />
+        <enumeration value="VeryLow" />
+        <enumeration value="Lowest" />
+      </restriction>
+    </simpleType>
+  </attribute>
+  
+   <element name="eventListener">
+    <annotation>
+      <documentation>
+        Subelement of the extensionsElements of flowNode, sequenceFlow, process. See documentation chapter on
+        event.
+      </documentation>
+    </annotation>
+    <complexType mixed="true">
+      <sequence>
+        <element name="script" maxOccurs="1" minOccurs="0">
+          <complexType mixed="true">
+            <attribute name="scriptFormat" type="string" use="optional"></attribute>
+          </complexType>
+        </element>
+      </sequence>
+      <attribute name="event" type="string" use="optional"></attribute>
+      <attribute name="class" type="string" use="optional"></attribute>
+    </complexType>
+  </element>
+
+  <!--extended attribute of flowNode, process-->
+  <element name="attribute">
+    <annotation>
+      <documentation>
+        Subelement of the extensionsElements of flow node, process. See documentation chapter on
+        attribute.
+      </documentation>
+    </annotation>
+    <complexType>
+      <attribute name="id" use="required" type="QName">
+        <annotation>
+          <documentation>
+            The key used to submit the property through the API.
+          </documentation>
+        </annotation>
+      </attribute>
+      <attribute name="value" use="optional" type="string">
+        <annotation>
+          <documentation>
+            The key used to submit the property through the API.
+          </documentation>
+        </annotation>
+      </attribute>
+    </complexType>  
+  </element>
+  
+</schema>

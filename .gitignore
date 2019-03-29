@@ -3,3 +3,6 @@
 ################################################################################
 
 /src/.vs/Bpmtk/v16
+/src/Bpmtk.Bpmn2/.vs/Bpmtk.Bpmn2
+/src/Bpmtk.Bpmn2/bin/Debug/netstandard2.0
+/src/Bpmtk.Bpmn2/obj
