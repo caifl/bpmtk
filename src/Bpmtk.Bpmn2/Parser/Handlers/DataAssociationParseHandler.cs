@@ -3,27 +3,39 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Bpmn2.Parser
 {
-    class DataInputAssociationParseHandler : BaseElementParseHandler
+    abstract class DataAssociationParseHandler : BaseElementParseHandler
     {
-        public DataInputAssociationParseHandler()
+        public DataAssociationParseHandler()
         {
-            //this.handlers.Add("sourceRef", new BpmnHandlerCallback<DataInputAssociation>((p, callback, x) =>
-            //{
-            //    //p.SourceRefs.Add(x.Value);
+            this.handlers.Add("sourceRef", new ParseHandlerAction<DataInputAssociation>((p, ctx, x) =>
+            {
+                var sourceRef = x.Value;
+                if (sourceRef != null)
+                    ctx.AddReferenceRequest<IItemAwareElement>(sourceRef, r => p.SourceRefs.Add(r));
+            }));
 
-            //    return x.Value;
-            //}));
-
-            //this.handlers.Add("targetRef", new BpmnHandlerCallback<DataInputAssociation>((p, callback, x) =>
-            //{
-            //    return p.TargetRef = x.Value;
-            //}));
+            this.handlers.Add("targetRef", new ParseHandlerAction<DataInputAssociation>((p, ctx, x) =>
+            {
+                var targetRef = x.Value;
+                if (targetRef != null)
+                    ctx.AddReferenceRequest<IItemAwareElement>(targetRef, r => p.TargetRef = r);
+            }));
 
             this.handlers.Add("assignment", new AssignmentParseHandler());
             this.handlers.Add("transformation", new ExpressionParseHandler<DataInputAssociation>((p, result) =>
             {
                 p.Transformation = result as FormalExpression;
             }));
+        }
+    }
+
+    class DataInputAssociationParseHandler<TParent> : DataAssociationParseHandler
+    {
+        private readonly Action<TParent, DataInputAssociation> callback;
+
+        public DataInputAssociationParseHandler(Action<TParent, DataInputAssociation> callback)
+        {
+            this.callback = callback;
         }
 
         public override object Create(object parent, IParseContext context, XElement element)
@@ -33,32 +45,20 @@ namespace Bpmtk.Bpmn2.Parser
             //item.
 
             //parent.DataInputAssociations.Add(item);
+            if (this.callback != null)
+                this.callback((TParent)parent, item);
 
             return item;
         }
     }
 
-    class DataOutputAssociationParseHandler : BaseElementParseHandler
+    class DataOutputAssociationParseHandler<TParent> : DataAssociationParseHandler
     {
-        public DataOutputAssociationParseHandler()
+        private readonly Action<TParent, DataOutputAssociation> callback;
+
+        public DataOutputAssociationParseHandler(Action<TParent, DataOutputAssociation> callback)
         {
-            //this.handlers.Add("sourceRef", new BpmnHandlerCallback<DataOutputAssociation>((p, callback, x) =>
-            //{
-            //    p.SourceRefs.Add(x.Value);
-
-            //    return x.Value;
-            //}));
-
-            //this.handlers.Add("targetRef", new BpmnHandlerCallback<DataOutputAssociation>((p, callback, x) =>
-            //{
-            //    return p.TargetRef = x.Value;
-            //}));
-
-            this.handlers.Add("assignment", new AssignmentParseHandler());
-            this.handlers.Add("transformation", new ExpressionParseHandler<DataOutputAssociation>((p, result) =>
-            {
-                p.Transformation = result as FormalExpression;
-            }));
+            this.callback = callback;
         }
 
         public override object Create(object parent, IParseContext context, XElement element)
@@ -68,6 +68,8 @@ namespace Bpmtk.Bpmn2.Parser
             //item.
 
             //parent.DataOutputAssociations.Add(item);
+            if (this.callback != null)
+                this.callback((TParent)parent, item);
 
             return item;
         }

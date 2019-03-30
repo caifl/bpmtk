@@ -27,7 +27,10 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
                     target.DataOutputs.Add(result);
                 }));
 
-            this.handlers.Add("dataOutputAssociation", new DataOutputAssociationParseHandler());
+            this.handlers.Add("dataOutputAssociation", new DataOutputAssociationParseHandler<CatchEvent>((x, y) =>
+            {
+                x.DataOutputAssociations.Add(y);
+            }));
 
             this.handlers.Add("eventDefinitionRef", new ParseHandlerAction<CatchEvent>((p, c, x) =>
             {
@@ -55,7 +58,10 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
                     target.DataInputs.Add(result);
                 }));
 
-            this.handlers.Add("dataInputAssociation", new DataInputAssociationParseHandler());
+            this.handlers.Add("dataInputAssociation", new DataInputAssociationParseHandler<ThrowEvent>((x, y) =>
+            {
+                x.DataInputAssociations.Add(y);
+            }));
 
             var keys = EventDefinitionParseHandler.Keys;
             IParseHandler handler = new EventDefinitionParseHandler();
