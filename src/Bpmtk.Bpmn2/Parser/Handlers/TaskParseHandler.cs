@@ -11,6 +11,8 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             var task = context.BpmnFactory.CreateTask();
             parent.FlowElements.Add(task);
 
+            base.Init(task, context, element);
+
             return task;
         }
     }

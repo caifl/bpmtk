@@ -2,7 +2,7 @@
 using Bpmtk.Bpmn2.DI;
 using Bpmtk.Bpmn2.DC;
 
-namespace Bpmtk.Bpmn2
+namespace Bpmtk.Bpmn2.Parser
 {
     public class BpmnFactory
     {

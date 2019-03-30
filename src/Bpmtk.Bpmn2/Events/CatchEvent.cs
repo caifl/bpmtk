@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Bpmtk.Bpmn2
 {
-    public abstract class CatchEvent : Event, IHasDataOutputs, IHasDataOutputAssociations
+    public abstract class CatchEvent : Event
     {
         protected List<DataOutput> dataOutputs = new List<DataOutput>();
         protected List<DataOutputAssociation> dataOutputAssociations = new List<DataOutputAssociation>();

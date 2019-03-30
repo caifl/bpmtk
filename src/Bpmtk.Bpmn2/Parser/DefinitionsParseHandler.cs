@@ -38,7 +38,8 @@ namespace Bpmtk.Bpmn2.Parser
             definitions.TypeLanguage = element.GetAttribute("typeLanguage");
             definitions.TargetNamespace = element.GetAttribute("targetNamespace");
 
-            base.CreateChildren(definitions, context, element);
+            if(element.HasElements)
+                base.CreateChildren(definitions, context, element);
 
             return definitions;
         }

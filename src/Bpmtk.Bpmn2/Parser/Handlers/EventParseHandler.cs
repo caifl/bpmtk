@@ -21,7 +21,12 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             foreach (var key in keys)
                 this.handlers.Add(key, handler);
 
-            this.handlers.Add("dataOutput", new DataOutputParseHandler());
+            this.handlers.Add("dataOutput", new DataOutputParseHandler<CatchEvent>(
+                (target, context, element, result) =>
+                {
+                    target.DataOutputs.Add(result);
+                }));
+
             this.handlers.Add("dataOutputAssociation", new DataOutputAssociationParseHandler());
 
             this.handlers.Add("eventDefinitionRef", new ParseHandlerAction<CatchEvent>((p, c, x) =>
@@ -44,7 +49,12 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
     {
         public ThrowEventParseHandler()
         {
-            this.handlers.Add("dataInput", new DataInputParseHandler());
+            this.handlers.Add("dataInput", new DataInputParseHandler<ThrowEvent>(
+                (target, context, element, result) =>
+                {
+                    target.DataInputs.Add(result);
+                }));
+
             this.handlers.Add("dataInputAssociation", new DataInputAssociationParseHandler());
 
             var keys = EventDefinitionParseHandler.Keys;

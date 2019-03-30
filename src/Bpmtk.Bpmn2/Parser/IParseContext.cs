@@ -9,25 +9,11 @@ namespace Bpmtk.Bpmn2.Parser
             get;
         }
 
-        void AddReferenceRequest<TObject>(string id, Action<TObject> callback);
-
-        //void AddReferenceRequest(ObjectReferenceRequest value);
-
-        void Push(ItemDefinition itemDefinition);
-
-        void Push(Message message);
+        void AddReferenceRequest<TBaseElement>(string id, Action<TBaseElement> action)
+            where TBaseElement : IBaseElement;
 
         void Push(FlowElement flowElement);
 
-        //void PushScope(FlowElementScope scope);
-
-        //FlowElementScope PopScope();
-
-        //FlowElementScope PeekScope();
-        //FlowElementParseContext SubProcessContext
-        //{
-        //    get;
-        //    set;
-        //}
+        void Push(BaseElement baseElement);
     }
 }

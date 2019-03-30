@@ -5,11 +5,13 @@ VisualStudioVersion = 16.0.28721.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bpmtk.Bpmn2", "Bpmtk.Bpmn2\Bpmtk.Bpmn2.csproj", "{39618BE0-AB39-4884-8CF2-B3D08CF33DAA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bpmtk.Engine", "Bpmtk.Engine\Bpmtk.Engine.csproj", "{6B8CAE2F-6568-4270-A6C8-87C0E52E6E8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bpmtk.Engine", "Bpmtk.Engine\Bpmtk.Engine.csproj", "{6B8CAE2F-6568-4270-A6C8-87C0E52E6E8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bpmtk.Engine.Hibernate", "Bpmtk.Engine.Hibernate\Bpmtk.Engine.Hibernate.csproj", "{D9B420BD-63CA-4A5F-9612-E4C15F5FF971}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bpmtk.Engine.Hibernate", "Bpmtk.Engine.Hibernate\Bpmtk.Engine.Hibernate.csproj", "{D9B420BD-63CA-4A5F-9612-E4C15F5FF971}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bpmtk.Abstractions", "Bpmtk.Abstractions\Bpmtk.Abstractions.csproj", "{BC401EE1-D445-4AFF-87CA-109231F50E6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bpmtk.Bpmn2.Tests", "Bpmtk.Bpmn2.Tests\Bpmtk.Bpmn2.Tests.csproj", "{70CE6EE1-4BBA-4030-AE6B-0B70A8E13D69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{BC401EE1-D445-4AFF-87CA-109231F50E6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC401EE1-D445-4AFF-87CA-109231F50E6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC401EE1-D445-4AFF-87CA-109231F50E6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70CE6EE1-4BBA-4030-AE6B-0B70A8E13D69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70CE6EE1-4BBA-4030-AE6B-0B70A8E13D69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70CE6EE1-4BBA-4030-AE6B-0B70A8E13D69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70CE6EE1-4BBA-4030-AE6B-0B70A8E13D69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

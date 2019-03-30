@@ -71,6 +71,8 @@ namespace Bpmtk.Bpmn2.Parser
 
             this.definitions = handler.Create(null, context, element) as Definitions;
 
+            context.Complete();
+
             return definitions;
         }
     }

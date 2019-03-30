@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Bpmtk.Bpmn2
 {
-    public abstract class BaseElement
+    public abstract class BaseElement : IBaseElement
     {
         protected List<Documentation> documentations = new List<Documentation>();
 
@@ -29,6 +29,14 @@ namespace Bpmtk.Bpmn2
                 return $"{this.GetType().Name} [{this.Id}]";
 
             return base.ToString();
+        }
+    }
+
+    public interface IBaseElement
+    {
+        string Id
+        {
+            get;
         }
     }
 }

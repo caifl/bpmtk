@@ -21,14 +21,12 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
 
         public EventDefinitionParseHandler()
         {
-            //this.handlers.Add("source", new BpmnHandlerCallback<EventDefinition>((p, c, x) =>
-            //{
-            //    var source = x.Value;
-            //    var linkEvent = ((LinkEventDefinition)p);
-            //    linkEvent.Source.Add(source);
-
-            //    return source;
-            //}));
+            this.handlers.Add("source", new ParseHandlerAction<EventDefinition>((p, c, x) =>
+            {
+                var source = x.Value;
+                var linkEvent = ((LinkEventDefinition)p);
+                linkEvent.Source.Add(source);
+            }));
 
             this.handlers.Add("condition", new ExpressionParseHandler<EventDefinition>((p, expr) =>
             {
@@ -67,10 +65,11 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
                     break;
 
                 case "errorEventDefinition":
-                    eventDefinition = new ErrorEventDefinition();
+                    var errorEventDefinition = new ErrorEventDefinition();
+                    eventDefinition = errorEventDefinition;
                     var errorRef = element.GetAttribute("errorRef");
                     if (errorRef != null)
-                        context.AddReferenceRequest(errorRef, (Error error) => ((ErrorEventDefinition)eventDefinition).ErrorRef = error);
+                        context.AddReferenceRequest<Error>(errorRef, x => errorEventDefinition.ErrorRef = x);
                     break;
 
                 case "timerEventDefinition":
@@ -82,11 +81,16 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
                     break;
 
                 case "messageEventDefinition":
-                    eventDefinition = new MessageEventDefinition()
-                    {
-                        //OperationRef = element.GetAttribute("operationRef"),
-                        //MessageRef = element.GetAttribute("messageRef")
-                    };
+                    var messageEventDefinition = new MessageEventDefinition();
+                    eventDefinition = messageEventDefinition;
+
+                    var operationRef = element.GetAttribute("operationRef");
+                    if (operationRef != null)
+                        context.AddReferenceRequest<Operation>(operationRef, x => messageEventDefinition.OperationRef = x);
+
+                    var messageRef = element.GetAttribute("messageRef");
+                    if (messageRef != null)
+                        context.AddReferenceRequest<Message>(messageRef, x => messageEventDefinition.MessageRef = x);
                     break;
 
                 case "conditionalEventDefinition":
@@ -94,18 +98,22 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
                     break;
 
                 case "compensateEventDefinition":
-                    eventDefinition = new CompensateEventDefinition()
-                    {
-                        //ActivityRef = element.GetAttribute("activityRef"),
-                        WaitForCompletion = element.GetBoolean("waitForCompletion")
-                    };
+                    var compensateEventDefinition = new CompensateEventDefinition();
+                    eventDefinition = compensateEventDefinition;
+
+                    compensateEventDefinition.WaitForCompletion = element.GetBoolean("waitForCompletion");
+                    var activityRef = element.GetAttribute("activityRef");
+                    if (activityRef != null)
+                        context.AddReferenceRequest<Activity>(activityRef, x => compensateEventDefinition.ActivityRef = x);
                     break;
 
                 case "signalEventDefinition":
-                    eventDefinition = new SignalEventDefinition()
-                    {
-                        //SignalRef = element.GetAttribute("signalRef")
-                    };
+                    var signalEventDefinition = new SignalEventDefinition();
+                    eventDefinition = signalEventDefinition;
+
+                    var signalRef = element.GetAttribute("signalRef");
+                    if (signalRef != null)
+                        context.AddReferenceRequest<Signal>(signalRef, x => signalEventDefinition.SignalRef = x);
                     break;
 
                 case "escalationEventDefinition":
@@ -123,6 +131,10 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
                     };
                     break;
             }
+
+            base.Init(eventDefinition, context, element);
+
+            context.Push(eventDefinition);
 
             return eventDefinition;
         }

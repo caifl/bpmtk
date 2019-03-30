@@ -18,16 +18,15 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             var sequenceFlow = context.BpmnFactory.CreateSequenceFlow();
             parent.FlowElements.Add(sequenceFlow);
 
+            base.Init(sequenceFlow, context, element);
+
             var sourceRef = element.GetAttribute("sourceRef");
             var targetRef = element.GetAttribute("targetRef");
 
             context.AddReferenceRequest(sourceRef, (FlowNode node) => sequenceFlow.SourceRef = node);
             context.AddReferenceRequest(targetRef, (FlowNode node) => sequenceFlow.TargetRef = node);
 
-            context.Push(sequenceFlow);
-
-            base.Init((BaseElement)sequenceFlow, context, element);
-
+            //context.Push(sequenceFlow);
             //if (sequenceFlow.ExtensionElements != null)
             //{
             //    var items = this.ParseEventListeners(sequenceFlow.ExtensionElements);

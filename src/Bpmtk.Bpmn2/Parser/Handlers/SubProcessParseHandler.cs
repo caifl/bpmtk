@@ -3,128 +3,78 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Bpmn2.Parser.Handlers
 {
-    abstract class BaseSubProcessParseHandler : FlowElementParseHandler
+    class SubProcessParseHandler : FlowElementParseHandler
     {
-        //readonly static SubProcessHandler<IFlowElementsContainer> _SubProcessHandler = new SubProcessHandler<IFlowElementsContainer>();
-        //readonly static AdHocSubProcessHandler<IFlowElementsContainer> _AdHocSubProcessHandler = new AdHocSubProcessHandler<IFlowElementsContainer>();
-        //readonly static TransactionHandler<IFlowElementsContainer> _TransactionHandler = new TransactionHandler<IFlowElementsContainer>();
-
-        public BaseSubProcessParseHandler()
+        public SubProcessParseHandler()
         {
-            //this.handlers.Add("startEvent", new StartEventHandler<TSubProcess>());
-            //this.handlers.Add("userTask", new UserTaskHandler<TSubProcess>());
-            //this.handlers.Add("sequenceFlow", new SequenceFlowHandler<TSubProcess>());
-            //this.handlers.Add("endEvent", new EndEventHandler<TSubProcess>());
-            //this.handlers.Add("parallelGateway", new ParallelGatewayHandler<TSubProcess>());
-            //this.handlers.Add("exclusiveGateway", new ExclusiveGatewayHandler<TSubProcess>());
-            //this.handlers.Add("inclusiveGateway", new InclusiveGatewayHandler<TSubProcess>());
-            //this.handlers.Add("scriptTask", new ScriptTaskHandler<TSubProcess>());
-            //this.handlers.Add("serviceTask", new ServiceTaskHandler<TSubProcess>());
-            //this.handlers.Add("receiveTask", new ReceiveTaskHandler<TSubProcess>());
-            //this.handlers.Add("sendTask", new SendTaskHandler<TSubProcess>());
-            //this.handlers.Add("task", new TaskHandler<TSubProcess>());
-            //this.handlers.Add("manualTask", new ManualTaskHandler<TSubProcess>());
-            //this.handlers.Add("businessRuleTask", new BusinessRuleTaskHandler<TSubProcess>());
+            this.handlers.Add("dataObject", new DataObjectParseHandler());
+            this.handlers.Add("dataObjectReference", new DataObjectReferenceParseHandler());
 
-            //this.handlers.Add("subProcess", new BpmnHandlerCallback<TSubProcess>((p, c, x) =>
-            //{
-            //    return _SubProcessHandler.Create(p, c, x);
-            //}));
+            this.handlers.Add("startEvent", new StartEventParseHandler());
+            this.handlers.Add("userTask", new UserTaskParseHandler());
+            this.handlers.Add("sequenceFlow", new SequenceFlowParseHandler());
+            this.handlers.Add("endEvent", new EndEventParseHandler());
+            this.handlers.Add("parallelGateway", new ParallelGatewayParseHandler());
+            this.handlers.Add("exclusiveGateway", new ExclusiveGatewayParseHandler());
+            this.handlers.Add("inclusiveGateway", new InclusiveGatewayParseHandler());
+            this.handlers.Add("scriptTask", new ScriptTaskParseHandler());
+            this.handlers.Add("serviceTask", new ServiceTaskParseHandler());
+            this.handlers.Add("receiveTask", new ReceiveTaskParseHandler());
+            this.handlers.Add("sendTask", new SendTaskParseHandler());
+            this.handlers.Add("task", new TaskParseHandler());
+            this.handlers.Add("manualTask", new ManualTaskParseHandler());
+            this.handlers.Add("businessRuleTask", new BusinessRuleTaskParseHandler());
 
-            //this.handlers.Add("transaction", new BpmnHandlerCallback<TSubProcess>((p, c, x) =>
-            //{
-            //    return _TransactionHandler.Create(p, c, x);
-            //}));
+            this.handlers.Add("subProcess", ProcessParseHandler.SubProcessParseHandler);
+            this.handlers.Add("transaction", ProcessParseHandler.TransactionParseHandler);
+            this.handlers.Add("adHocSubProcess", ProcessParseHandler.AdHocSubProcessParseHandler);
 
-            //this.handlers.Add("adHocSubProcess", new BpmnHandlerCallback<TSubProcess>((p, c, x) =>
-            //{
-            //    return _AdHocSubProcessHandler.Create(p, c, x);
-            //}));
-
-            //this.handlers.Add("dataObjectReference", new DataObjectReferenceHandler<TSubProcess>());
-
-            //var artifactHandler = new ArtifactHandler<TSubProcess>();
-            //this.handlers.Add("textAnnotation", artifactHandler);
-            //this.handlers.Add("association", artifactHandler);
+            var artifactHandler = new ArtifactParseHandler();
+            this.handlers.Add("textAnnotation", artifactHandler);
+            this.handlers.Add("association", artifactHandler);
         }
 
-        protected virtual void Parse(SubProcess subProcess, IParseContext context, XElement element)
+        protected virtual void Init(SubProcess subProcess, IParseContext context, XElement element)
         {
             subProcess.TriggeredByEvent = element.GetBoolean("triggeredByEvent");
 
-            //parent.FlowElements.Add(subProcess);
-
-            //this.EndScope(context);
-            context.Push(subProcess);
+            base.Init(subProcess, context, element);
         }
 
-        //public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
-        //{
-        //    var subProcess = context.BpmnFactory.CreateSubProcess();
-
-        //    subProcess.TriggeredByEvent = element.GetBoolean("triggeredByEvent");
-
-        //    parent.FlowElements.Add(subProcess);
-
-        //    //this.EndScope(context);
-        //    context.Push(subProcess);
-
-        //    return subProcess;
-        //}
-
-        //protected override void CreateChildren(TSubProcess parent, IParseContext context, XElement element)
-        //{
-        //    base.CreateChildren(parent, context, element);
-        //}
-
-        //protected virtual void BeginScope(IParseContext context, TSubProcess subProcess)
-        //{
-        //    var scope = new FlowElementScope(subProcess);
-        //    context.PushScope(scope);
-        //}
-
-        //protected virtual void EndScope(IParseContext context)
-        //{
-        //    var scope = context.PopScope();
-        //    scope.Complete();
-        //}
-    }
-
-    class SubProcessParseHandler : BaseSubProcessParseHandler
-    {
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var subProcess = context.BpmnFactory.CreateSubProcess();
-
             parent.FlowElements.Add(subProcess);
+
+            this.Init(subProcess, context, element);
 
             return subProcess;
         }
     }
 
-    //class AdHocSubProcessHandler<TFlowElementContainer> : SubProcessHandler<TFlowElementContainer, AdHocSubProcess>
-    //    where TFlowElementContainer : IFlowElementsContainer
-    //{
-    //    protected override AdHocSubProcess New(IParseContext context, XElement element)
-    //    {
-    //        var subProcess = context.BpmnFactory.CreateAdHocSubProcess();
+    class AdHocSubProcessParseHandler : SubProcessParseHandler
+    {
+        public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
+        {
+            var adHocSubProcess = context.BpmnFactory.CreateAdHocSubProcess();
+            parent.FlowElements.Add(adHocSubProcess);
 
-    //        this.BeginScope(context, subProcess);
+            base.Init(adHocSubProcess, context, element);
 
-    //        return subProcess;
-    //    }
-    //}
+            return adHocSubProcess;
+        }
+    }
 
-    //class TransactionHandler<TFlowElementContainer> : SubProcessHandler<TFlowElementContainer, Transaction>
-    //        where TFlowElementContainer : IFlowElementsContainer
-    //{
-    //    protected override Transaction New(IParseContext context, XElement element)
-    //    {
-    //        var subProcess = context.BpmnFactory.CreateTransaction();
+    class TransactionParseHandler : SubProcessParseHandler
+    {
+        public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
+        {
+            var transaction = context.BpmnFactory.CreateTransaction();
+            parent.FlowElements.Add(transaction);
 
-    //        this.BeginScope(context, subProcess);
+            base.Init(transaction, context, element);
 
-    //        return subProcess;
-    //    }
-    //}
+            return transaction;
+        }
+    }
 }

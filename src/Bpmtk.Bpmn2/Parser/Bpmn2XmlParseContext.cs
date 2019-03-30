@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Bpmtk.Bpmn2.Parser
 {
     class Bpmn2XmlParseContext : IParseContext
     {
-        private readonly Dictionary<string, Stack<Action<object>>> requestStacks = new Dictionary<string, Stack<Action<object>>>();
-        private readonly Dictionary<string, ItemDefinition> itemDefinitions = new Dictionary<string, ItemDefinition>();
-        private readonly Dictionary<string, Message> messages = new Dictionary<string, Message>();
+        private readonly Dictionary<string, Queue<Action<IBaseElement>>> requestQueues = new Dictionary<string, Queue<Action<IBaseElement>>>();
         private readonly Dictionary<string, FlowElement> flowElements = new Dictionary<string, FlowElement>();
-        //protected Stack<FlowElementScope> scopes = new Stack<FlowElementScope>();
+        private readonly Dictionary<string, IBaseElement> elements = new Dictionary<string, IBaseElement>();
 
         public Bpmn2XmlParseContext(Definitions definitions,
             BpmnFactory bpmnFactory)
@@ -23,22 +20,8 @@ namespace Bpmtk.Bpmn2.Parser
 
         public virtual BpmnFactory BpmnFactory { get; }
 
-        //public virtual void AddReferenceRequest(ObjectReferenceRequest value)
-        //{
-        //    if (value == null)
-        //        throw new ArgumentNullException(nameof(value));
-
-        //    IList<ObjectReferenceRequest> list = null;
-        //    if (!this.objectRefRequests.TryGetValue(value.Id, out list))
-        //    {
-        //        list = new List<ObjectReferenceRequest>();
-        //        this.objectRefRequests.Add(value.Id, list);
-        //    }
-
-        //    list.Add(value);
-        //}
-
-        public virtual void AddReferenceRequest<TObject>(string id, Action<TObject> action)
+        public virtual void AddReferenceRequest<TBaseElement>(string id, Action<TBaseElement> action)
+            where TBaseElement : IBaseElement
         {
             if (id == null)
                 throw new ArgumentNullException(nameof(id));
@@ -46,56 +29,65 @@ namespace Bpmtk.Bpmn2.Parser
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            Stack<Action<object>> stack = null;
-            if (!this.requestStacks.TryGetValue(id, out stack))
+            IBaseElement value = null;
+            if (elements.TryGetValue(id, out value))
             {
-                stack = new Stack<Action<object>>();
-                this.requestStacks.Add(id, stack);
+                action((TBaseElement)value);
+                return;
             }
 
-            var r = new Action<object>(x => action((TObject)x));
-            stack.Push(r);
-        }
-
-        public virtual void Push(ItemDefinition value)
-        {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-
-            this.itemDefinitions.Add(value.Id, value);
-
-            Stack<Action<object>> stack = null;
-            if(this.requestStacks.TryGetValue(value.Id, out stack))
+            Queue<Action<IBaseElement>> queue = null;
+            if (!this.requestQueues.TryGetValue(id, out queue))
             {
-                while(stack.Count > 0)
-                {
-                    var action = stack.Pop();
-                    action(value);
-                }
-
-                this.requestStacks.Remove(value.Id);
+                queue = new Queue<Action<IBaseElement>>();
+                this.requestQueues.Add(id, queue);
             }
+
+            var r = new Action<IBaseElement>(x => action((TBaseElement)x));
+            queue.Enqueue(r);
         }
 
-        public virtual void Push(Message value)
-        {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
+        //public virtual void Push(ItemDefinition value)
+        //{
+        //    if (value == null)
+        //        throw new ArgumentNullException(nameof(value));
 
-            this.messages.Add(value.Id, value);
+        //    this.itemDefinitions.Add(value.Id, value);
+        //    this.elements.Add(value.Id, value);
 
-            Stack<Action<object>> stack = null;
-            if (this.requestStacks.TryGetValue(value.Id, out stack))
-            {
-                while (stack.Count > 0)
-                {
-                    var action = stack.Pop();
-                    action(value);
-                }
+        //    Queue<Action<object>> queue = null;
+        //    if(this.requestQueues.TryGetValue(value.Id, out queue))
+        //    {
+        //        while(queue.Count > 0)
+        //        {
+        //            var action = queue.Dequeue();
+        //            action(value);
+        //        }
 
-                this.requestStacks.Remove(value.Id);
-            }
-        }
+        //        this.requestQueues.Remove(value.Id);
+        //    }
+        //}
+
+        //public virtual void Push(Message value)
+        //{
+        //    if (value == null)
+        //        throw new ArgumentNullException(nameof(value));
+
+        //    this.messages.Add(value.Id, value);
+        //    this.elements.Add(value.Id, value);
+
+        //    Queue<Action<object>> queue = null;
+        //    if (this.requestQueues.TryGetValue(value.Id, out queue))
+        //    {
+        //        while (queue.Count > 0)
+        //        {
+        //            var action = queue.Dequeue();
+        //            action(value);
+        //        }
+
+        //        this.requestQueues.Remove(value.Id);
+        //    }
+        //}
 
         public virtual void Push(FlowElement value)
         {
@@ -103,52 +95,61 @@ namespace Bpmtk.Bpmn2.Parser
                 throw new ArgumentNullException(nameof(value));
 
             this.flowElements.Add(value.Id, value);
+            this.elements.Add(value.Id, value);
 
-            Stack<Action<object>> stack = null;
-            if (this.requestStacks.TryGetValue(value.Id, out stack))
+            Queue<Action<IBaseElement>> queue = null;
+            if (this.requestQueues.TryGetValue(value.Id, out queue))
             {
-                while (stack.Count > 0)
+                while (queue.Count > 0)
                 {
-                    var action = stack.Pop();
+                    var action = queue.Dequeue();
                     action(value);
                 }
 
-                this.requestStacks.Remove(value.Id);
+                this.requestQueues.Remove(value.Id);
+            }
+        }
+
+        public virtual void Push(BaseElement baseElement)
+        {
+            if (baseElement == null)
+                throw new ArgumentNullException(nameof(baseElement));
+
+            this.elements.Add(baseElement.Id, baseElement);
+
+            Queue<Action<IBaseElement>> queue = null;
+            if (this.requestQueues.TryGetValue(baseElement.Id, out queue))
+            {
+                while (queue.Count > 0)
+                {
+                    var action = queue.Dequeue();
+                    action(baseElement);
+                }
+
+                this.requestQueues.Remove(baseElement.Id);
             }
         }
 
         public virtual void Complete()
         {
+            var em = this.requestQueues.GetEnumerator();
+            while(em.MoveNext())
+            {
+                var key = em.Current.Key;
+                var queue = em.Current.Value;
 
-        }
+                IBaseElement value = null;
+                if (!elements.TryGetValue(key, out value))
+                    continue;
 
-        //public virtual void PushScope(FlowElementScope scope)
-        //{
-        //    this.scopes.Push(scope);
-        //}
+                while (queue.Count > 0)
+                {
+                    var action = queue.Dequeue();
+                    action(value);
+                }
+            }
 
-        //public virtual FlowElementScope PeekScope() => this.scopes.Peek();
-
-        //public virtual FlowElementScope PopScope() => this.scopes.Pop();
-    }
-
-    public class ObjectReferenceRequest
-    {
-        public ObjectReferenceRequest(string id,
-            Action<object> callback)
-        {
-            Id = id;
-            Callback = callback;
-        }
-
-        public virtual string Id
-        {
-            get;
-        }
-
-        public virtual Action<object> Callback
-        {
-            get;
+            this.requestQueues.Clear();
         }
     }
 }

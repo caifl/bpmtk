@@ -2,14 +2,8 @@
 
 namespace Bpmtk.Bpmn2
 {
-    public interface IItemAwareElement
+    public interface IItemAwareElement : IBaseElement
     {
-        string Id
-        {
-            get;
-            set;
-        }
-
         string Name
         {
             get;

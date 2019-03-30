@@ -3,15 +3,17 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Bpmn2.Parser.Handlers
 {
-    class ProcessParseHandler : BaseElementParseHandler<Definitions>
+    class ProcessParseHandler : CallableElementParseHandler
     {
+        public readonly static SubProcessParseHandler SubProcessParseHandler = new SubProcessParseHandler();
+        public readonly static AdHocSubProcessParseHandler AdHocSubProcessParseHandler = new AdHocSubProcessParseHandler();
+        public readonly static TransactionParseHandler TransactionParseHandler = new TransactionParseHandler();
+
         public ProcessParseHandler()
         {
             this.handlers.Add("dataObject", new DataObjectParseHandler());
             this.handlers.Add("dataObjectReference", new DataObjectReferenceParseHandler());
             this.handlers.Add("property", new PropertyParseHandler());
-            this.handlers.Add("ioBinding", new InputOutputBindingParseHandler());
-            this.handlers.Add("ioSpecification", new IOSpecificationParseHandler());
 
             //resource
             IParseHandler handler = new ResourceRoleParseHandler();
@@ -33,9 +35,9 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             this.handlers.Add("manualTask", new ManualTaskParseHandler());
             this.handlers.Add("businessRuleTask", new BusinessRuleTaskParseHandler());
 
-            this.handlers.Add("subProcess", new SubProcessParseHandler());
-            //this.handlers.Add("transaction", new TransactionHandler<Process>());
-            //this.handlers.Add("adHocSubProcess", new AdHocSubProcessHandler<Process>());
+            this.handlers.Add("subProcess", SubProcessParseHandler);
+            this.handlers.Add("transaction", TransactionParseHandler);
+            this.handlers.Add("adHocSubProcess", AdHocSubProcessParseHandler);
 
             var artifactHandler = new ArtifactParseHandler();
             this.handlers.Add("textAnnotation", artifactHandler);
@@ -45,37 +47,15 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
         public override object Create(Definitions parent, IParseContext context, XElement element)
         {
             var process = context.BpmnFactory.CreateProcess();
+            parent.RootElements.Add(process);
 
-            process.Name = element.GetAttribute("name");
             process.IsExecutable = element.GetBoolean("isExecutable", false);
             process.ProcessType = element.GetEnum("processType", ProcessType.None);
             process.IsClosed = element.GetBoolean("isClosed", false);
 
             base.Init(process, context, element);
 
-            parent.RootElements.Add(process);
-
-            
-
             return process;
-        }
-
-        class InputOutputBindingParseHandler : BaseElementParseHandler
-        {
-            public override object Create(object parent, IParseContext context, XElement element)
-            {
-                var process = parent as Process;
-
-                var ioBinding = context.BpmnFactory.CreateInputOutputBinding();
-
-                //ioBinding.OutputDataRef = element.GetAttribute("outputDataRef");
-                //ioBinding.InputDataRef = element.GetAttribute("inputDataRef");
-                //ioBinding.OperationRef = element.GetAttribute("operationRef");
-
-                process.IOBindings.Add(ioBinding);
-
-                return ioBinding;
-            }
         }
     }
 }

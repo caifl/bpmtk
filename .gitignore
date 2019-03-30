@@ -13,3 +13,5 @@
 /src/Bpmtk.Abstractions/obj
 /src/Bpmtk.Engine.Hibernate/bin/Debug/netstandard2.0
 /src/Bpmtk.Engine.Hibernate/obj
+/src/Bpmtk.Bpmn2.Tests/bin/Debug/netcoreapp2.1
+/src/Bpmtk.Bpmn2.Tests/obj

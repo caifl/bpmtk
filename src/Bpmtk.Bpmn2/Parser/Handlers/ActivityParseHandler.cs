@@ -8,7 +8,10 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
         public ActivityParseHandler()
         {
             this.handlers.Add("property", new PropertyParseHandler());
-            this.handlers.Add("ioSpecification", new IOSpecificationParseHandler());
+            this.handlers.Add("ioSpecification", new IOSpecificationParseHandler<Activity>((x, y) =>
+            {
+                x.IOSpecification = y;
+            }));
 
             var miHandler = new MultiInstanceLoopCharacteristicsHandler();
             var stdHandler = new StandardLoopCharacteristicsHandler();
@@ -61,9 +64,17 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
                 p.CompletionCondition = expr;
             }));
 
-            this.handlers.Add("inputDataItem", new DataInputParseHandler());
+            this.handlers.Add("inputDataItem", new DataInputParseHandler<MultiInstanceLoopCharacteristics>(
+                (target, context, element, result) =>
+                {
+                    target.InputDataItem = result;
+                }));
 
-            this.handlers.Add("outputDataItem", new DataOutputParseHandler());
+            this.handlers.Add("outputDataItem", new DataOutputParseHandler<MultiInstanceLoopCharacteristics>(
+                (target, context, element, result) =>
+                {
+                    target.OutputDataItem = result;
+                }));
 
             this.handlers.Add("loopDataInputRef", new ParseHandlerAction<MultiInstanceLoopCharacteristics>((p, c, x) =>
             {
@@ -83,14 +94,15 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
         public override object Create(Activity parent, IParseContext context, XElement element)
         {
             var item = context.BpmnFactory.CreateMultiInstanceLoopCharacteristics();
+            parent.LoopCharacteristics = item;
 
             item.IsSequential = element.GetBoolean("isSequential");
 
             var eventRef = element.GetAttribute("noneBehaviorEventRef");
-            context.AddReferenceRequest(eventRef, (EventDefinition target) => item.NoneBehaviorEventRef = target);
+            context.AddReferenceRequest<EventDefinition>(eventRef, x => item.NoneBehaviorEventRef = x);
 
             eventRef = element.GetAttribute("oneBehaviorEventRef");
-            context.AddReferenceRequest(eventRef, (EventDefinition target) => item.OneBehaviorEventRef = target);
+            context.AddReferenceRequest<EventDefinition>(eventRef, x => item.OneBehaviorEventRef = x);
 
             item.Behavior = element.GetEnum("behavior", MultiInstanceBehavior.None);
 
@@ -98,52 +110,7 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             item.CollectionRef = element.GetExtendedAttribute("collectionRef");
             item.ElementRef = element.GetExtendedAttribute("elementRef");
 
-            parent.LoopCharacteristics = item;
-
             return item;
-        }
-
-        class DataInputParseHandler : BaseElementParseHandler<MultiInstanceLoopCharacteristics>
-        {
-            public override object Create(MultiInstanceLoopCharacteristics parent, IParseContext context, XElement element)
-            {
-                var dataInput = context.BpmnFactory.CreateDataInput();
-
-                dataInput.Name = element.GetAttribute("name");
-                //dataInput.ItemSubjectRef = element.GetAttribute("itemSubjectRef");
-                dataInput.IsCollection = element.GetBoolean("isCollection");
-
-                parent.InputDataItem = dataInput;
-
-                base.Init(dataInput, context, element);
-
-                return dataInput;
-            } 
-        }
-
-        class DataOutputParseHandler: BaseElementParseHandler<MultiInstanceLoopCharacteristics>
-        {
-            //private readonly Action<TParent, IParseContext, XElement, DataOutput> callback;
-
-            //public DataOutputHandler(Action<TParent, IParseContext, XElement, DataOutput> callback)
-            //{
-            //    this.callback = callback;
-            //}
-
-            public override object Create(MultiInstanceLoopCharacteristics parent, IParseContext context, XElement element)
-            {
-                var dataOutput = context.BpmnFactory.CreateDataOutput();
-
-                dataOutput.Name = element.GetAttribute("name");
-                //dataOutput.ItemSubjectRef = element.GetAttribute("itemSubjectRef");
-                dataOutput.IsCollection = element.GetBoolean("isCollection");
-
-                parent.OutputDataItem = dataOutput;
-
-                base.Init(dataOutput, context, element);
-
-                return dataOutput;
-            }
         }
     }
 
@@ -160,14 +127,13 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
         public override object Create(Activity parent, IParseContext context, XElement element)
         {
             var item = context.BpmnFactory.CreateStandardLoopCharacteristics();
+            parent.LoopCharacteristics = item;
 
             item.TestBefore = element.GetBoolean("testBefore");
 
             var value = element.GetAttribute("loopMaximum");
             if (value != null)
                 item.LoopMaximum = Convert.ToInt32(value);
-
-            parent.LoopCharacteristics = item;
 
             base.Init(item, context, element);
 

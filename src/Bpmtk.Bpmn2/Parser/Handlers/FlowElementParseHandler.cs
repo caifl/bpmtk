@@ -8,6 +8,10 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
         protected virtual void Init(FlowElement flowElement, IParseContext context, XElement element)
         {
             flowElement.Name = element.GetAttribute("name");
+
+            base.Init(flowElement, context, element);
+
+            context.Push(flowElement);
         }
     }
 

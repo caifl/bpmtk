@@ -24,7 +24,7 @@ namespace Bpmtk.Bpmn2
 
         protected List<Property> properties = new List<Property>();
         protected List<ResourceRole> resourceRoles = new List<ResourceRole>();
-        protected List<FlowElement> flowElements = new List<FlowElement>();
+        private readonly FlowElementCollection flowElements;
         protected List<Artifact> artifacts = new List<Artifact>();
         protected List<EventListener> eventListeners = new List<EventListener>();
 
@@ -32,6 +32,7 @@ namespace Bpmtk.Bpmn2
 
         public Process()
         {
+            this.flowElements = new FlowElementCollection(this);
             this.processType = ProcessType.None;
             this.isClosed = false;
             this.isExecutable = false;

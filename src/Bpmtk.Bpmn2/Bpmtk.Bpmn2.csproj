@@ -22,8 +22,4 @@
     <EmbeddedResource Include="Schema\Semantic.xsd" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Core\" />
-  </ItemGroup>
-
 </Project>

@@ -6,9 +6,14 @@ namespace Bpmtk.Bpmn2
 {
     public class SubProcess : Activity, IFlowElementsContainer
     {
-        protected List<FlowElement> flowElements = new List<FlowElement>();
+        private readonly FlowElementCollection flowElements;
         protected List<Artifact> artifacts = new List<Artifact>();
         private IDictionary<string, FlowElement> flowElementById;
+
+        public SubProcess()
+        {
+            this.flowElements = new FlowElementCollection(this);
+        }
 
         public override void Accept(IFlowNodeVisitor visitor)
         {

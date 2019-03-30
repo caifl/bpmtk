@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Bpmtk.Bpmn2
 {
-    public class IOSpecification : BaseElement, IHasDataInputs, IHasDataOutputs
+    public class IOSpecification : BaseElement
     {
         public IOSpecification()
         {

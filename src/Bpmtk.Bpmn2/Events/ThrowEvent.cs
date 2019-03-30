@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Bpmtk.Bpmn2
 {
-    public abstract class ThrowEvent : Event, IHasDataInputs, IHasDataInputAssociations
+    public abstract class ThrowEvent : Event
     {
         protected List<DataInput> dataInputs = new List<DataInput>();
         protected List<DataInputAssociation> dataInputAssociations = new List<DataInputAssociation>();

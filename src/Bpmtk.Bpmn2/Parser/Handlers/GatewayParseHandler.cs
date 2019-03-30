@@ -3,15 +3,12 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Bpmn2.Parser.Handlers
 {
-    abstract class GatewayParseHandler : FlowElementParseHandler
+    abstract class GatewayParseHandler : FlowNodeParseHandler
     {
-        public GatewayParseHandler()
+        protected virtual void Init(Gateway gateway, IParseContext context, XElement element)
         {
+            base.Init(gateway, context, element);
 
-        }
-
-        protected virtual void Parse(Gateway gateway, IParseContext context, XElement element)
-        {
             var value = element.GetAttribute("gatewayDirection");
             if (value != null)
                 gateway.GatewayDirection = (GatewayDirection)Enum.Parse(typeof(GatewayDirection), value);
@@ -19,8 +16,8 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             var defaultOutgoing = element.GetAttribute("default");
             if (defaultOutgoing != null)
             {
-                context.AddReferenceRequest(defaultOutgoing, (SequenceFlow target) => gateway.Default = target);
-            }
+                context.AddReferenceRequest<SequenceFlow>(defaultOutgoing, (s) => gateway.Default = s);
+            }       
         }
     }
 
@@ -28,9 +25,12 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
     {
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
-            var evnt = context.BpmnFactory.CreateExclusiveGateway();
+            var gateway = context.BpmnFactory.CreateExclusiveGateway();
+            parent.FlowElements.Add(gateway);
 
-            return evnt;
+            base.Init(gateway, context, element);
+
+            return gateway;
         }
     }
 
@@ -38,7 +38,12 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
     {
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
-            return context.BpmnFactory.CreateInclusiveGateway();
+            var gateway = context.BpmnFactory.CreateInclusiveGateway();
+            parent.FlowElements.Add(gateway);
+
+            base.Init(gateway, context, element);
+
+            return gateway;
         }
     }
 
@@ -46,9 +51,12 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
     {
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
-            var evnt = context.BpmnFactory.CreateParallelGateway();
+            var gateway = context.BpmnFactory.CreateParallelGateway();
+            parent.FlowElements.Add(gateway);
 
-            return evnt;
+            base.Init(gateway, context, element);
+
+            return gateway;
         }
     }
 }

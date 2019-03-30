@@ -37,6 +37,8 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
 
             base.Init(message, context, element);
 
+            context.Push(message);
+
             return message;
         }
     }
@@ -56,6 +58,8 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
 
             base.Init(signal, context, element);
 
+            context.Push(signal);
+
             return signal;
         }
     }
@@ -71,7 +75,11 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
 
             var structureRef = element.GetAttribute("structureRef");
             if(structureRef != null)
-                context.AddReferenceRequest<ItemDefinition>(structureRef, (x) => error.StructureRef = x);
+                context.AddReferenceRequest<ItemDefinition>(structureRef, x => error.StructureRef = x);
+
+            base.Init(error, context, element);
+
+            context.Push(error);
 
             return error;
         }
@@ -167,6 +175,8 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             op.ImplementationRef = element.GetAttribute("implementationRef");
 
             base.Init(op, context, element);
+
+            context.Push(op);
 
             return op;
         }
