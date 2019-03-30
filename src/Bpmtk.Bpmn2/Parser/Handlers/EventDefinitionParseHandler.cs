@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Linq;
 
-namespace Bpmtk.Bpmn2.Parser
+namespace Bpmtk.Bpmn2.Parser.Handlers
 {
     class EventDefinitionParseHandler : BaseElementParseHandler<Definitions>
     {
@@ -30,26 +30,29 @@ namespace Bpmtk.Bpmn2.Parser
             //    return source;
             //}));
 
-            //this.handlers.Add("condition", new ExpressionHandler<EventDefinition>((p, c, x, expr) =>
-            //{
-            //    var conditional = ((ConditionalEventDefinition)p);
-            //    conditional.Condition = expr;
-            //}));
+            this.handlers.Add("condition", new ExpressionParseHandler<EventDefinition>((p, expr) =>
+            {
+                var conditional = ((ConditionalEventDefinition)p);
+                conditional.Condition = expr;
+            }));
 
-            //this.handlers.Add("timeDuration", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
-            //    var timerEvent = ((TimerEventDefinition)p);
-            //    timerEvent.TimeDuration = expr;
-            //}));
+            this.handlers.Add("timeDuration", new ExpressionParseHandler<EventDefinition>((p, expr) =>
+            {
+                var timerEvent = ((TimerEventDefinition)p);
+                timerEvent.TimeDuration = expr;
+            }));
 
-            //this.handlers.Add("timeDate", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
-            //    var timerEvent = ((TimerEventDefinition)p);
-            //    timerEvent.TimeDate = expr;
-            //}));
+            this.handlers.Add("timeDate", new ExpressionParseHandler<EventDefinition>((p, expr) =>
+            {
+                var timerEvent = ((TimerEventDefinition)p);
+                timerEvent.TimeDate = expr;
+            }));
 
-            //this.handlers.Add("timeCycle", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
-            //    var timerEvent = ((TimerEventDefinition)p);
-            //    timerEvent.TimeCycle = expr;
-            //}));
+            this.handlers.Add("timeCycle", new ExpressionParseHandler<EventDefinition>((p, expr) =>
+            {
+                var timerEvent = ((TimerEventDefinition)p);
+                timerEvent.TimeCycle = expr;
+            }));
         }
 
         public override object Create(Definitions parent, IParseContext context, XElement element)
