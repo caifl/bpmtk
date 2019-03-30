@@ -3,41 +3,30 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Bpmn2.Parser
 {
-    class IOSpecificationHandler<TParent> : BaseElementHandler<TParent, IOSpecification>
-        where TParent : IHasIOSpecification
+    class IOSpecificationParseHandler : BaseElementParseHandler<IHasIOSpecification>
     {
-        //private readonly Action<TParent, IParseContext, XElement, IOSpecification> callback;
-
-        //public IOSpecificationHandler(Action<TParent, IParseContext, XElement, IOSpecification> callback)
-        public IOSpecificationHandler()
+        public IOSpecificationParseHandler()
         {
-            this.handlers.Add("dataInput", new DataInputHandler<IOSpecification>());
+            this.handlers.Add("dataInput", new DataInputParseHandler());
 
-            this.handlers.Add("dataOutput", new DataOutputHandler<IOSpecification>());
+            this.handlers.Add("dataOutput", new DataOutputParseHandler());
 
-            this.handlers.Add("inputSet", new InputSetHandler());
+            this.handlers.Add("inputSet", new InputSetParseHandler());
 
-            this.handlers.Add("outputSet", new OutputSetHandler());
-
-            //this.callback = callback;
+            this.handlers.Add("outputSet", new OutputSetParseHandler());
         }
 
-        public override IOSpecification Create(TParent parent, IParseContext context, XElement element)
+        public override object Create(IHasIOSpecification parent, IParseContext context, XElement element)
         {
-            var io = base.Create(parent, context, element);
+            var io = context.BpmnFactory.CreateIOSpecification();
 
-            //this.callback(parent, context, element, io);
             parent.IOSpecification = io;
 
             return io;
         }
-
-        protected override IOSpecification New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateIOSpecification();
     }
 
-    class DataInputHandler<TParent> : BaseElementHandler<TParent, DataInput>
-        where TParent : IHasDataInputs
+    class DataInputParseHandler : BaseElementParseHandler<IHasDataInputs>
     {
         //private readonly Action<TParent, IParseContext, XElement, DataInput> callback;
 
@@ -46,26 +35,24 @@ namespace Bpmtk.Bpmn2.Parser
         //    this.callback = callback;
         //}
 
-        public override DataInput Create(TParent parent, IParseContext context, XElement element)
+        public override object Create(IHasDataInputs parent, IParseContext context, XElement element)
         {
-            var dataInput = base.Create(parent, context, element);
+            var dataInput = context.BpmnFactory.CreateDataInput();
 
             dataInput.Name = element.GetAttribute("name");
-            dataInput.ItemSubjectRef = element.GetAttribute("itemSubjectRef");
+            //dataInput.ItemSubjectRef = element.GetAttribute("itemSubjectRef");
             dataInput.IsCollection = element.GetBoolean("isCollection");
 
             //this.callback(parent, context, element, dataInput);
             parent.DataInputs.Add(dataInput);
 
+            base.Init(dataInput, context, element);
+
             return dataInput;
         }
-
-        protected override DataInput New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateDataInput();
     }
 
-    class DataOutputHandler<TParent> : BaseElementHandler<TParent, DataOutput>
-        where TParent : IHasDataOutputs
+    class DataOutputParseHandler : BaseElementParseHandler<IHasDataOutputs>
     {
         //private readonly Action<TParent, IParseContext, XElement, DataOutput> callback;
 
@@ -74,133 +61,130 @@ namespace Bpmtk.Bpmn2.Parser
         //    this.callback = callback;
         //}
 
-        public override DataOutput Create(TParent parent, IParseContext context, XElement element)
+        public override object Create(IHasDataOutputs parent, IParseContext context, XElement element)
         {
-            var dataOutput = base.Create(parent, context, element);
+            var dataOutput = context.BpmnFactory.CreateDataOutput();
+            parent.DataOutputs.Add(dataOutput);
 
             dataOutput.Name = element.GetAttribute("name");
-            dataOutput.ItemSubjectRef = element.GetAttribute("itemSubjectRef");
+            
             dataOutput.IsCollection = element.GetBoolean("isCollection");
 
-            //this.callback(parent, context, element, dataOutput);
-            parent.DataOutputs.Add(dataOutput);
+            var itemSubjectRef = element.GetAttribute("itemSubjectRef");
+            if (itemSubjectRef != null)
+                context.AddReferenceRequest(itemSubjectRef, (ItemDefinition value) => dataOutput.ItemSubjectRef = value);
+
+            base.Init(dataOutput, context, element);
 
             return dataOutput;
         }
-
-        protected override DataOutput New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateDataOutput();
     }
 
-    class InputSetHandler : BaseElementHandler<IOSpecification, InputSet>
+    class InputSetParseHandler : BaseElementParseHandler<IOSpecification>
     {
-        public InputSetHandler()
+        public InputSetParseHandler()
         {
-            this.handlers.Add("dataInputRefs", new BpmnHandlerCallback<InputSet>((p, c, x) =>
-            {
-                var value = x.Value;
+            //this.handlers.Add("dataInputRefs", new BpmnHandlerCallback<InputSet>((p, c, x) =>
+            //{
+            //    var value = x.Value;
 
-                p.DataInputRefs.Add(value);
+            //    p.DataInputRefs.Add(value);
 
-                return value;
-            }));
+            //    return value;
+            //}));
 
-            this.handlers.Add("optionalInputRefs", new BpmnHandlerCallback<InputSet>((p, c, x) =>
-            {
-                var value = x.Value;
+            //this.handlers.Add("optionalInputRefs", new BpmnHandlerCallback<InputSet>((p, c, x) =>
+            //{
+            //    var value = x.Value;
 
-                p.OptionalInputRefs.Add(value);
+            //    p.OptionalInputRefs.Add(value);
 
-                return value;
-            }));
+            //    return value;
+            //}));
 
-            this.handlers.Add("whileExecutingInputRefs", new BpmnHandlerCallback<InputSet>((p, c, x) =>
-            {
-                var value = x.Value;
+            //this.handlers.Add("whileExecutingInputRefs", new BpmnHandlerCallback<InputSet>((p, c, x) =>
+            //{
+            //    var value = x.Value;
 
-                p.WhileExecutingInputRefs.Add(value);
+            //    p.WhileExecutingInputRefs.Add(value);
 
-                return value;
-            }));
+            //    return value;
+            //}));
 
-            this.handlers.Add("outputSetRefs", new BpmnHandlerCallback<InputSet>((p, c, x) =>
-            {
-                var value = x.Value;
+            //this.handlers.Add("outputSetRefs", new BpmnHandlerCallback<InputSet>((p, c, x) =>
+            //{
+            //    var value = x.Value;
 
-                p.OutputSetRefs.Add(value);
+            //    p.OutputSetRefs.Add(value);
 
-                return value;
-            }));
+            //    return value;
+            //}));
         }
 
-        public override InputSet Create(IOSpecification parent, IParseContext context, XElement element)
+        public override object Create(IOSpecification parent, IParseContext context, XElement element)
         {
-            var inputSet = base.Create(parent, context, element);
+            var inputSet = context.BpmnFactory.CreateInputSet();
+            parent.InputSets.Add(inputSet);
 
             inputSet.Name = element.GetAttribute("name");
 
-            parent.InputSets.Add(inputSet);
+            base.Init(inputSet, context, element);
 
             return inputSet;
         }
-
-        protected override InputSet New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateInputSet();
     }
 
-    class OutputSetHandler : BaseElementHandler<IOSpecification, OutputSet>
+    class OutputSetParseHandler : BaseElementParseHandler<IOSpecification>
     {
-        public OutputSetHandler()
+        public OutputSetParseHandler()
         {
-            this.handlers.Add("dataOutputRefs", new BpmnHandlerCallback<OutputSet>((p, c, x) =>
-            {
-                var value = x.Value;
+            //this.handlers.Add("dataOutputRefs", new BpmnHandlerCallback<OutputSet>((p, c, x) =>
+            //{
+            //    var value = x.Value;
 
-                p.DataOutputRefs.Add(value);
+            //    p.DataOutputRefs.Add(value);
 
-                return value;
-            }));
+            //    return value;
+            //}));
 
-            this.handlers.Add("optionalOutputRefs", new BpmnHandlerCallback<OutputSet>((p, c, x) =>
-            {
-                var value = x.Value;
+            //this.handlers.Add("optionalOutputRefs", new BpmnHandlerCallback<OutputSet>((p, c, x) =>
+            //{
+            //    var value = x.Value;
 
-                p.OptionalOutputRefs.Add(value);
+            //    p.OptionalOutputRefs.Add(value);
 
-                return value;
-            }));
+            //    return value;
+            //}));
 
-            this.handlers.Add("whileExecutingOutputRefs", new BpmnHandlerCallback<OutputSet>((p, c, x) =>
-            {
-                var value = x.Value;
+            //this.handlers.Add("whileExecutingOutputRefs", new BpmnHandlerCallback<OutputSet>((p, c, x) =>
+            //{
+            //    var value = x.Value;
 
-                p.WhileExecutingOutputRefs.Add(value);
+            //    p.WhileExecutingOutputRefs.Add(value);
 
-                return value;
-            }));
+            //    return value;
+            //}));
 
-            this.handlers.Add("inputSetRefs", new BpmnHandlerCallback<OutputSet>((p, c, x) =>
-            {
-                var value = x.Value;
+            //this.handlers.Add("inputSetRefs", new BpmnHandlerCallback<OutputSet>((p, c, x) =>
+            //{
+            //    var value = x.Value;
 
-                p.InputSetRefs.Add(value);
+            //    p.InputSetRefs.Add(value);
 
-                return value;
-            }));
+            //    return value;
+            //}));
         }
 
-        public override OutputSet Create(IOSpecification parent, IParseContext context, XElement element)
+        public override object Create(IOSpecification parent, IParseContext context, XElement element)
         {
-            var outputSet = base.Create(parent, context, element);
+            var outputSet = context.BpmnFactory.CreateOutputSet();
+            parent.OutputSets.Add(outputSet);
 
             outputSet.Name = element.GetAttribute("name");
 
-            parent.OutputSets.Add(outputSet);
+            base.Init(outputSet, context, element);
 
             return outputSet;
         }
-
-        protected override OutputSet New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateOutputSet();
     }
 }

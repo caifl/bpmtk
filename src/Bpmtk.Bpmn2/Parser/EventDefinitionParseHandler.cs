@@ -3,7 +3,7 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Bpmn2.Parser
 {
-    class EventDefinitionHandler : BaseElementHandler<Definitions, EventDefinition>
+    class EventDefinitionParseHandler : BaseElementParseHandler<Definitions>
     {
         public static readonly string[] Keys = new string[] {
             "messageEventDefinition",
@@ -19,49 +19,40 @@ namespace Bpmtk.Bpmn2.Parser
             "eventDefinition"
             };
 
-        public EventDefinitionHandler()
+        public EventDefinitionParseHandler()
         {
-            this.handlers.Add("source", new BpmnHandlerCallback<EventDefinition>((p, c, x) =>
-            {
-                var source = x.Value;
-                var linkEvent = ((LinkEventDefinition)p);
-                linkEvent.Source.Add(source);
+            //this.handlers.Add("source", new BpmnHandlerCallback<EventDefinition>((p, c, x) =>
+            //{
+            //    var source = x.Value;
+            //    var linkEvent = ((LinkEventDefinition)p);
+            //    linkEvent.Source.Add(source);
 
-                return source;
-            }));
+            //    return source;
+            //}));
 
-            this.handlers.Add("condition", new ExpressionHandler<EventDefinition>((p, c, x, expr) =>
-            {
-                var conditional = ((ConditionalEventDefinition)p);
-                conditional.Condition = expr;
-            }));
+            //this.handlers.Add("condition", new ExpressionHandler<EventDefinition>((p, c, x, expr) =>
+            //{
+            //    var conditional = ((ConditionalEventDefinition)p);
+            //    conditional.Condition = expr;
+            //}));
 
-            this.handlers.Add("timeDuration", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
-                var timerEvent = ((TimerEventDefinition)p);
-                timerEvent.TimeDuration = expr;
-            }));
+            //this.handlers.Add("timeDuration", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
+            //    var timerEvent = ((TimerEventDefinition)p);
+            //    timerEvent.TimeDuration = expr;
+            //}));
 
-            this.handlers.Add("timeDate", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
-                var timerEvent = ((TimerEventDefinition)p);
-                timerEvent.TimeDate = expr;
-            }));
+            //this.handlers.Add("timeDate", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
+            //    var timerEvent = ((TimerEventDefinition)p);
+            //    timerEvent.TimeDate = expr;
+            //}));
 
-            this.handlers.Add("timeCycle", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
-                var timerEvent = ((TimerEventDefinition)p);
-                timerEvent.TimeCycle = expr;
-            }));
+            //this.handlers.Add("timeCycle", new ExpressionHandler<EventDefinition>((p, c, x, expr) => {
+            //    var timerEvent = ((TimerEventDefinition)p);
+            //    timerEvent.TimeCycle = expr;
+            //}));
         }
 
-        public override EventDefinition Create(Definitions parent, IParseContext context, XElement element)
-        {
-            var eventDefinition = base.Create(parent, context, element);
-
-            parent.RootElements.Add(eventDefinition);
-
-            return eventDefinition;
-        }
-
-        protected override EventDefinition New(IParseContext context, XElement element)
+        public override object Create(Definitions parent, IParseContext context, XElement element)
         {
             EventDefinition eventDefinition = null;
             var localName = Helper.GetRealLocalName(element);
@@ -73,10 +64,10 @@ namespace Bpmtk.Bpmn2.Parser
                     break;
 
                 case "errorEventDefinition":
-                    eventDefinition = new ErrorEventDefinition()
-                    {
-                        ErrorRef = element.GetAttribute("errorRef")
-                    };
+                    eventDefinition = new ErrorEventDefinition();
+                    var errorRef = element.GetAttribute("errorRef");
+                    if (errorRef != null)
+                        context.AddReferenceRequest(errorRef, (Error error) => ((ErrorEventDefinition)eventDefinition).ErrorRef = error);
                     break;
 
                 case "timerEventDefinition":
@@ -90,8 +81,8 @@ namespace Bpmtk.Bpmn2.Parser
                 case "messageEventDefinition":
                     eventDefinition = new MessageEventDefinition()
                     {
-                        OperationRef = element.GetAttribute("operationRef"),
-                        MessageRef = element.GetAttribute("messageRef")
+                        //OperationRef = element.GetAttribute("operationRef"),
+                        //MessageRef = element.GetAttribute("messageRef")
                     };
                     break;
 
@@ -102,7 +93,7 @@ namespace Bpmtk.Bpmn2.Parser
                 case "compensateEventDefinition":
                     eventDefinition = new CompensateEventDefinition()
                     {
-                        ActivityRef = element.GetAttribute("activityRef"),
+                        //ActivityRef = element.GetAttribute("activityRef"),
                         WaitForCompletion = element.GetBoolean("waitForCompletion")
                     };
                     break;
@@ -110,7 +101,7 @@ namespace Bpmtk.Bpmn2.Parser
                 case "signalEventDefinition":
                     eventDefinition = new SignalEventDefinition()
                     {
-                        SignalRef = element.GetAttribute("signalRef")
+                        //SignalRef = element.GetAttribute("signalRef")
                     };
                     break;
 

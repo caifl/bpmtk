@@ -20,26 +20,8 @@ namespace Bpmtk.Bpmn2.Parser
                 "BPMN20.xsd", "BPMNDI.xsd", "DI.xsd", "DC.xsd", "Semantic.xsd", "Extensions.xsd"
             };
 
-        protected static readonly Dictionary<string, IBpmnHandler<Definitions>> definitionsHandlers = new Dictionary<string, IBpmnHandler<Definitions>>();
-
         static Bpmn2XmlParser()
         {
-            definitionsHandlers.Add("resource", new ResourceHandler());
-            definitionsHandlers.Add("process", new ProcessHandler());
-            definitionsHandlers.Add("itemDefinition", new ItemDefintionHandler());
-            definitionsHandlers.Add("message", new MessageHandler());
-            definitionsHandlers.Add("signal", new SignalHandler());
-            definitionsHandlers.Add("interface", new InterfaceHandler());
-            definitionsHandlers.Add("error", new ErrorHandler());
-            definitionsHandlers.Add("dataStore", new DataStoreHandler());
-            definitionsHandlers.Add("BPMNDiagram", new BpmnDiagramHandler());
-
-            //eventDefinitions
-            var keys = EventDefinitionHandler.Keys;
-            var eventDefinitionHandler = new EventDefinitionHandler();
-            foreach (var key in keys)
-                definitionsHandlers.Add(key, eventDefinitionHandler);
-
             settings = new XmlReaderSettings();
             settings.IgnoreComments = true;
             settings.IgnoreWhitespace = true;
@@ -83,47 +65,13 @@ namespace Bpmtk.Bpmn2.Parser
             XDocument document = XDocument.Load(reader);
             var element = document.Root;
 
-            this.definitions = this.ParseDefinitions(element);
-
-            return definitions;
-        }
-
-        protected virtual Definitions ParseDefinitions(XElement element)
-        {
-            var definitions = this.factory.CreateDefinitions();
-
-            definitions.Id = element.GetAttribute("id");
-            definitions.Name = element.GetAttribute("name");
-            definitions.Exporter = element.GetAttribute("exporter");
-            definitions.ExporterVersion = element.GetAttribute("exporterVersion");
-            definitions.ExpressionLanguage = element.GetAttribute("expressionLanguage");
-            definitions.TypeLanguage = element.GetAttribute("typeLanguage");
-            definitions.TargetNamespace = element.GetAttribute("targetNamespace");
+            var handler = new DefinitionsParseHandler();
 
             var context = new Bpmn2XmlParseContext(definitions, this.factory);
 
-            this.ParseChildren(element, definitions, context);
+            this.definitions = handler.Create(null, context, element) as Definitions;
 
             return definitions;
-        }
-
-        protected virtual void ParseChildren(XElement element,
-            Definitions parent,
-            IParseContext context)
-        {
-            if (!element.HasElements)
-                return;
-
-            string localName = null;
-            var elements = element.Elements();
-            IBpmnHandler<Definitions> handler = null;
-
-            foreach (var child in elements)
-            {
-                localName = child.Name.LocalName;
-                if (definitionsHandlers.TryGetValue(localName, out handler))
-                    handler.Create(parent, context, child);
-            }
         }
     }
 }

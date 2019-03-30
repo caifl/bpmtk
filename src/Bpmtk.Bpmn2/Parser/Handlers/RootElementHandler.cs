@@ -1,91 +1,93 @@
 ﻿using System;
 using System.Xml.Linq;
 
-namespace Bpmtk.Bpmn2.Parser
+namespace Bpmtk.Bpmn2.Parser.Handlers
 {
-    class ItemDefintionHandler : BaseElementHandler<Definitions, ItemDefinition>
+    class ItemDefintionParseHandler : BaseElementParseHandler<Definitions>
     {
-        public override ItemDefinition Create(Definitions parent, IParseContext context, XElement element)
+        public override object Create(Definitions parent, IParseContext context, XElement element)
         {
-            var itemDef = base.Create(parent, context, element);
+            var item = context.BpmnFactory.CreateItemDefinition();
+            parent.RootElements.Add(item);
 
-            itemDef.StructureRef = element.GetAttribute("structureRef");
-            itemDef.IsCollection = element.GetBoolean("isCollection");
-            itemDef.ItemKind = element.GetEnum<ItemKind>("itemKind", ItemKind.Information);
+            item.StructureRef = element.GetAttribute("structureRef");
+            item.IsCollection = element.GetBoolean("isCollection");
+            item.ItemKind = element.GetEnum("itemKind", ItemKind.Information);
 
-            parent.RootElements.Add(itemDef);
+            base.Init(item, context, element);
 
-            return itemDef;
+            context.Push(item);
+
+            return item;
         }
-
-        protected override ItemDefinition New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateItemDefinition();
     }
 
-    class MessageHandler : BaseElementHandler<Definitions, Message>
+    class MessageParseHandler : BaseElementParseHandler<Definitions>
     {
-        public override Message Create(Definitions parent, IParseContext context, XElement element)
+        public override object Create(Definitions parent, IParseContext context, XElement element)
         {
-            var message = base.Create(parent, context, element);
-
-            message.ItemRef = element.GetAttribute("itemRef");
+            var message = context.BpmnFactory.CreateMessage();
             message.Name = element.GetAttribute("name");
 
             parent.RootElements.Add(message);
 
+            var itemRef = element.GetAttribute("itemRef");
+            if(itemRef != null)
+                context.AddReferenceRequest(itemRef, (ItemDefinition x) => message.ItemRef = x);
+
+            base.Init(message, context, element);
+
             return message;
         }
-
-        protected override Message New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateMessage();
     }
 
-    class SignalHandler : BaseElementHandler<Definitions, Signal>
+    class SignalParseHandler : BaseElementParseHandler<Definitions>
     {
-        public override Signal Create(Definitions parent, IParseContext context, XElement element)
+        public override object Create(Definitions parent, IParseContext context, XElement element)
         {
-            var signal = base.Create(parent, context, element);
+            var signal = context.BpmnFactory.CreateSignal();
 
             signal.Name = element.GetAttribute("name");
-            signal.StructureRef = element.GetAttribute("structureRef");
-
             parent.RootElements.Add(signal);
+
+            var structureRef = element.GetAttribute("structureRef");
+            if (structureRef != null)
+                context.AddReferenceRequest(structureRef, (ItemDefinition x) => signal.StructureRef = x);
+
+            base.Init(signal, context, element);
 
             return signal;
         }
-
-        protected override Signal New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateSignal();
     }
 
-    class ErrorHandler : BaseElementHandler<Definitions, Error>
+    class ErrorParseHandler : BaseElementParseHandler<Definitions>
     {
-        public override Error Create(Definitions parent, IParseContext context, XElement element)
+        public override object Create(Definitions parent, IParseContext context, XElement element)
         {
-            var error = base.Create(parent, context, element);
+            var error = context.BpmnFactory.CreateError();
 
             error.Name = element.GetAttribute("name");
-            error.StructureRef = element.GetAttribute("structureRef");
-
             parent.RootElements.Add(error);
+
+            var structureRef = element.GetAttribute("structureRef");
+            if(structureRef != null)
+                context.AddReferenceRequest<ItemDefinition>(structureRef, (x) => error.StructureRef = x);
 
             return error;
         }
-
-        protected override Error New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateError();
     }
 
-    class DataStoreHandler : BaseElementHandler<Definitions, DataStore>
+    class DataStoreParseHandler : BaseElementParseHandler<Definitions>
     {
-        public DataStoreHandler()
+        public DataStoreParseHandler()
         {
             //this.handlers.Add("dataState")
         }
 
-        public override DataStore Create(Definitions parent, IParseContext context, XElement element)
+        public override object Create(Definitions parent, IParseContext context, XElement element)
         {
-            var dataStore = base.Create(parent, context, element);
+            var dataStore = context.BpmnFactory.CreateDataStore();
+            parent.RootElements.Add(dataStore);
 
             dataStore.Name = element.GetAttribute("name");
 
@@ -97,97 +99,94 @@ namespace Bpmtk.Bpmn2.Parser
             if (!string.IsNullOrEmpty(value))
                 dataStore.IsUnlimited = Convert.ToBoolean(value);
 
-            dataStore.ItemSubjectRef = element.GetAttribute("structureRef");
+            var itemSubjectRef = element.GetAttribute("itemSubjectRef");
+            if(itemSubjectRef != null)
+                context.AddReferenceRequest(itemSubjectRef, (ItemDefinition target) => dataStore.ItemSubjectRef = target);
 
-            parent.RootElements.Add(dataStore);
+            base.Init(dataStore, context, element);
 
             return dataStore;
         }
-
-        protected override DataStore New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateDataStore();
     }
 
-    class InterfaceHandler : BaseElementHandler<Definitions, Interface>
+    class InterfaceParseHandler : BaseElementParseHandler<Definitions>
     {
-        public InterfaceHandler()
+        public InterfaceParseHandler()
         {
-            this.handlers.Add("operation", new OperationHandler());
+            this.handlers.Add("operation", new OperationParseHandler());
         }
 
-        public override Interface Create(Definitions parent, IParseContext context, XElement element)
+        public override object Create(Definitions parent, IParseContext context, XElement element)
         {
-            var item = base.Create(parent, context, element);
+            var item = context.BpmnFactory.CreateInterface();
+            parent.RootElements.Add(item);
 
             item.ImplementationRef = element.GetAttribute("implementationRef");
             item.Name = element.GetAttribute("name");
 
-            parent.RootElements.Add(item);
+            base.Init(item, context, element);
 
             return item;
         }
-
-        protected override Interface New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateInterface();
     }
 
-    class OperationHandler : BaseElementHandler<Interface, Operation>
+    class OperationParseHandler : BaseElementParseHandler<Interface>
     {
-        public OperationHandler()
+        public OperationParseHandler()
         {
-            this.handlers.Add("inMessageRef", new BpmnHandlerCallback<Operation>((p, c, e) =>
+            this.handlers.Add("inMessageRef", new ParseHandlerAction<Operation>((p, c, e) =>
             {
-                return p.InMessageRef = e.Value;
+                var inMessageRef = e.Value;
+                if (inMessageRef != null)
+                    c.AddReferenceRequest<Message>(inMessageRef, (x) => p.InMessageRef = x);
             }));
 
-            this.handlers.Add("outMessageRef", new BpmnHandlerCallback<Operation>((p, c, e) =>
+            this.handlers.Add("outMessageRef", new ParseHandlerAction<Operation>((p, c, e) =>
             {
-                return p.OutMessageRef = e.Value;
+                var outMessageRef = e.Value;
+                if (outMessageRef != null)
+                    c.AddReferenceRequest<Message>(outMessageRef, (x) => p.OutMessageRef = x);
             }));
 
-            this.handlers.Add("errorRef", new BpmnHandlerCallback<Operation>((p, c, e) =>
+            this.handlers.Add("errorRef", new ParseHandlerAction<Operation>((p, c, e) =>
             {
                 var errorRef = e.Value;
-                p.ErrorRefs.Add(errorRef);
-
-                return errorRef;
+                if (errorRef != null)
+                    c.AddReferenceRequest<Error>(errorRef, (x) => p.ErrorRefs.Add(x));
             }));
         }
 
-        public override Operation Create(Interface parent, IParseContext context, XElement element)
+        public override object Create(Interface parent, IParseContext context, XElement element)
         {
-            var op = base.Create(parent, context, element);
+            var op = context.BpmnFactory.CreateOperation();
+            parent.Operations.Add(op);
+
             op.Interface = parent;
 
             op.Name = element.GetAttribute("name");
             op.ImplementationRef = element.GetAttribute("implementationRef");
 
-            parent.Operations.Add(op);
+            base.Init(op, context, element);
 
             return op;
         }
-
-        protected override Operation New(IParseContext context, XElement element)
-         => context.BpmnFactory.CreateOperation();
     }
 
-    class ImportHandler : BaseElementHandler<Definitions, Import>
+    class ImportParseHandler : BaseElementParseHandler<Definitions>
     {
-        public override Import Create(Definitions parent, IParseContext context, XElement element)
+        public override object Create(Definitions parent, IParseContext context, XElement element)
         {
-            var import = base.Create(parent, context, element);
+            var import = context.BpmnFactory.CreateImport();
+            parent.Imports.Add(import);
 
             import.Id = element.GetAttribute("id");
             import.Namespace = element.GetAttribute("namespace");
             import.Location = element.GetAttribute("location");
             import.ImportType = element.GetAttribute("importType");
 
-            parent.Imports.Add(import);
+            base.Init(import, context, element);
 
             return import;
         }
-
-        protected override Import New(IParseContext context, XElement element)
-            => context.BpmnFactory.CreateImport();
     }
 }

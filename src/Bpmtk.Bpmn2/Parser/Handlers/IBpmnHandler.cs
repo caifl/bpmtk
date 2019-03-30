@@ -123,6 +123,8 @@ namespace Bpmtk.Bpmn2.Parser
         protected abstract TItem New(IParseContext context, XElement element);
     }
 
+
+
     class BpmnHandlerCallback<TParent> : IBpmnHandler<TParent>
     {
         protected readonly Func<TParent, IParseContext, XElement, object> callback;

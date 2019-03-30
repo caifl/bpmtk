@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bpmtk.Bpmn2.Parser
 {
@@ -11,11 +9,21 @@ namespace Bpmtk.Bpmn2.Parser
             get;
         }
 
-        void PushScope(FlowElementScope scope);
+        void AddReferenceRequest<TObject>(string id, Action<TObject> callback);
 
-        FlowElementScope PopScope();
+        //void AddReferenceRequest(ObjectReferenceRequest value);
 
-        FlowElementScope PeekScope();
+        void Push(ItemDefinition itemDefinition);
+
+        void Push(Message message);
+
+        void Push(FlowElement flowElement);
+
+        //void PushScope(FlowElementScope scope);
+
+        //FlowElementScope PopScope();
+
+        //FlowElementScope PeekScope();
         //FlowElementParseContext SubProcessContext
         //{
         //    get;

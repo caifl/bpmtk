@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Bpmtk.Bpmn2
 {
-    public abstract class CallableElement : RootElement
+    public abstract class CallableElement : RootElement, IHasIOSpecification
     {
         protected List<string> supportedInterfaceRefs = new List<string>();
         protected List<InputOutputBinding> ioBindings = new List<InputOutputBinding>();

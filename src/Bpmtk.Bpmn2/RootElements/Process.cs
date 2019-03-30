@@ -12,8 +12,7 @@ namespace Bpmtk.Bpmn2
     public class Process : CallableElement, 
         IFlowElementsContainer, 
         IPropertyContainer,
-        IResourceRoleContainer,
-        IHasIOSpecification
+        IResourceRoleContainer
     {
         protected bool isExecutable;
         protected ProcessType processType;

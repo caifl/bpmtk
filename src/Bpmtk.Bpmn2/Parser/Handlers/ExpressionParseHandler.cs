@@ -3,16 +3,16 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Bpmn2.Parser
 {
-    class ExpressionHandler<TParent> : IBpmnHandler<TParent>
+    class ExpressionParseHandler<TParent> : ParseHandler<TParent>
     {
-        protected readonly Action<TParent, IParseContext, XElement, Expression> callback;
+        protected readonly Action<TParent, Expression> callback;
 
-        public ExpressionHandler(Action<TParent, IParseContext, XElement, Expression> callback)
+        public ExpressionParseHandler(Action<TParent, Expression> callback)
         {
             this.callback = callback;
         }
 
-        public virtual object Create(TParent parent, IParseContext context, XElement element)
+        public override object Create(TParent parent, IParseContext context, XElement element)
         {
             Expression expression = null;
             if (Helper.IsFormalExpression(element))
@@ -31,7 +31,7 @@ namespace Bpmtk.Bpmn2.Parser
             expression.Text = element.Value;
             expression.Documentation = element.GetElement("documentation")?.Value;
 
-            this.callback(parent, context, element, expression);
+            this.callback(parent, expression);
 
             return expression;
         }

@@ -1,24 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Xml.Linq;
 
-namespace Bpmtk.Bpmn2.Parser
+namespace Bpmtk.Bpmn2.Parser.Handlers
 {
-    class ArtifactHandler<TParent> : BaseElementHandler<TParent, Artifact>
-        where TParent : IFlowElementsContainer
+    class ArtifactParseHandler : BaseElementParseHandler
     {
-        public override Artifact Create(TParent parent, IParseContext context, XElement element)
-        {
-            var artifact = base.Create(parent, context, element);
-
-            if(artifact != null)
-                parent.Artifacts.Add(artifact);
-
-            return artifact;
-        }
-
-        protected override Artifact New(IParseContext context, XElement element)
+        public override object Create(object parent, IParseContext context, XElement element)
         {
             var localName = element.Name.LocalName;
             Artifact artifact = null;
@@ -36,7 +23,7 @@ namespace Bpmtk.Bpmn2.Parser
                     var association = context.BpmnFactory.CreateAssociation();
                     association.SourceRef = element.GetAttribute("sourceRef");
                     association.TargetRef = element.GetAttribute("targetRef");
-                    association.AssociationDirection = element.GetEnum<AssociationDirection>("AssociationDirection", AssociationDirection.None);
+                    association.AssociationDirection = element.GetEnum("AssociationDirection", AssociationDirection.None);
 
                     artifact = association;
                     break;
@@ -44,6 +31,9 @@ namespace Bpmtk.Bpmn2.Parser
                 default:
                     throw new NotImplementedException();
             }
+
+            //if (artifact != null)
+            //    parent.Artifacts.Add(artifact);
 
             return artifact;
         }
