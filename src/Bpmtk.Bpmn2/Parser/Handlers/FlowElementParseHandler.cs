@@ -49,41 +49,4 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
         //    //return flowNode;
         //}
     }
-
-    class DataObjectParseHandler : FlowElementParseHandler
-    {
-        public DataObjectParseHandler()
-        {
-            //this.handlers.Add("dataState", new DataStateHandler<DataObject>());
-        }
-
-        public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
-        {
-            var dataObject = context.BpmnFactory.CreateDataObject();
-
-            dataObject.Name = element.GetAttribute("name");
-            //dataObject.ItemSubjectRef = element.GetAttribute("itemSubjectRef");
-            dataObject.IsCollection = element.GetBoolean("isCollection");
-
-            return dataObject;
-        }
-    }
-
-    class DataObjectReferenceParseHandler : FlowElementParseHandler
-    {
-        public DataObjectReferenceParseHandler()
-        {
-            //this.handlers.Add("dataState", new DataStateHandler<DataObjectReference>());
-        }
-
-        public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
-        {
-            var dataObjectRef = context.BpmnFactory.CreateDataObjectReference();
-
-            dataObjectRef.Name = element.GetAttribute("name");
-            //dataObject.ItemSubjectRef = element.GetAttribute("itemSubjectRef");
-
-            return dataObjectRef;
-        }
-    }
 }

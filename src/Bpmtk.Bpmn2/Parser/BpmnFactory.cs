@@ -94,7 +94,7 @@ namespace Bpmtk.Bpmn2.Parser
 
         public virtual DataState CreateDataState() => new DataState();
 
-        public virtual IOSpecification CreateIOSpecification() => new IOSpecification();
+        public virtual InputOutputSpecification CreateIOSpecification() => new InputOutputSpecification();
 
         public virtual DataInput CreateDataInput() => new DataInput();
 

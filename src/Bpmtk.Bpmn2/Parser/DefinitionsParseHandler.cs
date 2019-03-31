@@ -17,7 +17,7 @@ namespace Bpmtk.Bpmn2.Parser
             this.handlers.Add("error", new ErrorParseHandler());
             this.handlers.Add("dataStore", new DataStoreParseHandler());
             this.handlers.Add("import", new ImportParseHandler());
-            //this.handlers.Add("BPMNDiagram", new BpmnDiagramHandler());
+            this.handlers.Add("BPMNDiagram", new BPMNDiagramParseHandler());
 
             //eventDefinitions
             var keys = EventDefinitionParseHandler.Keys;

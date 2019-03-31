@@ -7,12 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\data_association.bpmn.xml" />
     <None Remove="Resources\exclusive_gateway.bpmn.xml" />
     <None Remove="Resources\sequential_flow.bpmn.xml" />
     <None Remove="Resources\sub_process.bpmn.xml" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\data_association.bpmn.xml" />
     <EmbeddedResource Include="Resources\exclusive_gateway.bpmn.xml" />
     <EmbeddedResource Include="Resources\sequential_flow.bpmn.xml" />
     <EmbeddedResource Include="Resources\sub_process.bpmn.xml" />

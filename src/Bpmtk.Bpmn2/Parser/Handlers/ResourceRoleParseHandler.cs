@@ -61,15 +61,16 @@ namespace Bpmtk.Bpmn2.Parser
 
             ICollection<ResourceRole> list = null;
             if (parent is Process)
-                list = (parent as Process).ResourceRoles;
+                list = (parent as Process).Resources;
             else if (parent is Activity)
-                list = (parent as Activity).ResourceRoles;
+                list = (parent as Activity).Resources;
 
             if (list != null)
                 list.Add(resourceRole);
 
-            if (element.HasElements)
-                this.CreateChildren(resourceRole, context, element);
+            base.Init(resourceRole, context, element);
+
+            context.Push(resourceRole);
 
             return resourceRole;
         }
@@ -99,6 +100,8 @@ namespace Bpmtk.Bpmn2.Parser
             //binding.ParameterRef
 
             parent.ParameterBindings.Add(binding);
+
+            base.Init(binding, context, element);
 
             return binding;
         }

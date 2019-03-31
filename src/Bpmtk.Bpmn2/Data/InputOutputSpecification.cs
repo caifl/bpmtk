@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Bpmtk.Bpmn2
 {
-    public class IOSpecification : BaseElement
+    public class InputOutputSpecification : BaseElement
     {
-        public IOSpecification()
+        public InputOutputSpecification()
         {
             this.DataInputs = new List<DataInput>();
             this.DataOutputs = new List<DataOutput>();

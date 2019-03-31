@@ -12,6 +12,13 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             {
                 x.IOSpecification = y;
             }));
+
+            this.handlers.Add("supportedInterfaceRef", new ParseHandlerAction<CallableElement>((p, c, x) =>
+            {
+                var id = x.Value;
+                if (id != null)
+                    c.AddReferenceRequest<Interface>(id, r => p.SupportedInterfaceRefs.Add(r));
+            }));
         }
 
         protected virtual void Init(CallableElement callableElement, IParseContext context, XElement element)
@@ -29,8 +36,13 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             var ioBinding = context.BpmnFactory.CreateInputOutputBinding();
             parent.IOBindings.Add(ioBinding);
 
-            //ioBinding.OutputDataRef = element.GetAttribute("outputDataRef");
-            //ioBinding.InputDataRef = element.GetAttribute("inputDataRef");
+            var outputDataRef = element.GetAttribute("outputDataRef");
+            if (outputDataRef != null)
+                context.AddReferenceRequest<OutputSet>(outputDataRef, r => ioBinding.OutputDataRef = r);
+
+            var inputDataRef = element.GetAttribute("inputDataRef");
+            if (inputDataRef != null)
+                context.AddReferenceRequest<InputSet>(inputDataRef, r => ioBinding.InputDataRef = r);
 
             var operationRef = element.GetAttribute("operationRef");
             if (operationRef != null)

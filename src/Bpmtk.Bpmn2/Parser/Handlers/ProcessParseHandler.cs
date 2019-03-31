@@ -13,7 +13,11 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
         {
             this.handlers.Add("dataObject", new DataObjectParseHandler());
             this.handlers.Add("dataObjectReference", new DataObjectReferenceParseHandler());
-            this.handlers.Add("property", new PropertyParseHandler());
+
+            this.handlers.Add("property", new PropertyParseHandler<Process>((proc, props) =>
+            {
+                proc.Properties.Add(props);
+            }));
 
             //resource
             IParseHandler handler = new ResourceRoleParseHandler();

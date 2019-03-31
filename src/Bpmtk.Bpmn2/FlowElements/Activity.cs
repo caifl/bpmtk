@@ -3,18 +3,17 @@ using System.Collections.Generic;
 
 namespace Bpmtk.Bpmn2
 {
-    public abstract class Activity : FlowNode, IPropertyContainer, 
-        IResourceRoleContainer
+    public abstract class Activity : FlowNode
     {
         protected List<Property> properties = new List<Property>();
         protected List<DataInputAssociation> dataInputAssociations = new List<DataInputAssociation>();
         protected List<DataOutputAssociation> dataOutputAssociations = new List<DataOutputAssociation>();
-        protected List<ResourceRole> resourceRoles = new List<ResourceRole>();
+        protected List<ResourceRole> resources = new List<ResourceRole>();
 
         /// <summary>
         /// The activity input/output specification.
         /// </summary>
-        public virtual IOSpecification IOSpecification
+        public virtual InputOutputSpecification IOSpecification
         {
             get;
             set;
@@ -26,7 +25,7 @@ namespace Bpmtk.Bpmn2
 
         public virtual IList<DataOutputAssociation> DataOutputAssociations => this.dataOutputAssociations;
 
-        public virtual IList<ResourceRole> ResourceRoles => this.resourceRoles;
+        public virtual IList<ResourceRole> Resources => this.resources;
 
         public virtual LoopCharacteristics LoopCharacteristics
         {

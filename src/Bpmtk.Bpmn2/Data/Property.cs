@@ -21,11 +21,5 @@ namespace Bpmtk.Bpmn2
             get;
             set;
         }
-
-        public virtual bool IsCollection
-        {
-            get;
-            set;
-        }
     }
 }

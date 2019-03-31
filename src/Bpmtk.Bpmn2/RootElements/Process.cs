@@ -10,9 +10,7 @@ namespace Bpmtk.Bpmn2
     /// 流程定义信息
     /// </summary>
     public class Process : CallableElement, 
-        IFlowElementsContainer, 
-        IPropertyContainer,
-        IResourceRoleContainer
+        IFlowElementsContainer 
     {
         protected bool isExecutable;
         protected ProcessType processType;
@@ -23,7 +21,7 @@ namespace Bpmtk.Bpmn2
         protected readonly Dictionary<string, string> attributes = new Dictionary<string, string>();
 
         protected List<Property> properties = new List<Property>();
-        protected List<ResourceRole> resourceRoles = new List<ResourceRole>();
+        protected List<ResourceRole> resources = new List<ResourceRole>();
         private readonly FlowElementCollection flowElements;
         protected List<Artifact> artifacts = new List<Artifact>();
         protected List<EventListener> eventListeners = new List<EventListener>();
@@ -184,7 +182,7 @@ namespace Bpmtk.Bpmn2
         //[XmlElement("group", typeof(Group), Order = 5)]
         public virtual IList<Artifact> Artifacts => this.artifacts;
 
-        public virtual IList<ResourceRole> ResourceRoles => this.resourceRoles;
+        public virtual IList<ResourceRole> Resources => this.resources;
 
         /// <remarks/>
         //[XmlElement("correlationSubscription", Order = 7)]

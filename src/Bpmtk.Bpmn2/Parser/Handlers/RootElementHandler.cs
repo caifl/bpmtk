@@ -134,6 +134,8 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
 
             base.Init(item, context, element);
 
+            context.Push(item);
+
             return item;
         }
     }

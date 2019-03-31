@@ -7,14 +7,14 @@ namespace Bpmtk.Bpmn2.Parser
     {
         public DataAssociationParseHandler()
         {
-            this.handlers.Add("sourceRef", new ParseHandlerAction<DataInputAssociation>((p, ctx, x) =>
+            this.handlers.Add("sourceRef", new ParseHandlerAction<DataAssociation>((p, ctx, x) =>
             {
                 var sourceRef = x.Value;
                 if (sourceRef != null)
                     ctx.AddReferenceRequest<IItemAwareElement>(sourceRef, r => p.SourceRefs.Add(r));
             }));
 
-            this.handlers.Add("targetRef", new ParseHandlerAction<DataInputAssociation>((p, ctx, x) =>
+            this.handlers.Add("targetRef", new ParseHandlerAction<DataAssociation>((p, ctx, x) =>
             {
                 var targetRef = x.Value;
                 if (targetRef != null)
@@ -41,12 +41,11 @@ namespace Bpmtk.Bpmn2.Parser
         public override object Create(object parent, IParseContext context, XElement element)
         {
             var item = context.BpmnFactory.CreateDataInputAssociation();
-            //item.TargetRef = element.GetAttribute("targetRef");
-            //item.
 
-            //parent.DataInputAssociations.Add(item);
             if (this.callback != null)
                 this.callback((TParent)parent, item);
+
+            base.Init(item, context, element);
 
             return item;
         }
@@ -64,12 +63,11 @@ namespace Bpmtk.Bpmn2.Parser
         public override object Create(object parent, IParseContext context, XElement element)
         {
             var item = context.BpmnFactory.CreateDataOutputAssociation();
-            //item.TargetRef = element.GetAttribute("targetRef");
-            //item.
 
-            //parent.DataOutputAssociations.Add(item);
             if (this.callback != null)
                 this.callback((TParent)parent, item);
+
+            base.Init(item, context, element);
 
             return item;
         }

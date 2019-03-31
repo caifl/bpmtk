@@ -3,33 +3,47 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Bpmn2.Parser
 {
-    class PropertyParseHandler : BaseElementParseHandler
+    class PropertyParseHandler<TParent> : BaseElementParseHandler<TParent>
     {
-        public PropertyParseHandler()
+        private readonly Action<TParent, Property> callback;
+
+        public PropertyParseHandler(Action<TParent, Property> callback)
         {
             this.handlers.Add("dataState", new DataStateParseHandler());
+            this.callback = callback;
         }
 
-        public override object Create(object parent, IParseContext context, XElement element)
+        public override object Create(TParent parent, IParseContext context, XElement element)
         {
-            var prop = context.BpmnFactory.CreateProperty();
+            var props = context.BpmnFactory.CreateProperty();
 
-            prop.Name = element.GetAttribute("name");
-            //prop.ItemSubjectRef = element.GetAttribute("itemSubjectRef");
-            prop.IsCollection = element.GetBoolean("isCollection");
+            props.Name = element.GetAttribute("name");
 
-            //parent.Properties.Add(prop);
+            var itemSubjectRef = element.GetAttribute("itemSubjectRef");
+            if (itemSubjectRef != null)
+                context.AddReferenceRequest<ItemDefinition>(itemSubjectRef, x => props.ItemSubjectRef = x);
 
-            return prop;
+            if (this.callback != null)
+                this.callback(parent, props);
+
+            base.Init(props, context, element);
+
+            context.Push(props);
+
+            return props;
         }
     }
 
-    class DataStateParseHandler : BaseElementParseHandler
+    class DataStateParseHandler : BaseElementParseHandler<IItemAwareElement>
     {
-        public override object Create(object parent, IParseContext context, XElement element)
+        public override object Create(IItemAwareElement parent, IParseContext context, XElement element)
         {
             var dataState = context.BpmnFactory.CreateDataState();
+            parent.DataState = dataState;
+
             dataState.Name = element.GetAttribute("name");
+
+            base.Init(dataState, context, element);
 
             return dataState;
         }

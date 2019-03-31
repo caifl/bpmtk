@@ -16,12 +16,6 @@ namespace Bpmtk.Bpmn2
             set;
         }
 
-        //bool IsCollection
-        //{
-        //    get;
-        //    set;
-        //}
-
         DataState DataState
         {
             get;

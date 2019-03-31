@@ -7,7 +7,10 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
     {
         public EventParseHandler()
         {
-            this.handlers.Add("property", new PropertyParseHandler());
+            this.handlers.Add("property", new PropertyParseHandler<Event>((evnt, props) =>
+            {
+                evnt.Properties.Add(props);
+            }));
         }
     }
 

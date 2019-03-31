@@ -5,12 +5,12 @@ namespace Bpmtk.Bpmn2
 {
     public abstract class CallableElement : RootElement
     {
-        protected List<string> supportedInterfaceRefs = new List<string>();
+        protected List<Interface> supportedInterfaceRefs = new List<Interface>();
         protected List<InputOutputBinding> ioBindings = new List<InputOutputBinding>();
 
-        public virtual IList<string> SupportedInterfaceRefs => this.supportedInterfaceRefs;
+        public virtual IList<Interface> SupportedInterfaceRefs => this.supportedInterfaceRefs;
 
-        public virtual IOSpecification IOSpecification
+        public virtual InputOutputSpecification IOSpecification
         {
             get;
             set;

@@ -7,7 +7,11 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
     {
         public ActivityParseHandler()
         {
-            this.handlers.Add("property", new PropertyParseHandler());
+            this.handlers.Add("property", new PropertyParseHandler<Activity>((act,props) =>
+            {
+                act.Properties.Add(props);
+            }));
+
             this.handlers.Add("ioSpecification", new IOSpecificationParseHandler<Activity>((x, y) =>
             {
                 x.IOSpecification = y;
@@ -32,8 +36,15 @@ namespace Bpmtk.Bpmn2.Parser.Handlers
             foreach (var key in ResourceRoleParseHandler.Keys)
                 this.handlers.Add(key, handler);
 
-            //this.handlers.Add("dataInputAssociation", new DataInputAssociationHandler<TActivity>());
-            //this.handlers.Add("dataOutputAssociation", new DataOutputAssociationHandler<TActivity>());
+            this.handlers.Add("dataInputAssociation", new DataInputAssociationParseHandler<Activity>((x, y) =>
+            {
+                x.DataInputAssociations.Add(y);
+            }));
+
+            this.handlers.Add("dataOutputAssociation", new DataOutputAssociationParseHandler<Activity>((x, y) =>
+            {
+                x.DataOutputAssociations.Add(y);
+            }));
         }
 
         protected virtual void Init(Activity activity, IParseContext context, XElement element)
