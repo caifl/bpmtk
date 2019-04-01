@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Bpmtk.Abstractions\Bpmtk.Abstractions.csproj" />
     <ProjectReference Include="..\Bpmtk.Bpmn2\Bpmtk.Bpmn2.csproj" />
   </ItemGroup>
 

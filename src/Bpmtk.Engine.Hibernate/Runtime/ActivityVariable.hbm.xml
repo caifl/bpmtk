@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="Bpmtk.Engine"
+                   namespace="Bpmtk.Engine.Runtime">
+
+  <class name="ActivityVariable" table="bpm_act_data"
+         dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+    <property name="Name" column="name" not-null="true" length="64"/>
+    <property name="TypeName" column="type" not-null="true" length="255"/>
+    <property name="text" column="text" access="field" length="4000"/>
+    <property name="text2" column="text2" access="field" length="4000"/>
+    <property name="longVal" column="long_val" access="field"/>
+    <property name="doubleVal" column="double_val" access="field"/>
+    
+    <many-to-one name="byteArray"
+                 class="Bpmtk.Engine.Models.ByteArray"
+                 column="byte_array_id"
+                 access="field"/>
+
+    <many-to-one name="activityInstance"
+               class="ActivityInstance"
+               column="act_inst_id"
+               access="field" not-null="true"/>
+  </class>
+
+</hibernate-mapping>

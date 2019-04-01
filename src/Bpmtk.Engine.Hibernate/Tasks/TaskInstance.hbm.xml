@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="Bpmtk.Engine"
+                   namespace="Bpmtk.Engine.Tasks">
+
+  <class name="TaskInstance" table="bpm_task"
+         dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+    <property name="Name" column="name"/>
+    <property name="isSuspended" column="is_suspended" access="field"/>
+
+    <many-to-one name="processInstance"
+                 class="Bpmtk.Engine.Runtime.ProcessInstance"
+                 column="proc_inst_id"
+                 access="field"/>
+    
+    <many-to-one name="activityInstance"
+                 class="Bpmtk.Engine.Runtime.ActivityInstance"
+                 column="act_inst_id"
+                 access="field"/>
+
+    <many-to-one name="token"
+                 class="Bpmtk.Engine.Runtime.Token"
+                 column="token_id"
+                 access="field"/>
+
+    <many-to-one name="Assignee"
+               class="Bpmtk.Engine.Models.User"
+               column="assignee_id"/>
+  </class>
+
+</hibernate-mapping>

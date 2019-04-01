@@ -15,3 +15,5 @@
 /src/Bpmtk.Engine.Hibernate/obj
 /src/Bpmtk.Bpmn2.Tests/bin/Debug/netcoreapp2.1
 /src/Bpmtk.Bpmn2.Tests/obj
+/src/Bpmtk.Engine.Tests/bin/Debug/netcoreapp2.1
+/src/Bpmtk.Engine.Tests/obj

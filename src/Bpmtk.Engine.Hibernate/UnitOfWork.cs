@@ -5,7 +5,7 @@ using Bpmtk.Infrastructure;
 
 namespace Bpmtk.Engine
 {
-    class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly ISession session;
         private readonly ConcurrentDictionary<Type, IRepository> repositories 

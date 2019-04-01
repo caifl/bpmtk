@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="Bpmtk.Engine"
+                   namespace="Bpmtk.Engine.Runtime">
+
+  <class name="Token" table="bpm_token"
+         dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+    <property name="IsActive" column="is_active"/>
+    <property name="IsSuspended" column="is_suspended"/>
+    <property name="ActivityId" column="activity_id"/>
+    <property name="IsLoopActivity" column="is_loop_act"/>
+    
+    <set name="children" inverse="true" cascade="all-delete-orphan"
+         access="field">
+      <key column="parent_id"/>
+      <one-to-many class="Token"/>
+    </set>
+
+    <many-to-one name="activityInstance"
+                 class="ActivityInstance"
+                 column="act_inst_id"
+                 access="field"/>
+
+    <many-to-one name="processInstance"
+                 class="ProcessInstance"
+                 column="proc_inst_id"
+                 access="field"/>
+
+    <many-to-one name="parent"
+                 class="Token"
+                 column="parent_id"
+                 access="field"/>
+  </class>
+  
+</hibernate-mapping>

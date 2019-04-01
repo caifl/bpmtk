@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="Bpmtk.Engine"
+                   namespace="Bpmtk.Engine.Runtime">
+
+  <class name="ExecutionObject"
+         dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+    <property name="Name" column="NAME_"/>
+    <property name="Created" column="CREATED_" not-null="true"/>
+    <property name="StartTime" column="START_TIME_"/>
+    <property name="EndTime" column="END_TIME_"/>
+
+    <union-subclass name="ProcessInstance" table="bpm_proc_inst">
+      <property name="InitiatorId" column="INITIATOR_ID_"></property>
+      <many-to-one name="token"
+                 class="Token"
+                 column="TOKEN_ID_"
+                 access="field"/>
+    </union-subclass>
+
+    <union-subclass name="ActivityInstance" table="bpm_act_inst">
+      <many-to-one name="processInstance"
+                 class="ProcessInstance"
+                 column="proc_inst_id"
+                 access="field" not-null="true"/>
+    </union-subclass>
+    
+  </class>
+  
+</hibernate-mapping>
