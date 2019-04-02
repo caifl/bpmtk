@@ -20,6 +20,7 @@ namespace Bpmtk.Bpmn2
         //extended attributes
         protected readonly Dictionary<string, string> attributes = new Dictionary<string, string>();
 
+        private readonly List<LaneSet> laneSets = new List<LaneSet>();
         protected List<Property> properties = new List<Property>();
         protected List<ResourceRole> resources = new List<ResourceRole>();
         private readonly FlowElementCollection flowElements;
@@ -35,6 +36,8 @@ namespace Bpmtk.Bpmn2
             this.isClosed = false;
             this.isExecutable = false;
         }
+
+        public virtual IList<LaneSet> LaneSets => this.laneSets;
 
         /// <summary>
         /// Get extended attributes of Process.
