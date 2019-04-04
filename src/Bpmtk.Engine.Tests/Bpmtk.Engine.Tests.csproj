@@ -7,6 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\data_association.bpmn.xml" />
+    <None Remove="Resources\exclusive_gateway.bpmn.xml" />
+    <None Remove="Resources\sequential_flow.bpmn.xml" />
+    <None Remove="Resources\sub_process.bpmn.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\data_association.bpmn.xml" />
+    <EmbeddedResource Include="Resources\exclusive_gateway.bpmn.xml" />
+    <EmbeddedResource Include="Resources\sequential_flow.bpmn.xml" />
+    <EmbeddedResource Include="Resources\sub_process.bpmn.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="MySql.Data" Version="8.0.15" />
     <PackageReference Include="xunit" Version="2.4.0" />
@@ -14,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bpmtk.Engine.Hibernate\Bpmtk.Engine.Hibernate.csproj" />
+    <ProjectReference Include="..\Bpmtk.Engine\Bpmtk.Engine.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,14 +6,27 @@ using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Tasks
 {
-    public class TaskInstance
+    public class TaskInstance : ITaskInstance
     {
         protected ProcessInstance processInstance;
         protected Token token;
         protected ActivityInstance activityInstance;
         protected bool isSuspended;
+        
 
         public virtual long Id
+        {
+            get;
+            protected set;
+        }
+
+        public virtual TaskState State
+        {
+            get;
+            protected set;
+        }
+
+        public virtual long? TokenId
         {
             get;
             protected set;
@@ -54,5 +67,14 @@ namespace Bpmtk.Engine.Tasks
             if (this.token != null)
                 this.token.Signal();
         }
+    }
+
+    public enum TaskState
+    {
+        Ready = 0,
+
+        Active = 1,
+
+        Completed = 2
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bpmtk.Bpmn2;
+using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors

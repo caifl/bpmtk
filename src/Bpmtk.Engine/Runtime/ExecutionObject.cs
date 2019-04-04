@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using Bpmtk.Engine.Variables;
 
 namespace Bpmtk.Engine.Runtime
@@ -26,7 +26,11 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual VariableInstance GetVariableInstance(string name)
         {
-            return null;
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            var items = this.VariableInstances;
+            return items.Where(x => x.Name == name).SingleOrDefault();
         }
 
         public virtual object GetVariable(string name)

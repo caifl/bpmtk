@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Bpmtk.Bpmn2;
+using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2
@@ -9,7 +9,7 @@ namespace Bpmtk.Engine.Bpmn2
     public class BpmnActivity
     {
         private readonly FlowNode node;
-        private IBpmnActivityBehavior behavior;
+        private IActivityBehavior behavior;
 
         public BpmnActivity(FlowNode node)
         {
@@ -91,30 +91,31 @@ namespace Bpmtk.Engine.Bpmn2
         public virtual void Leave(ExecutionContext executionContext, 
             BpmnTransition transition = null)
         {
-            if (transition == null)
-                throw new Exception("transition is null");
+            //if (transition == null)
+            //    throw new Exception("transition is null");
 
-            Token token = executionContext.Token;
-            token.Activity = this;
-            executionContext.Transition = transition;
+            //Token token = executionContext.Token;
+            //token.Activity = this;
 
-            this.behavior.Leave(executionContext, transition);
+            //executionContext.Transition = transition;
 
-            // fire the leave-node event for this node
-            //fireEvent(Event.EVENTTYPE_NODE_LEAVE, executionContext);
+            //this.behavior.Leave(executionContext, transition);
 
-            // log this node
-            //if (token.getNodeEnter() != null)
-            //{
-            //    addNodeLog(token);
-            //}
+            //// fire the leave-node event for this node
+            ////fireEvent(Event.EVENTTYPE_NODE_LEAVE, executionContext);
 
-            // update the runtime information for taking the transition
-            // the transitionSource is used to calculate events on superstates
-            //executionContext.TransitionSource = this;
+            //// log this node
+            ////if (token.getNodeEnter() != null)
+            ////{
+            ////    addNodeLog(token);
+            ////}
 
-            // take the transition
-            //transition.Take(executionContext);
+            //// update the runtime information for taking the transition
+            //// the transitionSource is used to calculate events on superstates
+            ////executionContext.TransitionSource = this;
+
+            //// take the transition
+            ////transition.Take(executionContext);
         }
     }
 }

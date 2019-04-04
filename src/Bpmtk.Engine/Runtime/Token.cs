@@ -8,7 +8,7 @@ namespace Bpmtk.Engine.Runtime
     {
         private ProcessInstance processInstance;
         private ActivityInstance activityInstance;
-        private BpmnActivity activity;
+        private FlowNode node;
 
         //private bool isActive;
         //private string activityId;
@@ -63,10 +63,10 @@ namespace Bpmtk.Engine.Runtime
             get;
         }
 
-        public Token(ProcessInstance processInstance, BpmnActivity initialActivity)
+        public Token(ProcessInstance processInstance, FlowNode initialNode)
         {
             this.processInstance = processInstance ?? throw new ArgumentNullException(nameof(processInstance));
-            this.activity = initialActivity ?? throw new ArgumentNullException(nameof(initialActivity));
+            this.node = initialNode ?? throw new ArgumentNullException(nameof(initialNode));
             this.ActivateActivity();
         }
 
@@ -75,12 +75,12 @@ namespace Bpmtk.Engine.Runtime
             this.activityInstance = new ActivityInstance(this);
         }
 
-        public virtual BpmnActivity Activity
+        public virtual FlowNode Node
         {
-            get => this.activity;
+            get => this.node;
             set
             {
-                this.activity = value;
+                this.node = value;
             }
         }
 
@@ -231,7 +231,29 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual void End()
         {
+            this.Inactivate();
 
+            if (this.parent != null)
+            {
+                var parentToken = this.parent;
+
+                //判断是否在子流程中
+                var container = this.node.Container;
+                if (container is SubProcess)
+                {
+                    this.Remove();
+
+                    if (parentToken.children.Count > 0)
+                        return;
+
+                    var subProcess = container as SubProcess;
+                    subProcess.Leave(new ExecutionContext(parentToken));
+                    return;
+                }
+            }
+
+            //结束流程实例
+            this.processInstance.End();
         }
 
         /// <summary>
@@ -239,7 +261,7 @@ namespace Bpmtk.Engine.Runtime
         /// </summary>
         public virtual void Signal()
         {
-            if (this.activity == null)
+            if (this.node == null)
                 throw new RuntimeException(this + " is not positioned in a node");
 
             //var defaultTransition = node.getDefaultLeavingTransition();
@@ -253,8 +275,9 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual void Signal(string signalName, object signalData)
         {
-            this.activity.Signal(new ExecutionContext(this), signalName,
-                signalData);
+            this.node.Leave(new ExecutionContext(this));
+            //this.node.Signal(new ExecutionContext(this), signalName,
+            //    signalData);
         }
 
         public virtual bool IsSuspended

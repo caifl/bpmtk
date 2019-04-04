@@ -12,17 +12,17 @@ namespace Bpmtk.Engine.Runtime
         private ICollection<ActivityIdentityLink> identityLinks;
         private ICollection<Token> tokens;
         protected ProcessInstance processInstance;
-        private BpmnActivity activity;
+        private FlowNode activity;
 
         public ActivityInstance(ProcessInstance processInstance,
-            BpmnActivity activity)
+            FlowNode activity)
         {
             this.processInstance = processInstance;
             this.activity = activity;
 
             this.ActivityId = activity.Id;
             this.Name = activity.Name;
-            this.Description = activity.Description;
+            //this.Description = activity.Description;
         }
 
         public virtual string ActivityId

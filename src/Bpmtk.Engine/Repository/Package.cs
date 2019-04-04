@@ -7,7 +7,6 @@ namespace Bpmtk.Engine.Repository
 {
     public class Package : IAggregateRoot
     {
-        protected ByteArray byteArray;
         //protected Model model;
         //protected List<PackageResourceLink> resourceLinks = new List<PackageResourceLink>();
 
@@ -34,25 +33,19 @@ namespace Bpmtk.Engine.Repository
             protected set;
         }
 
-        public virtual string Key
-        {
-            get;
-            protected set;
-        }
-
-        public virtual int? OrganizationId
+        public virtual string TenantId
         {
             get;
             set;
         }
 
-        public virtual int? CategoryId
+        public virtual string Category
         {
             get;
             set;
         }
 
-        public virtual int OwnerId
+        public virtual User Owner
         {
             get;
             protected set;
@@ -109,9 +102,10 @@ namespace Bpmtk.Engine.Repository
             set;
         }
 
-        public virtual ByteArray ByteArray
+        public virtual ByteArray Source
         {
-            get => this.byteArray;
+            get;
+            set;
         }
 
         //public virtual Model Model

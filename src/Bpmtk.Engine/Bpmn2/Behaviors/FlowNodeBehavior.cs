@@ -5,7 +5,7 @@ using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
-    abstract class FlowNodeBehavior : IBpmnActivityBehavior, ISignallableActivityBehavior
+    abstract class FlowNodeBehavior : IActivityBehavior, ISignallableActivityBehavior
     {
         public virtual void Execute(ExecutionContext executionContext)
         {

@@ -1,12 +1,102 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bpmtk.Abstractions\Bpmtk.Abstractions.csproj" />
-    <ProjectReference Include="..\Bpmtk.Bpmn2\Bpmtk.Bpmn2.csproj" />
+    <Compile Remove="Bpmn2\Behaviors\**" />
+    <EmbeddedResource Remove="Bpmn2\Behaviors\**" />
+    <None Remove="Bpmn2\Behaviors\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Bpmn2\BpmnActivity.cs" />
+    <Compile Remove="Bpmn2\BpmnProcess.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Bpmn2\Schema\BPMN20.xsd" />
+    <None Remove="Bpmn2\Schema\BPMNDI.xsd" />
+    <None Remove="Bpmn2\Schema\DC.xsd" />
+    <None Remove="Bpmn2\Schema\DI.xsd" />
+    <None Remove="Bpmn2\Schema\Extensions.xsd" />
+    <None Remove="Bpmn2\Schema\Semantic.xsd" />
+    <None Remove="Stores\ByteArray.hbm.xml" />
+    <None Remove="Stores\Group.hbm.xml" />
+    <None Remove="Stores\IdentityLink.hbm.xml" />
+    <None Remove="Stores\User.hbm.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Bpmn2\Schema\BPMN20.xsd" />
+    <EmbeddedResource Include="Bpmn2\Schema\BPMNDI.xsd" />
+    <EmbeddedResource Include="Bpmn2\Schema\DC.xsd" />
+    <EmbeddedResource Include="Bpmn2\Schema\DI.xsd" />
+    <EmbeddedResource Include="Bpmn2\Schema\Extensions.xsd" />
+    <EmbeddedResource Include="Bpmn2\Schema\Semantic.xsd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jint" Version="3.0.0-beta-1525" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="NHibernate" Version="5.2.5" />
+    <PackageReference Include="Quartz" Version="3.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Stores\Mappings\ActivityInstance.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\ActivityVariable.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\ByteArray.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\Deployment.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\Group.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\IdentityLink.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\ScheduledJob.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\Package.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\EventSubscription.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\ProcessDefinition.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\ProcessInstance.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\ProcessVariable.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\TaskInstance.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\Token.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\Mappings\User.hbm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Stores\nhibernate.cfg.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Tasks\Internal\" />
   </ItemGroup>
 
 </Project>

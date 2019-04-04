@@ -17,3 +17,5 @@
 /src/Bpmtk.Bpmn2.Tests/obj
 /src/Bpmtk.Engine.Tests/bin/Debug/netcoreapp2.1
 /src/Bpmtk.Engine.Tests/obj
+/src/Bpmtk.Engine.WebApi/bin/Debug/netcoreapp2.1
+/src/Bpmtk.Engine.WebApi/obj

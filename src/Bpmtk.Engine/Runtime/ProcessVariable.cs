@@ -14,6 +14,19 @@ namespace Bpmtk.Engine.Runtime
 
         public ProcessVariable(ProcessInstance processInstance,
             string name,
+            IVariableType type,
+            object value
+            ) : base(name, value)
+        {
+            if (processInstance == null)
+                throw new ArgumentNullException(nameof(processInstance));
+
+            this.processInstance = processInstance;
+            this.type = type;
+        }
+
+        public ProcessVariable(ProcessInstance processInstance,
+            string name,
             object value
             ) : base(name, value)
         {

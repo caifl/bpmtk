@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="Bpmtk.Engine"
+                   namespace="Bpmtk.Engine.Repository">
+
+  <class name="ProcessDefinition" table="bpm_proc_def"
+         dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+    <property name="TenantId" column="tenant_id" length="32"/>
+    
+    <many-to-one name="Deployment"
+                 class="Deployment"
+                 column="deployment_id" not-null="true"/>
+    
+    <!--foreign key as property-->
+    <property name="DeploymentId" column="deployment_id" insert="false" update="false" not-null="true"/>
+    <property name="Key" column="`key`" not-null="true" length="64"/>
+    <property name="Name" column="name" length="100" not-null="true"/>
+    <property name="State" column="state" type="ProcessDefinitionState" not-null="true"/>
+    <property name="Category" column="category" length="50"/>
+    <property name="HasDiagram" column="has_diagram" not-null="true"/>
+    <property name="ValidFrom" column="valid_from"/>
+    <property name="ValidTo" column="valid_to"/>
+    <property name="Version" column="version" not-null="true"/>
+    <property name="Created" column="created" not-null="true"/>
+    <property name="VersionTag" column="version_tag" length="255"/>
+    <property name="Description" column="description" length="255"/>
+
+    <set name="identityLinks" inverse="true" cascade="all-delete-orphan"
+         access="field">
+      <key column="proc_def_id"/>
+      <one-to-many class="Bpmtk.Engine.Models.DefinitionIdentityLink"/>
+    </set>
+    
+  </class>
+
+</hibernate-mapping>

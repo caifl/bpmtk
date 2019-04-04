@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Bpmn2;
+using Bpmtk.Engine.Expressions;
 using Bpmtk.Engine.Tasks;
 using Bpmtk.Engine.Variables;
 
@@ -11,8 +11,8 @@ namespace Bpmtk.Engine.Runtime
     public class ExecutionContext
     {
         private readonly Token token;
-        private BpmnActivity transitionSource;
-        private BpmnTransition transition;
+        private FlowNode transitionSource;
+        private SequenceFlow transition;
 
         public ExecutionContext(Token token)
         {
@@ -21,7 +21,7 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual Token Token => this.token;
 
-        public virtual BpmnActivity Activity => this.token.Activity;
+        public virtual FlowNode Node => this.token.Node;
 
         /// <summary>
         /// Gets the current task instance.
@@ -31,14 +31,14 @@ namespace Bpmtk.Engine.Runtime
             get;
         }
 
-        public BpmnTransition Transition { get => transition; set => transition = value; }
+        public virtual SequenceFlow Transition { get => transition; set => transition = value; }
 
-        public BpmnActivity TransitionSource { get => transitionSource; set => transitionSource = value; }
+        public virtual FlowNode TransitionSource { get => transitionSource; set => transitionSource = value; }
 
         public virtual void LeaveNode(string outgoing = null)
         {
-            var transition = this.token.Activity.GetOutgoingById(outgoing);
-            this.Activity.Leave(this, transition);
+            //var transition = this.token.Activity.GetOutgoingById(outgoing);
+            this.Node.Leave(this, outgoing);
         }
 
         public virtual object GetVariable(string name)
@@ -87,14 +87,27 @@ namespace Bpmtk.Engine.Runtime
 
         }
 
+        public virtual IEvaluationContext CreateEvaluationContext()
+        {
+            return null;
+        }
+
         public virtual IExpressionEvaluator CreateExpressionEvaluator(string language = null)
         {
             return null;
         }
+
+        /// <summary>
+        /// Gets or sets sub-process-instance.
+        /// </summary>
+        public virtual ProcessInstance SubProcessInstance
+        {
+            get;
+            set;
+        }
+
+        public virtual IContext Context => Bpmtk.Engine.Context.Current;
     }
 
-    public interface IExpressionEvaluator
-    {
-        TResult Evaluate<TResult>(string expression);
-    }
+    
 }
