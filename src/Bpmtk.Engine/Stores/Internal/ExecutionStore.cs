@@ -22,6 +22,16 @@ namespace Bpmtk.Engine.Stores.Internal
             this.session.Save(processInstance);
         }
 
+        public void Add(HistoricToken historicToken)
+        {
+            this.session.Save(historicToken);
+        }
+
+        public void Add(Token token)
+        {
+            this.session.Save(token);
+        }
+
         //public virtual async Task<IEnumerable<ProcessInstance>> GetAsync()
         //{
         //    return await this.session.Query<ProcessInstance>().ToListAsync();
@@ -49,6 +59,11 @@ namespace Bpmtk.Engine.Stores.Internal
         public virtual void Remove(Token token)
         {
             this.session.Delete(token);
+        }
+
+        public Task SaveAsync(ProcessInstance processInstance)
+        {
+            throw new NotImplementedException();
         }
 
         public Task UpdateAsync(ProcessInstance processInstance)

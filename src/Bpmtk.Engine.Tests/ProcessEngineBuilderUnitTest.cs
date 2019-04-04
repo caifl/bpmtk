@@ -19,17 +19,15 @@ using Jint.Runtime.References;
 
 namespace Bpmtk.Engine.Tests
 {
-    public class ProcessEngineBuilderUnitTest
+    public class ProcessEngineBuilderUnitTest : BpmtkTestCase
     {
-        protected ITestOutputHelper output;
-
-        public ProcessEngineBuilderUnitTest(ITestOutputHelper output)
+        public ProcessEngineBuilderUnitTest(ITestOutputHelper output) : base(output)
         {
-            this.output = output;
         }
 
-        [Fact]
-        public void ScriptEngine()
+
+        //[Fact]
+        void ScriptEngine()
         {
             var engine = new Jint.Engine(options =>
             {
@@ -138,46 +136,15 @@ return a();
             }
         }
 
-
-        [Fact]
-        public void BuildProcessEngine()
+        public override void Execute()
         {
-            IProcessEngineBuilder builder = new ProcessEngineBuilder();
-            builder.ConfigureServices(services =>
-            {
-                //services.Add<IDeploymentManager>()
-            });
-
-            var engine = builder.AddDefaultStores(cfg =>
-            {
-                cfg.SetInterceptor(new XUnitSqlCaptureInterceptor(this.output));
-            }).Build();
-
-            var context = engine.CreateContext();
-
-            Context.SetCurrent(context);
-
-            var uow = context.GetService<IUnitOfWork>();
-
-            var rs = context.GetService<IRepositoryService>();
-
-            var rb = rs.CreateDeploymentBuilder();
-
-            var ms = new MemoryStream();
-            var stream = this.GetType().Assembly.GetManifestResourceStream("Bpmtk.Engine.Tests.Resources.sequential_flow.bpmn.xml");
-            stream.CopyTo(ms);
-
-            var deployment = rb.SetBpmnModel(ms.ToArray())
-                .SetName("test")
-                .SetMemo("unit-tests")
-                .SetCategory("tests")
-                .Build();
+            this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.sequential_flow.bpmn.xml");
 
             var runtimeService = context.GetService<IRuntimeService>();
 
             var pi = runtimeService.StartProcessInstanceByKey("Process_0cyms8o");
 
-            uow.Commit();
+            this.unitOfWork.Commit();
 
             //var data = rs.GetBpmnModelData(5);
 
@@ -215,22 +182,6 @@ return a();
             //var list = query.List<InstanceIdentityLink>();
         }
 
-        public class XUnitSqlCaptureInterceptor : EmptyInterceptor
-        {
-            public XUnitSqlCaptureInterceptor(ITestOutputHelper output)
-            {
-                this.Output = output;
-            }
-
-            public ITestOutputHelper Output { get; set; }
-
-            public override NHibernate.SqlCommand.SqlString OnPrepareStatement(NHibernate.SqlCommand.SqlString sql)
-            {
-                var text = sql.ToString();
-                this.Output.WriteLine(text);
-
-                return sql;
-            }
-        }
+        
     }
 }

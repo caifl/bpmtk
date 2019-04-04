@@ -1,20 +1,18 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Bpmtk.Engine.Bpmn2;
+using Bpmtk.Engine.Stores;
+using System.Collections.ObjectModel;
 
 namespace Bpmtk.Engine.Runtime
 {
     public class Token
     {
+        private Token parent;
         private ProcessInstance processInstance;
         private ActivityInstance activityInstance;
         private FlowNode node;
-
-        //private bool isActive;
-        //private string activityId;
-        //private bool isSuspended;
-        //private bool isLoopActivity;
-        private Token parent;
         private ICollection<Token> children;
 
         protected Token()
@@ -22,7 +20,13 @@ namespace Bpmtk.Engine.Runtime
 
         protected Token(Token parent)
         {
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent));
+
             this.parent = parent;
+            this.children = new List<Token>();
+            this.processInstance = parent.ProcessInstance;
+            this.IsActive = true;
         }
 
         public virtual long Id
@@ -58,16 +62,62 @@ namespace Bpmtk.Engine.Runtime
                 this.parent.children.Remove(this);
         }
 
-        public virtual IEnumerable<Token> Children
+        /// <summary>
+        /// Gets the root-token.
+        /// </summary>
+        public virtual Token GetRoot()
+            => this.processInstance.Token;
+
+        protected void CollectInactiveTokensAt(FlowNode node, IList<Token> tokens)
         {
-            get;
+            if (!this.IsActive && node.Id.Equals(this.node.Id))
+                tokens.Add(this);
+
+            var children = this.children;
+            foreach (var child in children)
+                child.CollectInactiveTokensAt(node, tokens);
+        }
+
+        protected void CollectActiveTokens(IList<Token> tokens)
+        {
+            if (this.IsActive)
+                tokens.Add(this);
+
+            var children = this.children;
+            foreach (var child in children)
+                child.CollectActiveTokens(tokens);
+        }
+
+        public virtual IList<Token> GetInactiveTokensAt(FlowNode node)
+        {
+            var list = new List<Token>();
+            this.CollectInactiveTokensAt(node, list);
+
+            return list;
+        }
+
+        public virtual IList<Token> Children
+        {
+            get => new List<Token>(this.children);
         }
 
         public Token(ProcessInstance processInstance, FlowNode initialNode)
         {
+            this.children = new List<Token>();
             this.processInstance = processInstance ?? throw new ArgumentNullException(nameof(processInstance));
             this.node = initialNode ?? throw new ArgumentNullException(nameof(initialNode));
-            this.ActivateActivity();
+            this.IsActive = true;
+            this.IsLoopActivity = false;
+            this.IsSuspended = false;
+
+            this.OnNodeChanged();
+
+            //this.ActivateActivity();
+        }
+
+        protected virtual void OnNodeChanged()
+        {
+            this.ActivityId = this.node?.Id;
         }
 
         protected virtual void ActivateActivity()
@@ -81,6 +131,7 @@ namespace Bpmtk.Engine.Runtime
             set
             {
                 this.node = value;
+                this.ActivityId = value?.Id;
             }
         }
 
@@ -99,7 +150,13 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual Token CreateToken()
         {
-            return new Token(this);
+            var token = new Token(this);
+            this.children.Add(token);
+
+            var store = Context.Current.GetService<IProcessInstanceStore>();
+            store.Add(token);
+
+            return token;
         }
 
         //protected virtual void ExecuteLoopActivity(StandardLoopCharacteristics loopCharacteristics)
@@ -218,20 +275,21 @@ namespace Bpmtk.Engine.Runtime
         //    var context = new ExecutionContext(this);
             
         //}
+        public virtual IList<Token> GetActiveTokens()
+        {
+            var list = new List<Token>();
+            this.CollectActiveTokens(list);
 
-        //public virtual void Take(SequenceFlow transition)
-        //{
+            return list;
+        }
 
-        //}
-
-        //protected virtual void ExecuteScriptTask()
-        //{
-
-        //}
-
-        public virtual void End()
+        public virtual void End(bool isImplicit = false,
+            string endReason = null)
         {
             this.Inactivate();
+
+            var store = Context.Current.GetService<IProcessInstanceStore>();
+            store.Add(new HistoricToken(new ExecutionContext(this), "end"));
 
             if (this.parent != null)
             {
@@ -253,7 +311,7 @@ namespace Bpmtk.Engine.Runtime
             }
 
             //结束流程实例
-            this.processInstance.End();
+            this.processInstance.End(isImplicit, endReason);
         }
 
         /// <summary>

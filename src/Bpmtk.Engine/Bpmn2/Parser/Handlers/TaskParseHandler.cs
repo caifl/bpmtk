@@ -43,7 +43,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var userTask = context.BpmnFactory.CreateUserTask();
-
+            parent.FlowElements.Add(userTask);
             //userTask.TaskName = element.GetExtendedAttribute("taskName");
             //userTask.AssignmentStrategy = element.GetExtendedAttribute("assignmentStrategy");
             //userTask.Assignee = element.GetExtendedAttribute("assignee");
@@ -51,6 +51,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             var value = element.GetExtendedAttribute("priority");
             if (value != null)
                 userTask.Priority = (TaskPriority)Enum.Parse(typeof(TaskPriority), value);
+
+            base.Init(userTask, context, element);
 
             return userTask;
         }
@@ -62,9 +64,12 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateScriptTask();
+            parent.FlowElements.Add(task);
 
             task.ScriptFormat = element.GetAttribute("scriptFormat");
             task.Script = element.Value;
+
+            base.Init(task, context, element);
 
             return task;
         }
@@ -76,12 +81,15 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateServiceTask();
+            parent.FlowElements.Add(task);
 
             task.Implementation = element.GetAttribute("implementation");
 
             var operationRef = element.GetAttribute("operationRef");
             if (operationRef != null)
                 context.AddReferenceRequest(operationRef, (Operation operation) => task.OperationRef = operation);
+
+            base.Init(task, context, element);
 
             return task;
         }
@@ -93,6 +101,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateSendTask();
+            parent.FlowElements.Add(task);
 
             task.Implementation = element.GetAttribute("implementation");
 
@@ -104,6 +113,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             if (messageRef != null)
                 context.AddReferenceRequest(messageRef, (Message message) => task.MessageRef = message);
 
+            base.Init(task, context, element);
+
             return task;
         }
     }
@@ -114,6 +125,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateReceiveTask();
+            parent.FlowElements.Add(task);
 
             task.Implementation = element.GetAttribute("implementation");
 
@@ -126,6 +138,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
                 context.AddReferenceRequest(messageRef, (Message message) => task.MessageRef = message);
             //Instantiate
 
+            base.Init(task, context, element);
+
             return task;
         }
     }
@@ -136,8 +150,11 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateBusinessRuleTask();
+            parent.FlowElements.Add(task);
 
             task.Implementation = element.GetAttribute("implementation");
+
+            base.Init(task, context, element);
 
             return task;
         }

@@ -17,6 +17,10 @@ namespace Bpmtk.Engine.Stores
 
         void Remove(Token token);
 
+        void Add(Token token);
+
+        void Add(HistoricToken historicToken);
+
         IEnumerable<string> GetActiveActivityIds(long id);
 
         Task UpdateAsync(ProcessInstance processInstance);

@@ -26,13 +26,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             context.AddReferenceRequest(sourceRef, (FlowNode node) => sequenceFlow.SourceRef = node);
             context.AddReferenceRequest(targetRef, (FlowNode node) => sequenceFlow.TargetRef = node);
 
-            //context.Push(sequenceFlow);
-            //if (sequenceFlow.ExtensionElements != null)
-            //{
-            //    var items = this.ParseEventListeners(sequenceFlow.ExtensionElements);
-            //    foreach (var item in items)
-            //        sequenceFlow.EventListeners.Add(item);
-            //}
+            context.AddSourceRef(sourceRef, sequenceFlow);
+            context.AddTargetRef(targetRef, sequenceFlow);
 
             return sequenceFlow;
         }

@@ -15,5 +15,11 @@ namespace Bpmtk.Engine.Bpmn2.Parser
         void Push(FlowElement flowElement);
 
         void Push(BaseElement baseElement);
+
+        void AddSourceRef(string sourceRef, SequenceFlow sequenceFlow);
+
+        void AddTargetRef(string targetRef, SequenceFlow sequenceFlow);
+
+        void AddFlowNode(FlowNode flowNode);
     }
 }

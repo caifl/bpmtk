@@ -69,12 +69,12 @@ namespace Bpmtk.Engine.Bpmn2
             base.Enter(executionContext);
         }
 
-        public override void Execute(ExecutionContext executionContext)
-        {
-            base.Execute(executionContext);
-        }
+        //public override void Execute(ExecutionContext executionContext)
+        //{
+        //    base.Execute(executionContext);
+        //}
 
-        public override void Leave(ExecutionContext executionContext, string transitionId = null)
+        public override void Leave(ExecutionContext executionContext)
         {
             var token = executionContext.Token;
             if (token.Parent != null &&
@@ -85,7 +85,7 @@ namespace Bpmtk.Engine.Bpmn2
                 return;
             }
 
-            base.Leave(executionContext, transitionId);
+            base.Leave(executionContext);
         }
     }
 }

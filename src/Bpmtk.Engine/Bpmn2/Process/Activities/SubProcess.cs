@@ -56,13 +56,13 @@ namespace Bpmtk.Engine.Bpmn2
 
         public virtual IList<Artifact> Artifacts => this.artifacts;
 
-        public override void Leave(ExecutionContext executionContext, string transitionId = null)
+        public override void Leave(ExecutionContext executionContext)
         {
             var token = executionContext.Token;
-            if (token.Children.Count() > 0)
+            if (token.Children.Count > 0)
                 throw new BpmnError("该子流程还有环节未完成");
 
-            base.Leave(executionContext, transitionId);
+            base.Leave(executionContext);
         }
     }
 }

@@ -5,8 +5,10 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 {
     abstract class FlowElementParseHandler : BaseElementParseHandler<IFlowElementsContainer>
     {
-        protected virtual void Init(FlowElement flowElement, IParseContext context, XElement element)
+        protected override void Init(BaseElement baseElement, IParseContext context, XElement element)
         {
+            var flowElement = baseElement as FlowElement;
+
             flowElement.Name = element.GetAttribute("name");
 
             base.Init(flowElement, context, element);
@@ -32,6 +34,15 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
                 if (outgoing != null)
                     context.AddReferenceRequest<SequenceFlow>(outgoing, (sf) => parent.Outgoings.Add(sf));
             }));
+        }
+
+        protected override void Init(BaseElement baseElement, IParseContext context, XElement element)
+        {
+            var flowNode = baseElement as FlowNode;
+
+            base.Init(flowNode, context, element);
+
+            context.AddFlowNode(flowNode);
         }
 
         //protected virtual void Parse(FlowNode flowNode, IParseContext context, XElement element)

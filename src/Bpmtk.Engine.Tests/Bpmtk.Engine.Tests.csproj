@@ -9,6 +9,7 @@
   <ItemGroup>
     <None Remove="Resources\data_association.bpmn.xml" />
     <None Remove="Resources\exclusive_gateway.bpmn.xml" />
+    <None Remove="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.bpmn20.xml" />
     <None Remove="Resources\sequential_flow.bpmn.xml" />
     <None Remove="Resources\sub_process.bpmn.xml" />
   </ItemGroup>
@@ -16,6 +17,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\data_association.bpmn.xml" />
     <EmbeddedResource Include="Resources\exclusive_gateway.bpmn.xml" />
+    <EmbeddedResource Include="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.bpmn20.xml" />
     <EmbeddedResource Include="Resources\sequential_flow.bpmn.xml" />
     <EmbeddedResource Include="Resources\sub_process.bpmn.xml" />
   </ItemGroup>
@@ -29,6 +31,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bpmtk.Engine\Bpmtk.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Deploy\" />
+    <Folder Include="Scripting\" />
   </ItemGroup>
 
 </Project>

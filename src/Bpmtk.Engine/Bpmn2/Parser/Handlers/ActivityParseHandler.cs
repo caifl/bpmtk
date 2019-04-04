@@ -47,8 +47,10 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             }));
         }
 
-        protected virtual void Init(Activity activity, IParseContext context, XElement element)
+        protected override void Init(BaseElement baseElement, IParseContext context, XElement element)
         {
+            var activity = baseElement as Activity;
+
             activity.IsForCompensation = element.GetBoolean("isForCompensation");
             activity.StartQuantity = element.GetInt32("startQuantity");
             activity.CompletionQuantity = element.GetInt32("completionQuantity");

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Bpmtk.Engine.Bpmn2.Extensions;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Stores;
 
 namespace Bpmtk.Engine.Bpmn2
 {
@@ -57,7 +58,8 @@ namespace Bpmtk.Engine.Bpmn2
 
             //    // fire the transition event (if any)
             //    fireEvent(Event.EVENTTYPE_TRANSITION, executionContext);
-
+            var store = executionContext.Context.GetService<IProcessInstanceStore>();
+            store.Add(new HistoricToken(executionContext, "transition"));
             //    // fire enter events for superstates (if any)
             //    Node destination = fireSuperStateEnterEvents(executionContext);
             //    // update the ultimate destinationNode of this transition

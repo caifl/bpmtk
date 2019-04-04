@@ -53,13 +53,17 @@ namespace Bpmtk.Engine.Runtime
             protected set => this.super = value;
         }
 
+        public virtual IReadOnlyCollection<Token> Tokens
+        {
+            get;
+        }
+
         public virtual Token Token
         {
             get => this.token;
             protected set => this.token = value;
         }
 
-        //protected ICollection<Token> tokens;
         protected ProcessInstance()
         { }
 
@@ -178,7 +182,17 @@ namespace Bpmtk.Engine.Runtime
                 initialNode = startEvents.FirstOrDefault();
             }
 
-            this.token = new Token(this, initialNode);
+            var store = context.GetService<IProcessInstanceStore>();
+
+            var rootToken = new Token(this, initialNode);          
+            this.token = rootToken;
+
+            store.Add(rootToken);
+
+            this.StartTime = DateTime.Now;
+            this.State = ExecutionState.Active;
+            
+            store.UpdateAsync(this).GetAwaiter().GetResult();
 
             //fire ProcessStartEvent
             this.OnStart(initialNode);
@@ -186,22 +200,34 @@ namespace Bpmtk.Engine.Runtime
 
         protected virtual void OnStart(FlowNode initialNode)
         {
-            this.StartTime = DateTime.Now;
-
             // fire the process start event
             if (initialNode != null)
             {
                 var executionContext = new ExecutionContext(this.token);
                 //processDefinition.fireEvent(Event.EVENTTYPE_PROCESS_START, executionContext);
+                var store = executionContext.Context.GetService<IProcessInstanceStore>();
+                store.Add(new HistoricToken(executionContext, "start"));
 
                 //execute the start node
                 initialNode.Execute(executionContext);
             }
         }
 
-        public virtual void End()
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="isImplicit">indicates end from endEvent</param>
+        ///// <param name="endReason"></param>
+        public virtual void End(bool isImplicit = false, 
+            string endReason = null)
         {
             var rootToken = this.token;
+            if(isImplicit)
+            {
+                var activeTokens = rootToken.GetActiveTokens();
+                if (activeTokens.Count > 0)
+                    return;
+            }
 
             //Clear
             this.token = null;

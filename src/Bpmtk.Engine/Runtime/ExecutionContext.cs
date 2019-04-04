@@ -10,7 +10,7 @@ namespace Bpmtk.Engine.Runtime
 {
     public class ExecutionContext
     {
-        private readonly Token token;
+        private Token token;
         private FlowNode transitionSource;
         private SequenceFlow transition;
 
@@ -31,14 +31,20 @@ namespace Bpmtk.Engine.Runtime
             get;
         }
 
+        public virtual void ReplaceToken(Token token)
+        {
+            var node = this.token.Node;
+            this.token = token;
+            this.token.Node = node;
+        }
+
         public virtual SequenceFlow Transition { get => transition; set => transition = value; }
 
         public virtual FlowNode TransitionSource { get => transitionSource; set => transitionSource = value; }
 
         public virtual void LeaveNode(string outgoing = null)
         {
-            //var transition = this.token.Activity.GetOutgoingById(outgoing);
-            this.Node.Leave(this, outgoing);
+            this.Node.Leave(this);
         }
 
         public virtual object GetVariable(string name)

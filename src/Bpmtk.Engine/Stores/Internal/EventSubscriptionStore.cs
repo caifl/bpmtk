@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using Bpmtk.Engine.Events;
 using NHibernate;
 
@@ -33,6 +33,13 @@ namespace Bpmtk.Engine.Stores.Internal
         public EventSubscription Find(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual EventSubscription FindByName(string eventName, string eventType)
+        {
+            return this.Session.Query<EventSubscription>()
+                .Where(x => x.EventName == eventName && x.EventType == eventType)
+                .SingleOrDefault();
         }
 
         public IEnumerable<EventSubscription> GetEventSubscriptionsByProcess(int processDefinitionId)

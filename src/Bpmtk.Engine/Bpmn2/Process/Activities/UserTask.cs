@@ -83,10 +83,12 @@ namespace Bpmtk.Engine.Bpmn2
 
         public override void Execute(ExecutionContext executionContext)
         {
-            var context = executionContext.Context;
-            var builder = context.GetService<ITaskInstanceBuilder>();
-            builder.SetUserTask(this)
-                .Build(executionContext);
+            //var context = executionContext.Context;
+            //var builder = context.GetService<ITaskInstanceBuilder>();
+            //builder.SetUserTask(this)
+            //    .Build(executionContext);
+
+            base.Leave(executionContext);
         }
 
         public override void Signal(ExecutionContext executionContext, 
