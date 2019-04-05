@@ -64,6 +64,12 @@ namespace Bpmtk.Engine.Tests
             }
         }
 
+        protected virtual void AssertProcessInstanceEnd(long id)
+        {
+            var pi = this.runtimeService.FindProcessInstanceById(id);
+            Assert.True(pi.State == Runtime.ExecutionState.Completed);
+        }
+
         [Fact]
         public abstract void Execute();
 

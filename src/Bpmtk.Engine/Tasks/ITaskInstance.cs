@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bpmtk.Engine.Tasks
 {
@@ -10,5 +8,49 @@ namespace Bpmtk.Engine.Tasks
         {
             get;
         }
+
+        long? ProcessInstanceId
+        {
+            get;
+        }
+
+        TaskState State
+        {
+            get;
+        }
+
+        DateTime LastStateTime
+        {
+            get;
+        }
+
+        string Name
+        {
+            get;
+            set;
+        }
+
+        short Priority
+        {
+            get;
+            set;
+        }
+
+        int? AssigneeId
+        {
+            get;
+            set;
+        }
+
+        DateTime Created
+        {
+            get;
+        }
+
+        string Description
+        {
+            get;
+            set;
+        } 
     }
 }

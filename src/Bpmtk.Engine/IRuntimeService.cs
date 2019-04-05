@@ -10,7 +10,7 @@ namespace Bpmtk.Engine
     {
         IProcessInstanceQuery CreateProcessInstanceQuery();
 
-        Task<IProcessInstance> FindProcessInstanceByIdAsync(long id);
+        IProcessInstance FindProcessInstanceById(long id);
 
         Task SetProcessInstanceNameAsync(long id, string name);
 

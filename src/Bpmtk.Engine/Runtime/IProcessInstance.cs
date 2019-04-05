@@ -14,6 +14,9 @@ namespace Bpmtk.Engine.Runtime
             get;
         }
 
-
+        ExecutionState State
+        {
+            get;
+        }
     }
 }

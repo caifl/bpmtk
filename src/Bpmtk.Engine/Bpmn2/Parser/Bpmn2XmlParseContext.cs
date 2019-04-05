@@ -167,87 +167,21 @@ namespace Bpmtk.Engine.Bpmn2.Parser
                 if(this.sourceRefs.TryGetValue(id, out flows))
                 {
                     foreach (var sf in flows)
-                        flowNode.Outgoings.Add(sf);
+                    {
+                        if(!flowNode.Outgoings.Contains(sf))
+                            flowNode.Outgoings.Add(sf);
+                    }
                 }
 
                 if (this.targetRefs.TryGetValue(id, out flows))
                 {
                     foreach (var sf in flows)
-                        flowNode.Incomings.Add(sf);
+                    {
+                        if (!flowNode.Incomings.Contains(sf))
+                            flowNode.Incomings.Add(sf);
+                    }
                 }
             }
-
-            //fix incomings, outgoings of flowNode.
-            //var el = this.flowElements.GetEnumerator();
-            //while(el.MoveNext())
-            //{
-            //    var flowElement = el.Current.Value;
-            //    if(flowElement is StartEvent)
-            //    {
-            //        var startEvent = flowElement as StartEvent;
-            //        if (startEvent.Outgoings.Count > 0)
-            //            continue;
-
-            //        var values = this.flowElements.Values.OfType<SequenceFlow>()
-            //            .Where(x => startEvent.Equals(x.SourceRef)).ToArray();
-            //        if(values.Length > 0)
-            //        {
-            //            foreach (var item in values)
-            //                startEvent.Outgoings.Add(item);
-            //        }
-
-            //        continue;
-            //    }
-
-            //    if (flowElement is EndEvent)
-            //    {
-            //        var endEvent = flowElement as EndEvent;
-            //        if (endEvent.Incomings.Count > 0)
-            //            continue;
-
-            //        var values = this.flowElements.Values.OfType<SequenceFlow>()
-            //            .Where(x => endEvent.Equals(x.TargetRef)).ToArray();
-            //        if (values.Length > 0)
-            //        {
-            //            foreach (var item in values)
-            //                endEvent.Incomings.Add(item);
-            //        }
-
-            //        continue;
-            //    }
-
-            //    if (flowElement is FlowNode)
-            //    {
-            //        var flowNode = flowElement as FlowNode;
-            //        if (flowNode.Incomings.Count == 0)
-            //        {
-            //            var values = this.flowElements.Values.OfType<SequenceFlow>()
-            //                .Where(x => flowNode.Equals(x.TargetRef)).ToArray();
-            //            if (values.Length > 0)
-            //            {
-            //                foreach (var item in values)
-            //                    flowNode.Incomings.Add(item);
-            //            }
-            //        }
-
-            //        if (flowNode.Outgoings.Count == 0)
-            //        {
-            //            var values = this.flowElements.Values.OfType<SequenceFlow>()
-            //                .Where(x => flowNode.Equals(x.SourceRef)).ToArray();
-            //            if (values.Length > 0)
-            //            {
-            //                foreach (var item in values)
-            //                    flowNode.Outgoings.Add(item);
-            //            }
-            //        }
-
-            //    }
-            //}
-            //var processes = this.Definitions.RootElements.OfType<Process>();
-            //foreach(var process in processes)
-            //{
-            //    process.
-            //}
         }
 
         public void AddSourceRef(string sourceRef, SequenceFlow sequenceFlow)

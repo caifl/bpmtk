@@ -5,6 +5,8 @@ using Bpmtk.Engine.Repository;
 using Bpmtk.Engine.Repository.Internal;
 using Bpmtk.Engine.Stores;
 using Bpmtk.Engine.Stores.Internal;
+using Bpmtk.Engine.Tasks;
+using Bpmtk.Engine.Tasks.Internal;
 using Bpmtk.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -48,6 +50,7 @@ namespace Bpmtk.Engine
         {
             //add core services.
             this.services.AddTransient<IDeploymentManager, DeploymentManager>();
+            this.services.AddTransient<IHumanTaskHandler, HumanTaskHandler>();
             //this.services.AddTransient<IRuntimeService, ExecutionService>();
         }
 

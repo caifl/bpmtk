@@ -15,6 +15,17 @@ namespace Bpmtk.Engine.Internal
             this.tasks = tasks;
         }
 
+        public void Complete(long id, IDictionary<string, object> variables = null)
+        {
+            var task = this.tasks.Find(id);
+            if (task == null)
+                throw new Exception("Task not found.");
+
+            task.Complete(variables);
+        }
+
+        public ITaskQuery CreateQuery() => this.tasks.CreateQuery();
+
         public virtual ITaskInstance Find(long id)
         {
             return this.tasks.Find(id);

@@ -60,6 +60,8 @@ namespace Bpmtk.Engine.Runtime
         {
             if (this.parent != null)
                 this.parent.children.Remove(this);
+            else
+                throw new Exception("Can't delete root-token.");
         }
 
         /// <summary>
@@ -328,7 +330,7 @@ namespace Bpmtk.Engine.Runtime
             //    throw new JbpmException(node + " has no default transition");
             //}
 
-            //this.Signal(defaultTransition, new ExecutionContext(this));
+            this.node.Signal(new ExecutionContext(this), null, null);
         }
 
         public virtual void Signal(string signalName, object signalData)

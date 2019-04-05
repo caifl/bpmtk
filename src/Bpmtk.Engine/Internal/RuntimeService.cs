@@ -47,28 +47,16 @@ namespace Bpmtk.Engine.Internal
 
             var context = Context.Current;
             pi.Start(context);
-            //var re = Context.GetService<IDeploymentRepository>();
-            //var exe = Context.GetService<IExecutionRepository>();
 
-            //var processDefinition = re.GetProcessDefintionByKey(processDefinitionKey);
-
-            //var pi = new ProcessInstance(processDefinition);
-            //pi.Name = "ffff";
-            //exe.Add(pi);
-
-            //pi.SetVariables();
-
-            //pi.Start();
-
-            return null;
+            return pi;
         }
 
         IProcessInstance IRuntimeService.StartProcessInstanceByKey(string processDefinitionKey, IDictionary<string, object> variables)
             => this.StartProcessByKey(processDefinitionKey, variables);
 
-        public Task<IProcessInstance> FindProcessInstanceByIdAsync(long id)
+        public virtual IProcessInstance FindProcessInstanceById(long id)
         {
-            throw new NotImplementedException();
+            return this.executions.Find(id);
         }
 
         public virtual Task<IEnumerable<IdentityLink>> GetIdentityLinksAsync(long id)

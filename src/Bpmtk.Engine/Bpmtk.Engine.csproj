@@ -98,8 +98,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Tasks\Internal\" />
-  </ItemGroup>
-
 </Project>

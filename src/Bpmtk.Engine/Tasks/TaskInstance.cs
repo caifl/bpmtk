@@ -3,18 +3,49 @@ using System.Collections.Generic;
 using System.Text;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Stores;
+using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Tasks
 {
     public class TaskInstance : ITaskInstance
     {
         protected ProcessInstance processInstance;
-        protected Token token;
+        //protected Token token;
         protected ActivityInstance activityInstance;
         protected bool isSuspended;
-        
+
+        protected TaskInstance()
+        { }
+
+        public TaskInstance(Token token)
+        {
+            this.Token = token;
+            this.processInstance = token.ProcessInstance;
+            this.Created = Clock.Now;
+            this.State = TaskState.Active;
+            this.ActivityId = token.ActivityId;
+            this.LastStateTime = this.Created;
+
+            this.ProcessInstanceId = this.processInstance?.Id;
+        }
 
         public virtual long Id
+        {
+            get;
+            protected set;
+        }
+
+        public virtual ProcessInstance ProcessInstance
+        {
+            get => this.processInstance;
+            protected set
+            {
+                this.processInstance = value;
+            }
+        }
+
+        public virtual long? ProcessInstanceId
         {
             get;
             protected set;
@@ -26,7 +57,13 @@ namespace Bpmtk.Engine.Tasks
             protected set;
         }
 
-        public virtual long? TokenId
+        public virtual DateTime LastStateTime
+        {
+            get;
+            protected set;
+        }
+
+        public virtual Token Token
         {
             get;
             protected set;
@@ -38,10 +75,34 @@ namespace Bpmtk.Engine.Tasks
             set;
         }
 
+        public virtual short Priority
+        {
+            get;
+            set;
+        }
+
         public virtual string ActivityId
         {
             get;
             protected set;
+        }
+
+        public virtual DateTime Created
+        {
+            get;
+            protected set;
+        }
+
+        public virtual DateTime? ClaimedTime
+        {
+            get;
+            protected set;
+        }
+
+        public virtual int? AssigneeId
+        {
+            get;
+            set;
         }
 
         public virtual User Assignee
@@ -50,22 +111,41 @@ namespace Bpmtk.Engine.Tasks
             protected set;
         }
 
+        public virtual string Description
+        {
+            get;
+            set;
+        }
+
         public virtual void Resume()
         {
             this.isSuspended = false;
-            this.token.Resume();
+            this.Token.Resume();
         }
 
         public virtual void Suspend()
         {
             this.isSuspended = true;
-            this.token.Suspend();
+            this.Token.Suspend();
         }
 
-        public virtual void Complete()
+        public virtual void Complete(IDictionary<string, object> variables = null)
         {
-            if (this.token != null)
-                this.token.Signal();
+            if (this.State != TaskState.Active)
+                throw new InvalidOperationException("Invalid state transition.");
+
+            var theToken = this.Token;
+
+            this.State = TaskState.Completed;
+            this.LastStateTime = Clock.Now;
+            this.Token = null; //Clear token
+
+            var context = Context.Current;
+            var store = context.GetService<ITaskStore>();
+            store.Update(this);
+
+            if (theToken != null)
+                theToken.Signal();
         }
     }
 

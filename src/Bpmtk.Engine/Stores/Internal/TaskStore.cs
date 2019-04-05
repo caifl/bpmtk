@@ -15,15 +15,28 @@ namespace Bpmtk.Engine.Stores.Internal
             this.session = session;
         }
 
+        public void Add(TaskInstance taskInstance)
+        {
+            this.session.Save(taskInstance);
+        }
+
+        public void Update(TaskInstance taskInstance)
+        {
+            this.session.Update(taskInstance);
+        }
+
         public TaskInstance Find(long id)
             => this.session.Get<TaskInstance>(id);
 
         public virtual int GetActiveTaskCount(long tokenId)
         {
             return this.session.Query<TaskInstance>()
-                .Where(x => x.TokenId == tokenId
+                .Where(x => x.Token.Id == tokenId
                     && x.State == TaskState.Active)
                 .Count();
         }
+
+        public virtual ITaskQuery CreateQuery()
+            => new TaskQuery(this.session);
     }
 }

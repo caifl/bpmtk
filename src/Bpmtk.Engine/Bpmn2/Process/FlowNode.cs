@@ -93,6 +93,8 @@ namespace Bpmtk.Engine.Bpmn2
             throw new NotSupportedException("The activity does not support signal event.");
         }
 
+        //public virtual void Leave(ExecutionContext executionContext, bool ignoreConditions)
+
         public virtual void Leave(ExecutionContext executionContext)
         {
             Token token = executionContext.Token;

@@ -36,6 +36,9 @@ namespace Bpmtk.Engine.Runtime
             var node = this.token.Node;
             this.token = token;
             this.token.Node = node;
+
+            //re-activate.
+            this.token.Activate();
         }
 
         public virtual SequenceFlow Transition { get => transition; set => transition = value; }

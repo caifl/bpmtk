@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bpmtk.Engine.Tasks;
 
 namespace Bpmtk.Engine
@@ -7,6 +8,8 @@ namespace Bpmtk.Engine
     {
         ITaskInstance Find(long id);
 
+        ITaskQuery CreateQuery();
 
+        void Complete(long id, IDictionary<string, object> variables = null);
     }
 }

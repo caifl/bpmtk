@@ -18,24 +18,77 @@ namespace Bpmtk.Engine.Bpmn2
             var token = executionContext.Token;
             token.Inactivate();
 
-            var inactiveTokens = token.GetRoot().GetInactiveTokensAt(token.Node);
+            var rootToken = token.GetRoot();
+            var inactiveTokens = rootToken.GetInactiveTokensAt(token.Node);
             if(inactiveTokens.Count >= this.incomings.Count)
             {
                 //create activity-instance
+
+                //保留当前token.
                 inactiveTokens.Remove(token);
 
-                if(inactiveTokens.Count > 0)
+                //保留rootToken.
+                inactiveTokens.Remove(rootToken);
+
+                //var parents = new List<Token>();
+
+                //删除其他完成的分支
+                Token current = null;
+                foreach (var pToken in inactiveTokens)
                 {
-                    foreach (var pToken in inactiveTokens)
-                        pToken.Remove();
+                    current = pToken;
+                    current.Remove();
+
+                    //往上遍历
+                    current = current.Parent;
+                    while (current.Parent != null
+                        && current.Parent.Children.Count == 1)
+                    {
+                        current.Remove();
+                        current = current.Parent;
+                    }
+                    //while(current != null)
+                    //{
+                    //    current.Remove();
+
+                    //    current = current.Parent;
+                    //    if (current == null
+                    //        || current.Equals(rootToken)
+                    //        || current.Children.Count > 0)
+                    //    {
+                    //        break;
+                    //    }
+                    //}
                 }
 
-                var parent = token.Parent;
-                if(parent != null && !parent.IsActive && parent.Children.Count() == 1)
+                var parentToken = token.Parent;
+
+                //尝试删除当前分支
+                current = token;
+                while (current.Parent != null
+                    && current.Parent.Children.Count == 1)
                 {
-                    token.Remove();
-                    executionContext.ReplaceToken(parent);
+                    current.Remove();
+                    current = current.Parent;
                 }
+
+                if (!current.Equals(token))
+                    executionContext.ReplaceToken(current);
+
+                ////create activity-instance
+                //inactiveTokens.Remove(token);
+
+                //if(inactiveTokens.Count > 0)
+                //{
+                    
+                //}
+
+                //var parent = token.Parent;
+                //if(parent != null && !parent.IsActive && parent.Children.Count == 1)
+                //{
+                //    token.Remove();
+                //    executionContext.ReplaceToken(parent);
+                //}
 
                 base.Execute(executionContext);
             }
@@ -55,25 +108,12 @@ namespace Bpmtk.Engine.Bpmn2
 
             //fork.
             var token = executionContext.Token;
+            token.Inactivate();
+
             var list = new List<ParallelTransition>();
-
-            var concurrentRoot = token.Parent != null ? token.Parent : token;
-            var index = 0;
-            if (!token.Equals(concurrentRoot))
+            foreach(var outgoing in this.outgoings)
             {
-                list.Add(new ParallelTransition(token, this.outgoings[0]));
-                index = 1;
-            }
-            else
-            {
-                token.Inactivate();
-            }
-
-            for(var i = index; i < this.outgoings.Count; i ++)
-            {
-                var outgoing = this.outgoings[index];
-
-                var childToken = concurrentRoot.CreateToken();
+                var childToken = token.CreateToken();
                 childToken.Node = this;
                 list.Add(new ParallelTransition(childToken, outgoing));
             }
