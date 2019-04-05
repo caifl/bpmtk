@@ -58,7 +58,7 @@ namespace Bpmtk.Engine.Bpmn2
 
             //    // fire the transition event (if any)
             //    fireEvent(Event.EVENTTYPE_TRANSITION, executionContext);
-            var store = executionContext.Context.GetService<IProcessInstanceStore>();
+            var store = executionContext.Context.GetService<IInstanceStore>();
             store.Add(new HistoricToken(executionContext, "transition"));
             //    // fire enter events for superstates (if any)
             //    Node destination = fireSuperStateEnterEvents(executionContext);

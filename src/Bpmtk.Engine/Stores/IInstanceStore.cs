@@ -5,11 +5,13 @@ using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Stores
 {
-    public interface IProcessInstanceStore
+    public interface IInstanceStore
     {
         ProcessInstance Find(long id);
 
         void Add(ProcessInstance processInstance);
+
+        void Add(ActivityInstance activityInstance);
 
         Task SaveAsync(ProcessInstance processInstance);
 

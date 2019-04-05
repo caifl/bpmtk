@@ -3,30 +3,43 @@ using System.Linq;
 using System.Collections.Generic;
 using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Stores;
-using System.Collections.ObjectModel;
+using Bpmtk.Engine.Repository;
 
 namespace Bpmtk.Engine.Runtime
 {
     public class Token
     {
-        private Token parent;
-        private ProcessInstance processInstance;
-        private ActivityInstance activityInstance;
+        private bool isInitialized;
         private FlowNode node;
         private ICollection<Token> children;
 
         protected Token()
-        {}
+        {
+            isInitialized = false;
+        }
 
         protected Token(Token parent)
         {
             if (parent == null)
                 throw new ArgumentNullException(nameof(parent));
 
-            this.parent = parent;
+            this.isInitialized = true;
+            this.Parent = parent;
             this.children = new List<Token>();
-            this.processInstance = parent.ProcessInstance;
+            this.ProcessInstance = parent.ProcessInstance;
             this.IsActive = true;
+        }
+
+        public Token(ProcessInstance processInstance, FlowNode initialNode)
+        {
+            this.children = new List<Token>();
+            this.ProcessInstance = processInstance ?? throw new ArgumentNullException(nameof(processInstance));
+            this.node = initialNode ?? throw new ArgumentNullException(nameof(initialNode));
+            this.IsActive = true;
+            this.IsMIRoot = false;
+            this.IsSuspended = false;
+
+            this.OnNodeChanged();
         }
 
         public virtual long Id
@@ -43,7 +56,8 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual Token Parent
         {
-            get => this.parent;
+            get;
+            protected set;
         }
 
         public virtual void Activate()
@@ -58,8 +72,8 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual void Remove()
         {
-            if (this.parent != null)
-                this.parent.children.Remove(this);
+            if (this.Parent != null)
+                this.Parent.children.Remove(this);
             else
                 throw new Exception("Can't delete root-token.");
         }
@@ -68,7 +82,7 @@ namespace Bpmtk.Engine.Runtime
         /// Gets the root-token.
         /// </summary>
         public virtual Token GetRoot()
-            => this.processInstance.Token;
+            => this.ProcessInstance.Token;
 
         protected void CollectInactiveTokensAt(FlowNode node, IList<Token> tokens)
         {
@@ -98,23 +112,9 @@ namespace Bpmtk.Engine.Runtime
             return list;
         }
 
-        public virtual IList<Token> Children
+        public virtual IReadOnlyList<Token> Children
         {
-            get => new List<Token>(this.children);
-        }
-
-        public Token(ProcessInstance processInstance, FlowNode initialNode)
-        {
-            this.children = new List<Token>();
-            this.processInstance = processInstance ?? throw new ArgumentNullException(nameof(processInstance));
-            this.node = initialNode ?? throw new ArgumentNullException(nameof(initialNode));
-            this.IsActive = true;
-            this.IsLoopActivity = false;
-            this.IsSuspended = false;
-
-            this.OnNodeChanged();
-
-            //this.ActivateActivity();
+            get => this.children.ToList();
         }
 
         protected virtual void OnNodeChanged()
@@ -122,14 +122,31 @@ namespace Bpmtk.Engine.Runtime
             this.ActivityId = this.node?.Id;
         }
 
-        protected virtual void ActivateActivity()
+        protected virtual void EnsureInitialized()
         {
-            this.activityInstance = new ActivityInstance(this);
+            if (!this.isInitialized)
+            {
+                if (this.node == null && this.ActivityId != null)
+                {
+                    var procDef = this.ProcessInstance.ProcessDefinition;
+                    var deploymentId = procDef.DeploymentId;
+                    var dm = Context.Current.GetService<IDeploymentManager>();
+                    var model = dm.GetBpmnModel(deploymentId);
+                    this.node = model?.GetFlowElement(this.ActivityId) as FlowNode;
+                }
+
+                this.isInitialized = true;
+            }
         }
 
         public virtual FlowNode Node
         {
-            get => this.node;
+            get
+            {
+                this.EnsureInitialized();
+
+                return this.node;
+            }
             set
             {
                 this.node = value;
@@ -145,138 +162,54 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual ActivityInstance ActivityInstance
         {
-            get => this.activityInstance;
+            get;
+            set;
         }
 
-        public virtual ProcessInstance ProcessInstance { get => processInstance; }
+        /// <summary>
+        /// Gets or sets SubProcess activity-instance.
+        /// </summary>
+        public virtual ActivityInstance Scope
+        {
+            get;
+            set;
+        }
+
+        public virtual ProcessInstance ProcessInstance
+        {
+            get;
+            protected set;
+        }
 
         public virtual Token CreateToken()
         {
             var token = new Token(this);
             this.children.Add(token);
 
-            var store = Context.Current.GetService<IProcessInstanceStore>();
+            var store = Context.Current.GetService<IInstanceStore>();
             store.Add(token);
 
             return token;
         }
 
-        //protected virtual void ExecuteLoopActivity(StandardLoopCharacteristics loopCharacteristics)
-        //{
-
-        //}
-
-        //protected virtual void ExecuteMultiInstanceActivity(MultiInstanceLoopCharacteristics loopCharacteristics)
-        //{
-
-        //}
-
-        //protected virtual void ExecuteSubProcess()
-        //{
-
-        //}
-
-        protected IList<Token> GetJoinedTokens()
+        public virtual Token ResolveScope()
         {
-            return null;
+            if (this.Scope == null)
+                return this.ProcessInstance.Token;
+
+            var activityInstanceId = this.Scope.Id;
+            var p = this.Parent;
+            while(p != null && p.ActivityInstance != null)
+            {
+                if(activityInstanceId == p.ActivityInstance.Id)
+                    return p;
+
+                p = p.Parent;
+            }
+
+            return this.ProcessInstance.Token;
         }
 
-        //protected virtual bool ExecuteParallelGateway()
-        //{
-        //    this.isActive = false;
-
-        //    var joinedTokens = this.GetJoinedTokens();
-        //    if(joinedTokens.Count >= this.activiy.Incomings.Count)
-        //    {
-        //        //Continue ..
-        //        var act = joinedTokens.Where(x => x.activityInstance != null)
-        //            .Select(x => x.activityInstance)
-        //            .FirstOrDefault();
-
-        //        if (act == null)
-        //            act = new ActivityInstance();
-
-        //        this.ActivateNode();
-
-        //        //Fork
-        //        var list = new List<Token>();
-
-        //        foreach (var outgoing in this.activiy.Outgoings)
-        //            list.Add(this.CreateToken());
-
-        //        foreach (var t in list)
-        //            t.Take(null);
-
-        //        return true;
-        //    }
-        //    else
-        //    {
-        //        //Waiting tokens.
-        //        return false;
-        //    }
-        //}
-
-        //protected virtual void Take(SequenceFlow transition)
-        //{
-
-        //}
-
-        //public virtual Token CreateToken()
-        //{
-        //    return null;
-        //}
-
-        //protected virtual void ActivateNode()
-        //{
-        //    this.activityInstance.Activate();
-        //}
-
-        //public virtual void EnterNode(FlowNode node)
-        //{
-        //    this.activiy = node;
-        //    //this.isActive = true;
-
-        //    if (node is ParallelGateway)
-        //    {
-        //        this.ExecuteParallelGateway();
-        //        return;
-        //    }
-
-        //    if (node is Activity && ((Activity)node).LoopCharacteristics != null)
-        //    {
-        //        var activity = node as Activity;
-        //        var loopCharacteristics = activity.LoopCharacteristics;
-        //        this.isLoopActivity = true;
-
-        //        if (loopCharacteristics is MultiInstanceLoopCharacteristics)
-        //        {
-        //            var multiInstance = loopCharacteristics as MultiInstanceLoopCharacteristics;
-        //            this.ExecuteMultiInstanceActivity(multiInstance);
-        //        }
-        //        else
-        //        {
-        //            var loop = loopCharacteristics as StandardLoopCharacteristics;
-        //            this.ExecuteLoopActivity(loop);
-        //        }
-
-        //        return;
-        //    }
-
-        //    if(node is SubProcess)
-        //    {
-        //        this.ExecuteSubProcess();
-        //        return;
-        //    }
-
-        //    if(node is ScriptTask)
-        //    {
-        //        this.ExecuteScriptTask();
-        //        return;
-        //    }
-
-        //    var context = new ExecutionContext(this);
-            
-        //}
         public virtual IList<Token> GetActiveTokens()
         {
             var list = new List<Token>();
@@ -288,14 +221,18 @@ namespace Bpmtk.Engine.Runtime
         public virtual void End(bool isImplicit = false,
             string endReason = null)
         {
+            //complete act-inst.
+            if (this.ActivityInstance != null)
+                this.ActivityInstance.Finish();
+
             this.Inactivate();
 
-            var store = Context.Current.GetService<IProcessInstanceStore>();
+            var store = Context.Current.GetService<IInstanceStore>();
             store.Add(new HistoricToken(new ExecutionContext(this), "end"));
 
-            if (this.parent != null)
+            if (this.Parent != null)
             {
-                var parentToken = this.parent;
+                var parentToken = this.Parent;
 
                 //判断是否在子流程中
                 var container = this.node.Container;
@@ -313,7 +250,7 @@ namespace Bpmtk.Engine.Runtime
             }
 
             //结束流程实例
-            this.processInstance.End(isImplicit, endReason);
+            this.ProcessInstance.End(isImplicit, endReason);
         }
 
         /// <summary>
@@ -346,7 +283,7 @@ namespace Bpmtk.Engine.Runtime
             protected set;
         }
 
-        public virtual bool IsLoopActivity
+        public virtual bool IsMIRoot
         {
             get;
             protected set;

@@ -82,7 +82,7 @@ namespace Bpmtk.Engine.Runtime
 
     public enum ExecutionState : int
     {
-        Inactive = 0,
+        Ready = 0,
 
         Active = 1,
 

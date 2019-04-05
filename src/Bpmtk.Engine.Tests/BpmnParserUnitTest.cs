@@ -13,8 +13,8 @@ namespace Bpmtk.Engine.Tests
         public void ParseSequentialFlow()
         {
             var stream = this.GetType().Assembly.GetManifestResourceStream("Bpmtk.Engine.Bpmn2.Tests.Resources.sequential_flow.bpmn.xml");
-            var parser = Bpmn2XmlParser.Create();
-            var definitions = parser.Parse(stream);
+            var parser = BpmnParser.Create();
+            var definitions = parser.Parse(stream).Definitions;
 
             Assert.True(definitions != null);
             Assert.True(definitions.Id == "Definitions_0f2yaoj");
@@ -53,8 +53,8 @@ namespace Bpmtk.Engine.Tests
         public void ParseExclusiveGateway()
         {
             var stream = this.GetType().Assembly.GetManifestResourceStream("Bpmtk.Engine.Bpmn2.Tests.Resources.exclusive_gateway.bpmn.xml");
-            var parser = Bpmn2XmlParser.Create();
-            var definitions = parser.Parse(stream);
+            var parser = BpmnParser.Create();
+            var definitions = parser.Parse(stream).Definitions;
 
             Assert.True(definitions != null);
             Assert.True(definitions.Id == "Definitions_0f2yaoj");
@@ -101,8 +101,8 @@ namespace Bpmtk.Engine.Tests
         public void ParseSubProcess()
         {
             var stream = this.GetType().Assembly.GetManifestResourceStream("Bpmtk.Engine.Bpmn2.Tests.Resources.sub_process.bpmn.xml");
-            var parser = Bpmn2XmlParser.Create();
-            var definitions = parser.Parse(stream);
+            var parser = BpmnParser.Create();
+            var definitions = parser.Parse(stream).Definitions;
 
             Assert.True(definitions != null);
             Assert.True(definitions.Id == "Definitions_0f2yaoj");
@@ -144,8 +144,8 @@ namespace Bpmtk.Engine.Tests
         public void ParseDataAssociation()
         {
             var stream = this.GetType().Assembly.GetManifestResourceStream("Bpmtk.Engine.Bpmn2.Tests.Resources.data_association.bpmn.xml");
-            var parser = Bpmn2XmlParser.Create();
-            var definitions = parser.Parse(stream);
+            var parser = BpmnParser.Create();
+            var definitions = parser.Parse(stream).Definitions;
 
             Assert.True(definitions != null);
             Assert.True(definitions.Id == "Definitions_0f2yaoj");

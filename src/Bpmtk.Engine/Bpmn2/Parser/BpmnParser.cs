@@ -8,7 +8,7 @@ using System.Xml.Schema;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
 {
-    public class Bpmn2XmlParser
+    public class BpmnParser
     {
         protected BpmnFactory factory = new BpmnFactory();
         protected Definitions definitions;
@@ -20,7 +20,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser
                 "BPMN20.xsd", "BPMNDI.xsd", "DI.xsd", "DC.xsd", "Semantic.xsd", "Extensions.xsd"
             };
 
-        static Bpmn2XmlParser()
+        static BpmnParser()
         {
             settings = new XmlReaderSettings();
             settings.IgnoreComments = true;
@@ -31,7 +31,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser
             settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
             settings.ValidationEventHandler += Settings_ValidationEventHandler; ;
 
-            var assembly = typeof(Bpmn2XmlParser).Assembly;
+            var assembly = typeof(BpmnParser).Assembly;
             var names = assembly.GetManifestResourceNames();
 
             var schemaSet = new XmlSchemaSet();
@@ -53,27 +53,32 @@ namespace Bpmtk.Engine.Bpmn2.Parser
         {
         }
 
-        public static Bpmn2XmlParser Create()
+        public static BpmnParser Create()
         {
-            return new Bpmn2XmlParser();
+            return new BpmnParser();
         }
 
-        public virtual Definitions Parse(Stream stream)
+        public virtual BpmnParserResults Parse(Stream stream)
         {
-            var reader = XmlReader.Create(stream, settings);
+            XDocument document = null;
+            using (var reader = XmlReader.Create(stream, settings))
+            {
+                document = XDocument.Load(reader);
+            }
 
-            XDocument document = XDocument.Load(reader);
             var element = document.Root;
 
             var handler = new DefinitionsParseHandler();
 
-            var context = new Bpmn2XmlParseContext(definitions, this.factory);
+            var context = new BpmnParseContext(definitions, this.factory);
 
             this.definitions = handler.Create(null, context, element) as Definitions;
 
             context.Complete();
 
-            return definitions;
+            var flowElements = context.FlowElements;
+
+            return new BpmnParserResults(definitions, flowElements, new List<Exception>());
         }
     }
 }

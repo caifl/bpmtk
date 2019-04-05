@@ -32,7 +32,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
             tasks = query.List();
             Assert.True(2 == tasks.Count);
             Assert.True("Task A" == tasks[0].Name);
-            Assert.True("Task B" == tasks[1].Name);
+            Assert.True("Task B" == tasks[1].Name);         
 
             // Completing task A should not trigger any new tasks
             taskService.Complete(tasks[0].Id);
@@ -46,6 +46,8 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
             Assert.True(2 == tasks.Count);
             Assert.True("Task B1" == tasks[0].Name);
             Assert.True("Task B2" == tasks[1].Name);
+            //this.unitOfWork.Commit();
+
 
             // Completing B1 and B2 will activate both joins, and process reaches
             // task C

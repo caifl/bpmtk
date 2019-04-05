@@ -9,9 +9,9 @@ namespace Bpmtk.Engine.Events.Internal
 {
     class MessageStartEventHandler : IMessageStartEventHandler
     {
-        private readonly IProcessInstanceStore store;
+        private readonly IInstanceStore store;
 
-        public MessageStartEventHandler(IProcessInstanceStore store)
+        public MessageStartEventHandler(IInstanceStore store)
         {
             this.store = store;
         }

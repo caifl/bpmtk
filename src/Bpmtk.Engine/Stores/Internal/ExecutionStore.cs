@@ -7,12 +7,12 @@ using System.Collections.Generic;
 
 namespace Bpmtk.Engine.Stores.Internal
 {
-    public class ProcessInstanceStore
-        : IProcessInstanceStore
+    public class InstanceStore
+        : IInstanceStore
     {
         private readonly ISession session;
 
-        public ProcessInstanceStore(ISession session)
+        public InstanceStore(ISession session)
         {
             this.session = session;
         }
@@ -30,6 +30,11 @@ namespace Bpmtk.Engine.Stores.Internal
         public void Add(Token token)
         {
             this.session.Save(token);
+        }
+
+        public void Add(ActivityInstance activityInstance)
+        {
+            this.session.Save(activityInstance);
         }
 
         //public virtual async Task<IEnumerable<ProcessInstance>> GetAsync()
@@ -63,7 +68,7 @@ namespace Bpmtk.Engine.Stores.Internal
 
         public Task SaveAsync(ProcessInstance processInstance)
         {
-            throw new NotImplementedException();
+            return this.session.SaveAsync(processInstance);
         }
 
         public Task UpdateAsync(ProcessInstance processInstance)

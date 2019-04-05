@@ -20,7 +20,7 @@ namespace Bpmtk.Engine.Runtime
             this.TransitionId = executionContext.Transition?.Id;
             this.IsActive = token.IsActive;
             this.IsSuspended = token.IsSuspended;
-            this.IsLoopActivity = token.IsLoopActivity;
+            this.IsLoopActivity = token.IsMIRoot;
             this.Event = eventName;
             this.Created = Clock.Now;
 

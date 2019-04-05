@@ -46,11 +46,53 @@ namespace Bpmtk.Engine.Bpmn2
 
         protected virtual void OnEnter(ExecutionContext executionContext)
         {
-            var store = executionContext.Context.GetService<IProcessInstanceStore>();
+            //创建活动实例
+            //bool canActivate = true;
+            //if (joinedTokens != null)
+            //{
+            //    var token = executionContext.Token;
+
+            //    //CreateActivityInstance
+            //    if (joinedTokens.Count == 1)
+            //    {
+            //        token.ActivityInstance = new ActivityInstance();
+            //    }
+            //    else
+            //    {
+            //        //findActivityInstance
+            //        var act = joinedTokens.Where(x => x.ActivityInstance != null)
+            //            .Select(x => x.ActivityInstance)
+            //            .FirstOrDefault();
+            //        token.ActivityInstance = act;
+            //    }
+
+            //    canActivate = this.incomings.Count == joinedTokens.Count;
+            //}
+            //Create activity-instance.
+            executionContext.ActivityInstance = this.CreateActivityInstance(executionContext);
+
+            var store = executionContext.Context.GetService<IInstanceStore>();
             store.Add(new HistoricToken(executionContext, "enter"));
 
             //create activity instance
-            
+            //if (canActivate)
+            this.OnActivate(executionContext);
+        }
+
+        protected virtual ActivityInstance CreateActivityInstance(ExecutionContext executionContext)
+        {
+            return ActivityInstance.Create(executionContext);
+        }
+
+        protected virtual void OnActivate(ExecutionContext executionContext)
+        {
+            //激活活动实例
+            var act = executionContext.ActivityInstance;
+            if(act != null)
+                act.Activate();
+
+            var store = executionContext.Context.GetService<IInstanceStore>();
+            store.Add(new HistoricToken(executionContext, "activate"));
         }
 
         public virtual void Enter(ExecutionContext executionContext)
@@ -59,6 +101,7 @@ namespace Bpmtk.Engine.Bpmn2
 
             // update the runtime context information
             token.Node = this;
+            token.ActivityInstance = null;
 
             // register entrance time so that a node-log can be generated upon leaving
             //token.setNodeEnter(Clock.getCurrentTime());
@@ -136,8 +179,7 @@ namespace Bpmtk.Engine.Bpmn2
 
             // fire the leave-node event for this node
             //fireEvent(Event.EVENTTYPE_NODE_LEAVE, executionContext);
-            var store = executionContext.Context.GetService<IProcessInstanceStore>();
-            store.Add(new HistoricToken(executionContext, "leave"));
+            this.OnLeave(executionContext);
 
             // log this node
             //if (token.getNodeEnter() != null)
@@ -153,38 +195,66 @@ namespace Bpmtk.Engine.Bpmn2
             transition.Take(executionContext);
         }
 
+        protected virtual void OnLeave(ExecutionContext executionContext)
+        {
+            //activity-instance completed.
+            var act = executionContext.ActivityInstance;
+            if (act != null)
+                act.Finish();
+
+            var store = executionContext.Context.GetService<IInstanceStore>();
+            store.Add(new HistoricToken(executionContext, "leave"));
+        }
+
         protected virtual void LeaveAll(ExecutionContext executionContext)
         {
-            Token token = executionContext.Token;
-            token.Node = this;
-
-            var items = new List<Token>();
-            //var concurrentRoot = token.Parent != null ? token.Parent : token;
-
-            foreach(var outgoing in this.outgoings)
+            if (this.outgoings.Count <= 1)
             {
-                var child = token.CreateToken();
-                child.Node = this;
+                this.Leave(executionContext);
+                return;
             }
-            //executionContext.Transition = transition;
 
-            // fire the leave-node event for this node
-            //fireEvent(Event.EVENTTYPE_NODE_LEAVE, executionContext);
-            var store = executionContext.Context.GetService<IProcessInstanceStore>();
-            store.Add(new HistoricToken(executionContext, "leave"));
+            //fork.
+            var token = executionContext.Token;
+            token.Node = this;
+            token.Inactivate();
 
-            // log this node
-            //if (token.getNodeEnter() != null)
-            //{
-            //    addNodeLog(token);
-            //}
+            var list = new List<ParallelTransition>();
+            foreach (var outgoing in this.outgoings)
+            {
+                var childToken = token.CreateToken();
+                childToken.Node = this;
+                childToken.ActivityInstance = token.ActivityInstance;
+                childToken.Scope = token.Scope;
+                list.Add(new ParallelTransition(childToken, outgoing));
+            }
 
-            // update the runtime information for taking the transition
-            // the transitionSource is used to calculate events on superstates
-            executionContext.TransitionSource = this;
+            //fire leaveNode event.
+            this.OnLeave(executionContext);
 
-            // take the transition
-            //transition.Take(executionContext);
+            foreach (var transition in list)
+                transition.Take();
+        }
+
+        class ParallelTransition
+        {
+            private readonly Token token;
+            private readonly SequenceFlow transition;
+
+            public ParallelTransition(Token token, SequenceFlow transition)
+            {
+                this.token = token;
+                this.transition = transition;
+            }
+
+            public virtual void Take()
+            {
+                var executionContext = new ExecutionContext(this.token);
+                executionContext.TransitionSource = transition.SourceRef;
+                executionContext.Transition = transition;
+
+                transition.Take(executionContext);
+            }
         }
 
         #endregion

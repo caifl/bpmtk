@@ -19,23 +19,20 @@ namespace Bpmtk.Engine.Runtime
             this.token = token;
         }
 
+        public virtual ProcessInstance ProcessInstance => this.token.ProcessInstance;
+
         public virtual Token Token => this.token;
 
         public virtual FlowNode Node => this.token.Node;
 
-        /// <summary>
-        /// Gets the current task instance.
-        /// </summary>
-        public virtual TaskInstance TaskInstance
-        {
-            get;
-        }
-
         public virtual void ReplaceToken(Token token)
         {
-            var node = this.token.Node;
+            var oldToken = this.token;
+
             this.token = token;
-            this.token.Node = node;
+            this.token.Node = oldToken.Node;
+            this.token.Scope = oldToken.Scope;
+            this.token.ActivityInstance = oldToken.ActivityInstance;
 
             //re-activate.
             this.token.Activate();
@@ -44,6 +41,12 @@ namespace Bpmtk.Engine.Runtime
         public virtual SequenceFlow Transition { get => transition; set => transition = value; }
 
         public virtual FlowNode TransitionSource { get => transitionSource; set => transitionSource = value; }
+
+        public virtual ActivityInstance ActivityInstance
+        {
+            get => this.token.ActivityInstance;
+            set => this.token.ActivityInstance = value;
+        }
 
         public virtual void LeaveNode(string outgoing = null)
         {
@@ -86,16 +89,6 @@ namespace Bpmtk.Engine.Runtime
 
         }
 
-        protected virtual void OnEnterNode()
-        {
-
-        }
-
-        protected virtual void OnLeaveNode()
-        {
-
-        }
-
         public virtual IEvaluationContext CreateEvaluationContext()
         {
             return null;
@@ -104,6 +97,12 @@ namespace Bpmtk.Engine.Runtime
         public virtual IExpressionEvaluator CreateExpressionEvaluator(string language = null)
         {
             return null;
+        }
+
+        public virtual ActivityInstance Scope
+        {
+            get => this.token.Scope;
+            set => this.token.Scope = value;
         }
 
         /// <summary>

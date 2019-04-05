@@ -81,7 +81,7 @@ namespace Bpmtk.Engine.Runtime
             if (this.super != null)
                 this.callActivityInstance = super.ActivityInstance;
 
-            this.State = ExecutionState.Inactive;
+            this.State = ExecutionState.Ready;
 
             this.Name = processDefinition.Name;
             if (string.IsNullOrEmpty(this.Name))
@@ -182,7 +182,7 @@ namespace Bpmtk.Engine.Runtime
                 initialNode = startEvents.FirstOrDefault();
             }
 
-            var store = context.GetService<IProcessInstanceStore>();
+            var store = context.GetService<IInstanceStore>();
 
             var rootToken = new Token(this, initialNode);          
             this.token = rootToken;
@@ -204,8 +204,12 @@ namespace Bpmtk.Engine.Runtime
             if (initialNode != null)
             {
                 var executionContext = new ExecutionContext(this.token);
+
+                //CreateActivityInstance
+                this.token.ActivityInstance = ActivityInstance.Create(executionContext);
+
                 //processDefinition.fireEvent(Event.EVENTTYPE_PROCESS_START, executionContext);
-                var store = executionContext.Context.GetService<IProcessInstanceStore>();
+                var store = executionContext.Context.GetService<IInstanceStore>();
                 store.Add(new HistoricToken(executionContext, "start"));
 
                 //execute the start node
@@ -233,7 +237,7 @@ namespace Bpmtk.Engine.Runtime
             this.token = null;
 
             //Remove root-token.
-            var store = Context.Current.GetService<IProcessInstanceStore>();
+            var store = Context.Current.GetService<IInstanceStore>();
             store.Remove(rootToken);
 
             this.State = ExecutionState.Completed;

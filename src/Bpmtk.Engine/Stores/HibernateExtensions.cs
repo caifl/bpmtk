@@ -74,7 +74,7 @@ namespace Bpmtk.Engine
             services.AddTransient<IEventSubscriptionStore, EventSubscriptionStore>();
             services.AddTransient<IScheduledJobStore, ScheduledJobStore>();
             services.AddTransient<ITaskStore, TaskStore>();
-            services.AddTransient<IProcessInstanceStore, ProcessInstanceStore>();
+            services.AddTransient<IInstanceStore, InstanceStore>();
 
             return builder;
         }

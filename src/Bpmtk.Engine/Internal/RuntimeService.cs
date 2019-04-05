@@ -12,11 +12,11 @@ namespace Bpmtk.Engine.Internal
 {
     public class ExecutionService : IRuntimeService
     {
-        private readonly IProcessInstanceStore executions;
+        private readonly IInstanceStore executions;
         protected readonly IDeploymentStore deployments;
         private readonly IEventSubscriptionStore eventSubscriptions;
 
-        public ExecutionService(IProcessInstanceStore executions,
+        public ExecutionService(IInstanceStore executions,
             IDeploymentStore deployments,
             IEventSubscriptionStore eventSubscriptions)
         {

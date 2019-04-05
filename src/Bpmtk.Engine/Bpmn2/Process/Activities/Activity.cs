@@ -78,7 +78,7 @@ namespace Bpmtk.Engine.Bpmn2
         {
             var token = executionContext.Token;
             if (token.Parent != null &&
-                token.Parent.IsLoopActivity &&
+                token.Parent.IsMIRoot &&
                 this.LoopCharacteristics != null)
             {
                 this.LoopCharacteristics.Leave(executionContext);

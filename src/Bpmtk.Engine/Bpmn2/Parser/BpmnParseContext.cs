@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
 {
-    class Bpmn2XmlParseContext : IParseContext
+    class BpmnParseContext : IParseContext
     {
         private readonly Dictionary<string, Queue<Action<IBaseElement>>> requestQueues = new Dictionary<string, Queue<Action<IBaseElement>>>();
         private readonly Dictionary<string, FlowElement> flowElements = new Dictionary<string, FlowElement>();
@@ -13,12 +13,14 @@ namespace Bpmtk.Engine.Bpmn2.Parser
         private readonly Dictionary<string, List<SequenceFlow>> targetRefs = new Dictionary<string, List<SequenceFlow>>();
         private readonly List<FlowNode> flowNodes = new List<FlowNode>();
 
-        public Bpmn2XmlParseContext(Definitions definitions,
+        public BpmnParseContext(Definitions definitions,
             BpmnFactory bpmnFactory)
         {
             Definitions = definitions;
             BpmnFactory = bpmnFactory;
         }
+
+        public virtual IDictionary<string, FlowElement> FlowElements => this.flowElements;
 
         public virtual Definitions Definitions { get; }
 

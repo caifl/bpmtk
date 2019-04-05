@@ -11,7 +11,7 @@
     <property name="IsActive" column="is_active"/>
     <property name="IsSuspended" column="is_suspended"/>
     <property name="ActivityId" column="activity_id"/>
-    <property name="IsLoopActivity" column="is_loop_act"/>
+    <property name="IsMIRoot" column="is_mi_root"/>
     
     <set name="children" inverse="true" cascade="all-delete-orphan"
          access="field">
@@ -19,20 +19,21 @@
       <one-to-many class="Token"/>
     </set>
 
-    <many-to-one name="activityInstance"
+    <many-to-one name="ActivityInstance"
                  class="ActivityInstance"
-                 column="act_inst_id"
-                 access="field"/>
+                 column="act_inst_id"/>
 
-    <many-to-one name="processInstance"
+    <many-to-one name="Scope"
+                 class="ActivityInstance"
+                 column="scope_id"/>
+
+    <many-to-one name="ProcessInstance"
                  class="ProcessInstance"
-                 column="proc_inst_id"
-                 access="field"/>
+                 column="proc_inst_id"/>
 
-    <many-to-one name="parent"
+    <many-to-one name="Parent"
                  class="Token"
-                 column="parent_id"
-                 access="field"/>
+                 column="parent_id"/>
   </class>
   
 </hibernate-mapping>
