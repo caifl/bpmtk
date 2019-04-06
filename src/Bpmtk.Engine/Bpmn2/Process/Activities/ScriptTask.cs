@@ -27,14 +27,20 @@ namespace Bpmtk.Engine.Bpmn2
         {
             if (!string.IsNullOrEmpty(this.Script))
             {
-                var context = executionContext.Context;
-                var scriptEngineManager = context.GetService<IScriptEngineManager>();
+                var scriptingContext = new ScriptingContext(executionContext);
+                var engine = new JavascriptEngine();
 
-                var engine = scriptEngineManager.Get(this.ScriptFormat);
-                engine.Execute(this.Script);
+                var scope = engine.CreateScope(scriptingContext);
+                engine.Execute(this.Script, scope);
+                //var context = executionContext.Context;
+                //var scriptEngineManager = context.GetService<IScriptEngineManager>();
+
+                //var engine = scriptEngineManager.Get(this.ScriptFormat);
+                //engine.Execute(this.Script);
             }
 
             base.Execute(executionContext);
         }
+
     }
 }

@@ -7,6 +7,7 @@ using Bpmtk.Engine.Stores;
 using Bpmtk.Engine.Repository;
 using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Events;
+using Bpmtk.Engine.Events.Internal;
 
 namespace Bpmtk.Engine.Internal
 {
@@ -44,6 +45,15 @@ namespace Bpmtk.Engine.Internal
 
             var pi = new ProcessInstance(processDefinition);
             pi.InitializeContext(Context.Current);
+            
+            if(variables != null && variables.Count > 0)
+            {
+                var em = variables.GetEnumerator();
+                while(em.MoveNext())
+                {
+                    pi.SetVariable(em.Current.Key, em.Current.Value);
+                }
+            }
 
             this.executions.Add(pi);
 
@@ -108,7 +118,9 @@ namespace Bpmtk.Engine.Internal
             if(eventSubscr.ProcessDefinition != null
                 && eventSubscr.ActivityId != null)
             {
-                IMessageStartEventHandler handler = null;
+                var store = Context.Current.GetService<IInstanceStore>();
+                IMessageStartEventHandler handler = new MessageStartEventHandler(store);
+
                 var task = handler.Execute(eventSubscr, messageData);
 
                 return task.Result;

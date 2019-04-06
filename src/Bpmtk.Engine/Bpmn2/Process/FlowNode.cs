@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Bpmtk.Engine.Bpmn2.Extensions;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Scripting;
 using Bpmtk.Engine.Stores;
+using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Bpmn2
 {
@@ -154,14 +156,15 @@ namespace Bpmtk.Engine.Bpmn2
                 transition = this.outgoings[0];
             else
             {
-                foreach(var outgoing in this.outgoings)
+                foreach (var outgoing in this.outgoings)
                 {
-                    var enabled = outgoing.ConditionExpression.GetValue<bool>(executionContext.CreateEvaluationContext());
-                    if(enabled)
-                    {
-                        transition = outgoing;
-                        break;
-                    }
+                    var condition = outgoing.ConditionExpression;
+                    if (condition == null || string.IsNullOrEmpty(condition.Text)
+                        || !this.Evalute(condition.Text, executionContext))
+                        continue;
+
+                    transition = outgoing;
+                    break;
                 }
 
                 if(transition == null)
@@ -169,6 +172,10 @@ namespace Bpmtk.Engine.Bpmn2
                     if(this is Activity)
                     {
                         transition = ((Activity)this).Default;
+                    }
+                    else if(this is ExclusiveGateway)
+                    {
+                        transition = ((ExclusiveGateway)this).Default;
                     }
                 }
             }
@@ -195,6 +202,20 @@ namespace Bpmtk.Engine.Bpmn2
 
             // take the transition
             transition.Take(executionContext);
+        }
+
+        protected bool Evalute(string condition, ExecutionContext executionContext)
+        {
+            //extract expression.
+            condition = StringHelper.ExtractExpression(condition);
+            var engine = new JavascriptEngine();
+            var scope = engine.CreateScope(new ScriptingContext(executionContext));
+
+            var result = engine.Execute(condition, scope);
+            if (result != null && Convert.ToBoolean(result))
+                return true;
+
+            return false;
         }
 
         protected virtual void OnLeave(ExecutionContext executionContext)

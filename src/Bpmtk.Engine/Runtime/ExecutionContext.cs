@@ -61,24 +61,34 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual object GetVariable(string name)
         {
-            VariableInstance varInst = null;
+            ExecutionObject execution = this.ActivityInstance;
+            if (execution != null)
+                return execution.GetVariable(name);
 
-            var t = this.token;
-            while (true)
-            {
-                varInst = t.ActivityInstance.GetVariableInstance(name);
-                if (varInst != null)
-                    break;
+            execution = this.Scope;
+            if (execution != null)
+                return execution.GetVariable(name);
 
-                t = t.Parent;
-                if (t == null)
-                    break;
-            }
+            return this.ProcessInstance.GetVariable(name);
 
-            var p = token.ProcessInstance;
-            varInst = p.GetVariableInstance(name);
+            //VariableInstance varInst = null;
 
-            return varInst?.GetValue();
+            //var t = this.token;
+            //while (true)
+            //{
+            //    varInst = t.ActivityInstance.GetVariableInstance(name);
+            //    if (varInst != null)
+            //        break;
+
+            //    t = t.Parent;
+            //    if (t == null)
+            //        break;
+            //}
+
+            //var p = token.ProcessInstance;
+            //varInst = p.GetVariableInstance(name);
+
+            //return varInst?.GetValue();
         }
 
         public virtual TValue GetVariable<TValue>(string name)
@@ -92,7 +102,21 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual void SetVariable(string name, object value)
         {
+            ExecutionObject execution = this.ActivityInstance;
+            if (execution != null)
+            {
+                execution.SetVariable(name, value);
+                return;
+            }
 
+            execution = this.Scope;
+            if (execution != null)
+            {
+                execution.SetVariable(name, value);
+                return;
+            }
+
+            this.ProcessInstance.SetVariable(name, value);
         }
 
         public virtual IEvaluationContext CreateEvaluationContext()

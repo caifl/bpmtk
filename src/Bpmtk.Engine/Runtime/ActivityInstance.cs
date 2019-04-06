@@ -132,6 +132,24 @@ namespace Bpmtk.Engine.Runtime
             return false;
         }
 
+        public override void SetVariable(string name, object value)
+        {
+            ActivityVariable variable = null;
+            if (this.variables.TryGetValue(name, out variable))
+            {
+                variable.SetValue(value);
+                return;
+            }
+
+            if (this.Parent != null)
+            {
+                this.Parent.SetVariable(name, value);
+                return;
+            }
+
+            this.ProcessInstance.SetVariable(name, value);
+        }
+
         public virtual void InitializeContext(IContext context)
         {
             var processDefinition = this.ProcessInstance.ProcessDefinition;

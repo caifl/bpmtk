@@ -43,18 +43,18 @@ namespace Bpmtk.Engine
 
         static void DumpSchema(Configuration cfg)
         {
-            StreamWriter writer = new StreamWriter(@"C:\Users\Felix\bpmtk_create.sql");
+            //StreamWriter writer = new StreamWriter(@"C:\Users\Felix\bpmtk_create.sql");
             var export = new SchemaExport(cfg);
             export.Create(x =>
             {
-                var sql = x;
-                writer.WriteLine(sql);
-                writer.Flush();
+                //var sql = x;
+                ///writer.WriteLine(sql);
+                //writer.Flush();
             }, true);
             //export.Execute(true, true, false);
 
-            writer.Flush();
-            writer.Close();
+            //writer.Flush();
+            //writer.Close();
         }
 
         public static IProcessEngineBuilder AddDefaultStores(this IProcessEngineBuilder builder,

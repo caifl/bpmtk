@@ -146,6 +146,19 @@ namespace Bpmtk.Engine.Runtime
             return false;
         }
 
+        public override void SetVariable(string name, object value)
+        {
+            ProcessVariable variable = null;
+            if (this.variables.TryGetValue(name, out variable))
+            {
+                variable.SetValue(value);
+            }
+            else
+            {
+                this.CreateVariableInstance(name, VariableType.Resolve(name), value);
+            }
+        }
+
         object IProcessInstance.GetVariable(string name)
             => this.GetVariable(name);
 
@@ -250,11 +263,11 @@ namespace Bpmtk.Engine.Runtime
             }
         }
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="isImplicit">indicates end from endEvent</param>
-        ///// <param name="endReason"></param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="isImplicit">indicates end from endEvent</param>
+        /// <param name="endReason"></param>
         public virtual void End(IContext context, bool isImplicit = false, 
             string endReason = null)
         {

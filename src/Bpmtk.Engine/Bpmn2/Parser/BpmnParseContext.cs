@@ -125,6 +125,9 @@ namespace Bpmtk.Engine.Bpmn2.Parser
             if (baseElement == null)
                 throw new ArgumentNullException(nameof(baseElement));
 
+            if (string.IsNullOrEmpty(baseElement.Id))
+                return;
+
             this.elements.Add(baseElement.Id, baseElement);
 
             Queue<Action<IBaseElement>> queue = null;

@@ -21,7 +21,11 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 
             //eventDefinitions
             var keys = EventDefinitionParseHandler.Keys;
-            var eventDefinitionHandler = new EventDefinitionParseHandler();
+            var eventDefinitionHandler = new EventDefinitionParseHandler((parent, context, element, result) =>
+            {
+                ((Definitions)parent).RootElements.Add(result);
+            });
+
             foreach (var key in keys)
                 this.handlers.Add(key, eventDefinitionHandler);
         }

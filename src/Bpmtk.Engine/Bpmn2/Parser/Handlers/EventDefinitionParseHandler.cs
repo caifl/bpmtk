@@ -3,7 +3,7 @@ using System.Xml.Linq;
 
 namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 {
-    class EventDefinitionParseHandler : BaseElementParseHandler<Definitions>
+    class EventDefinitionParseHandler : BaseElementParseHandler
     {
         public static readonly string[] Keys = new string[] {
             "messageEventDefinition",
@@ -18,8 +18,9 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             "linkEventDefinition",
             "eventDefinition"
             };
+        private readonly Action<object, IParseContext, XElement, EventDefinition> callback;
 
-        public EventDefinitionParseHandler()
+        public EventDefinitionParseHandler(Action<object, IParseContext, XElement, EventDefinition> callback)
         {
             this.handlers.Add("source", new ParseHandlerAction<EventDefinition>((p, c, x) =>
             {
@@ -51,9 +52,10 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
                 var timerEvent = ((TimerEventDefinition)p);
                 timerEvent.TimeCycle = expr;
             }));
+            this.callback = callback;
         }
 
-        public override object Create(Definitions parent, IParseContext context, XElement element)
+        public override object Create(object parent, IParseContext context, XElement element)
         {
             EventDefinition eventDefinition = null;
             var localName = Helper.GetRealLocalName(element);
@@ -131,6 +133,9 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
                     };
                     break;
             }
+
+            if (this.callback != null)
+                this.callback(parent, context, element, eventDefinition);
 
             base.Init(eventDefinition, context, element);
 

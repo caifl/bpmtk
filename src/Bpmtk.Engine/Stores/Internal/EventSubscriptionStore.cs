@@ -20,9 +20,10 @@ namespace Bpmtk.Engine.Stores.Internal
             throw new NotImplementedException();
         }
 
-        public void AddRange(IEnumerable<EventSubscription> eventSubscriptions)
+        public virtual void AddRange(IEnumerable<EventSubscription> eventSubscriptions)
         {
-            throw new NotImplementedException();
+            foreach (var item in eventSubscriptions)
+                this.Session.Save(item);
         }
 
         public IEventSubscriptionQuery CreateQuery()

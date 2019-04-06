@@ -19,7 +19,10 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public CatchEventParseHandler()
         {
             var keys = EventDefinitionParseHandler.Keys;
-            IParseHandler handler = new EventDefinitionParseHandler();
+            IParseHandler handler = new EventDefinitionParseHandler((parent, context, element, result) =>
+            {
+                ((CatchEvent)parent).EventDefinitions.Add(result);
+            });
 
             foreach (var key in keys)
                 this.handlers.Add(key, handler);
@@ -43,8 +46,9 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             }));
         }
 
-        protected virtual void Init(CatchEvent catchEvent, IParseContext context, XElement element)
+        protected override void Init(BaseElement baseElement, IParseContext context, XElement element)
         {
+            var catchEvent = baseElement as CatchEvent;
             catchEvent.ParallelMultiple = element.GetBoolean("parallelMultiple");
 
             base.Init(catchEvent, context, element);
@@ -67,7 +71,10 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             }));
 
             var keys = EventDefinitionParseHandler.Keys;
-            IParseHandler handler = new EventDefinitionParseHandler();
+            IParseHandler handler = new EventDefinitionParseHandler((parent, context, element, result) =>
+            {
+                ((ThrowEvent)parent).EventDefinitions.Add(result);
+            });
 
             foreach (var key in keys)
                 this.handlers.Add(key, handler);

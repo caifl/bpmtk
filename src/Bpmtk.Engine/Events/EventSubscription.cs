@@ -1,11 +1,17 @@
 ﻿using Bpmtk.Engine.Repository;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Utils;
 using System;
 
 namespace Bpmtk.Engine.Events
 {
     public class EventSubscription
     {
+        public EventSubscription()
+        {
+            this.Created = Clock.Now;
+        }
+
         public virtual long Id
         {
             get;

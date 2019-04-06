@@ -40,6 +40,8 @@ namespace Bpmtk.Engine.Runtime
 
         public abstract object GetVariable(string name);
 
+        public abstract void SetVariable(string name, object value);
+
         public virtual string Name
         {
             get;

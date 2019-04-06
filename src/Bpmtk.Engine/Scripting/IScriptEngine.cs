@@ -1,11 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Bpmtk.Engine.Scripting
 {
     public interface IScriptEngine
     {
-        object Execute(string script);
+        string Name
+        {
+            get;
+        }
+
+        object CreateCompileUnit(string script);
+
+        object CreateCompileUnit(string script,
+            out bool isExpression);
+
+        IScriptingScope CreateScope(IVariableResolver variableResolver = null);
+
+        object Execute(string script, IScriptingScope scope);
+
+        object ExecuteCompileUnit(object compileUnit, IScriptingScope scope);
     }
 }
