@@ -3,7 +3,7 @@
                    assembly="Bpmtk.Engine"
                    namespace="Bpmtk.Engine.Runtime">
 
-  <class name="HistoricToken" table="bpm_hi_token">
+  <class name="HistoricToken" table="bpm_exection_log">
     <id name="Id" column="id">
       <generator class="identity"/>
     </id>
@@ -13,9 +13,10 @@
     <property name="Event" column="event" length="50" not-null="true"/>
     <property name="IsActive" column="is_active"/>
     <property name="IsSuspended" column="is_suspended"/>
-    <property name="IsLoopActivity" column="is_loop_act"/>
+    <property name="IsMIRoot" column="is_mi_root"/>
     <property name="ActivityId" column="activity_id" length="64"/>
     <property name="ActivityInstanceId" column="act_inst_id"/>
+    <property name="ScopeId" column="scope_id"/>
     <property name="TransitionId" column="transition_id" length="64"/>
     <property name="Name" column="name" length="100"/>
     <property name="Created" column="created"/>

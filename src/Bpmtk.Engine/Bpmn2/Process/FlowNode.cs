@@ -131,7 +131,7 @@ namespace Bpmtk.Engine.Bpmn2
 
         public virtual void Signal(ExecutionContext executionContext,
             string signalName,
-            string signalData)
+            object signalData)
         {
             throw new NotSupportedException("The activity does not support signal event.");
         }
@@ -141,9 +141,11 @@ namespace Bpmtk.Engine.Bpmn2
         public virtual void Leave(ExecutionContext executionContext)
         {
             Token token = executionContext.Token;
+            var context = executionContext.Context;
+
             if (this.outgoings.Count == 0)
             {
-                token.End(true);
+                token.End(context, true);
                 return;
             }
 
@@ -219,10 +221,11 @@ namespace Bpmtk.Engine.Bpmn2
             token.Node = this;
             token.Inactivate();
 
+            var context = executionContext.Context;
             var list = new List<ParallelTransition>();
             foreach (var outgoing in this.outgoings)
             {
-                var childToken = token.CreateToken();
+                var childToken = token.CreateToken(context);
                 childToken.Node = this;
                 childToken.ActivityInstance = token.ActivityInstance;
                 childToken.Scope = token.Scope;
@@ -233,7 +236,7 @@ namespace Bpmtk.Engine.Bpmn2
             this.OnLeave(executionContext);
 
             foreach (var transition in list)
-                transition.Take();
+                transition.Take(context);
         }
 
         class ParallelTransition
@@ -247,9 +250,9 @@ namespace Bpmtk.Engine.Bpmn2
                 this.transition = transition;
             }
 
-            public virtual void Take()
+            public virtual void Take(IContext context)
             {
-                var executionContext = new ExecutionContext(this.token);
+                var executionContext = ExecutionContext.Create(context, this.token);
                 executionContext.TransitionSource = transition.SourceRef;
                 executionContext.Transition = transition;
 

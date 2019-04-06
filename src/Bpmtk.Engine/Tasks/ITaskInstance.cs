@@ -51,6 +51,8 @@ namespace Bpmtk.Engine.Tasks
         {
             get;
             set;
-        } 
+        }
+
+        object GetVariable(string name);
     }
 }

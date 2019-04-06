@@ -89,7 +89,7 @@ namespace Bpmtk.Engine.Bpmn2
         }
 
         public override void Signal(ExecutionContext executionContext, 
-            string signalName, string signalData)
+            string signalName, object signalData)
         {
             //check if all task-instances completed.
             var token = executionContext.Token;

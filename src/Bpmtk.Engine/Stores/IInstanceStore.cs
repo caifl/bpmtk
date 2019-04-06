@@ -26,5 +26,7 @@ namespace Bpmtk.Engine.Stores
         IEnumerable<string> GetActiveActivityIds(long id);
 
         Task UpdateAsync(ProcessInstance processInstance);
+
+        void Update(Token token);
     }
 }

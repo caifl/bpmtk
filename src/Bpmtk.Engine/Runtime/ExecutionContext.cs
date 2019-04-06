@@ -14,9 +14,15 @@ namespace Bpmtk.Engine.Runtime
         private FlowNode transitionSource;
         private SequenceFlow transition;
 
-        public ExecutionContext(Token token)
+        protected ExecutionContext(IContext context, Token token)
         {
+            this.Context = context;
             this.token = token;
+        }
+
+        public static ExecutionContext Create(IContext context, Token token)
+        {
+            return new ExecutionContext(context, token);
         }
 
         public virtual ProcessInstance ProcessInstance => this.token.ProcessInstance;
@@ -114,8 +120,9 @@ namespace Bpmtk.Engine.Runtime
             set;
         }
 
-        public virtual IContext Context => Bpmtk.Engine.Context.Current;
+        public virtual IContext Context
+        {
+            get;
+        }
     }
-
-    
 }

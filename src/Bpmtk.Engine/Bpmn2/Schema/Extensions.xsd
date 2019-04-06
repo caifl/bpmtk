@@ -163,5 +163,13 @@
       </attribute>
     </complexType>  
   </element>
+
+  <element name="value" type="string">
+    <annotation>
+      <documentation>
+        Subelement of the extensionsElements of ItemAwareElement. See documentation chapter on ItemAwareElement.
+      </documentation>
+    </annotation>
+  </element>
   
 </schema>

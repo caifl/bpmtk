@@ -20,12 +20,13 @@ namespace Bpmtk.Engine.Runtime
             this.TransitionId = executionContext.Transition?.Id;
             this.IsActive = token.IsActive;
             this.IsSuspended = token.IsSuspended;
-            this.IsLoopActivity = token.IsMIRoot;
+            this.IsMIRoot = token.IsMIRoot;
             this.Event = eventName;
             this.Created = Clock.Now;
 
             this.ProcessInstanceId = token.ProcessInstance.Id;
             this.ActivityInstanceId = token.ActivityInstance?.Id;
+            this.ScopeId = token.Scope?.Id;
         }
 
         public virtual long Id
@@ -82,6 +83,12 @@ namespace Bpmtk.Engine.Runtime
             protected set;
         }
 
+        public virtual long? ScopeId
+        {
+            get;
+            protected set;
+        }
+
         public virtual bool IsActive
         {
             get;
@@ -94,7 +101,7 @@ namespace Bpmtk.Engine.Runtime
             protected set;
         }
 
-        public virtual bool IsLoopActivity
+        public virtual bool IsMIRoot
         {
             get;
             protected set;

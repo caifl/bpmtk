@@ -21,7 +21,7 @@ namespace Bpmtk.Engine.Internal
             if (task == null)
                 throw new Exception("Task not found.");
 
-            task.Complete(variables);
+            task.Complete(Context.Current, variables);
         }
 
         public ITaskQuery CreateQuery() => this.tasks.CreateQuery();

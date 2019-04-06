@@ -33,10 +33,12 @@ namespace Bpmtk.Engine.Runtime
             return items.Where(x => x.Name == name).SingleOrDefault();
         }
 
-        public virtual object GetVariable(string name)
-        {
-            return null;
-        }
+        //public virtual bool GetVariable(string name, out object value)
+        //{
+        //    return null;
+        //}
+
+        public abstract object GetVariable(string name);
 
         public virtual string Name
         {

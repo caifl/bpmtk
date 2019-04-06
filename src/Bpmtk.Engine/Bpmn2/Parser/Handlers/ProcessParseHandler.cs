@@ -5,10 +5,6 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 {
     class ProcessParseHandler : CallableElementParseHandler
     {
-        public readonly static SubProcessParseHandler SubProcessParseHandler = new SubProcessParseHandler();
-        public readonly static AdHocSubProcessParseHandler AdHocSubProcessParseHandler = new AdHocSubProcessParseHandler();
-        public readonly static TransactionParseHandler TransactionParseHandler = new TransactionParseHandler();
-
         public ProcessParseHandler()
         {
             this.handlers.Add("dataObject", new DataObjectParseHandler());
@@ -39,9 +35,9 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             this.handlers.Add("manualTask", new ManualTaskParseHandler());
             this.handlers.Add("businessRuleTask", new BusinessRuleTaskParseHandler());
 
-            this.handlers.Add("subProcess", SubProcessParseHandler);
-            this.handlers.Add("transaction", TransactionParseHandler);
-            this.handlers.Add("adHocSubProcess", AdHocSubProcessParseHandler);
+            this.handlers.Add("subProcess", new SubProcessParseHandler());
+            this.handlers.Add("transaction",new TransactionParseHandler());
+            this.handlers.Add("adHocSubProcess", new AdHocSubProcessParseHandler());
 
             var artifactHandler = new ArtifactParseHandler();
             this.handlers.Add("textAnnotation", artifactHandler);

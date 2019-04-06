@@ -70,10 +70,14 @@ namespace Bpmtk.Engine.Runtime
             this.IsActive = false;
         }
 
-        public virtual void Remove()
+        public virtual void Remove(IContext context)
         {
             if (this.Parent != null)
+            {
                 this.Parent.children.Remove(this);
+                var store = context.GetService<IInstanceStore>();
+                store.Remove(this);
+            }
             else
                 throw new Exception("Can't delete root-token.");
         }
@@ -181,16 +185,27 @@ namespace Bpmtk.Engine.Runtime
             protected set;
         }
 
-        public virtual Token CreateToken()
+        public virtual Token CreateToken(IContext context)
         {
             var token = new Token(this);
             this.children.Add(token);
 
-            var store = Context.Current.GetService<IInstanceStore>();
+            var store = context.GetService<IInstanceStore>();
             store.Add(token);
 
             return token;
         }
+
+        //public virtual Token CreateToken()
+        //{
+        //    var token = new Token(this);
+        //    this.children.Add(token);
+
+        //    var store = Context.Current.GetService<IInstanceStore>();
+        //    store.Add(token);
+
+        //    return token;
+        //}
 
         public virtual Token ResolveScope()
         {
@@ -218,8 +233,8 @@ namespace Bpmtk.Engine.Runtime
             return list;
         }
 
-        public virtual void End(bool isImplicit = false,
-            string endReason = null)
+        public virtual void End(IContext context,
+            bool isImplicit = false, string endReason = null)
         {
             //complete act-inst.
             if (this.ActivityInstance != null)
@@ -227,8 +242,8 @@ namespace Bpmtk.Engine.Runtime
 
             this.Inactivate();
 
-            var store = Context.Current.GetService<IInstanceStore>();
-            store.Add(new HistoricToken(new ExecutionContext(this), "end"));
+            var store = context.GetService<IInstanceStore>();
+            store.Add(new HistoricToken(ExecutionContext.Create(context, this), "end"));
 
             if (this.Parent != null)
             {
@@ -238,25 +253,25 @@ namespace Bpmtk.Engine.Runtime
                 var container = this.node.Container;
                 if (container is SubProcess)
                 {
-                    this.Remove();
+                    this.Remove(context);
 
                     if (parentToken.children.Count > 0)
                         return;
 
                     var subProcess = container as SubProcess;
-                    subProcess.Leave(new ExecutionContext(parentToken));
+                    subProcess.Leave(ExecutionContext.Create(context, parentToken));
                     return;
                 }
             }
 
             //结束流程实例
-            this.ProcessInstance.End(isImplicit, endReason);
+            this.ProcessInstance.End(context, isImplicit, endReason);
         }
 
         /// <summary>
         /// Sends a signal to this token. leaves the current {@link #getNode() node} over the default transition
         /// </summary>
-        public virtual void Signal()
+        public virtual void Signal(IContext context)
         {
             if (this.node == null)
                 throw new RuntimeException(this + " is not positioned in a node");
@@ -267,14 +282,14 @@ namespace Bpmtk.Engine.Runtime
             //    throw new JbpmException(node + " has no default transition");
             //}
 
-            this.node.Signal(new ExecutionContext(this), null, null);
+            this.node.Signal(ExecutionContext.Create(context, this), null, null);
         }
 
-        public virtual void Signal(string signalName, object signalData)
+        public virtual void Signal(IContext context,
+            string signalName, 
+            object signalData)
         {
-            this.node.Leave(new ExecutionContext(this));
-            //this.node.Signal(new ExecutionContext(this), signalName,
-            //    signalData);
+            this.node.Signal(ExecutionContext.Create(context, this), signalName, signalData);
         }
 
         public virtual bool IsSuspended

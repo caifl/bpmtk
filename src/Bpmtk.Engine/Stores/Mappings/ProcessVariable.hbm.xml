@@ -18,7 +18,9 @@
     <many-to-one name="byteArray"
                  class="Bpmtk.Engine.Models.ByteArray"
                  column="byte_array_id"
-                 access="field"/>
+                 access="field" 
+                 cascade="all"
+                 unique="true"/>
 
     <many-to-one name="processInstance"
                class="ProcessInstance"

@@ -6,12 +6,15 @@ using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Utils;
 using Bpmtk.Engine.Stores;
+using Bpmtk.Engine.Repository;
+using Bpmtk.Engine.Variables;
 
 namespace Bpmtk.Engine.Runtime
 {
     public class ActivityInstance : ExecutionObject, IAggregateRoot
     {
         private ICollection<ActivityVariable> variableInstances;
+        private IDictionary<string, ActivityVariable> variables;
         private ICollection<ActivityIdentityLink> identityLinks;
         private FlowNode activity;
         protected ICollection<ActivityInstance> children;
@@ -25,6 +28,8 @@ namespace Bpmtk.Engine.Runtime
             ActivityInstance parent = null)
         {
             this.Parent = parent;
+            this.variableInstances = new List<ActivityVariable>();
+            this.variables = new Dictionary<string, ActivityVariable>();
             this.children = new List<ActivityInstance>();
 
             this.ProcessInstance = processInstance;
@@ -112,6 +117,65 @@ namespace Bpmtk.Engine.Runtime
             store.Add(act);
 
             return act;
+        }
+
+        public virtual bool GetVariable(string name, out object value)
+        {
+            value = null;
+            ActivityVariable variable = null;
+            if (this.variables.TryGetValue(name, out variable))
+            {
+                value = variable.GetValue();
+                return true;
+            }
+
+            return false;
+        }
+
+        public virtual void InitializeContext(IContext context)
+        {
+            var processDefinition = this.ProcessInstance.ProcessDefinition;
+            var deploymentId = processDefinition.Deployment.Id;
+            var processDefinitionKey = processDefinition.Key;
+
+            var dm = context.GetService<IDeploymentManager>();
+            var model = dm.GetBpmnModel(deploymentId);
+            var dataObjects = model.GetSubProcessDataObjects(this.ActivityId);
+
+            IVariableType type = null;
+
+            foreach (var dataObject in dataObjects)
+            {
+                var value = dataObject.Value;
+                type = Variables.VariableType.Resolve(value);
+
+                this.CreateVariableInstance(dataObject.Id, value);
+            }
+
+            //this.variableInstances = list;
+            //this.variables = map;
+        }
+
+        protected virtual ActivityVariable CreateVariableInstance(string name,
+            object initialValue = null)
+        {
+            var item = new ActivityVariable(this, name, initialValue);
+            this.variableInstances.Add(item);
+            this.variables.Add(item.Name, item);
+
+            return item;
+        }
+
+        public override object GetVariable(string name)
+        {
+            object value = null;
+            if (this.GetVariable(name, out value))
+                return value;
+
+            if (this.Parent != null)
+                return this.Parent.GetVariable(name);
+
+            return this.ProcessInstance.GetVariable(name);
         }
     }
 }

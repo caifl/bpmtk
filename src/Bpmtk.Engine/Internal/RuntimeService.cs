@@ -43,6 +43,8 @@ namespace Bpmtk.Engine.Internal
                 throw new KeyNotFoundException("The specified process-definition was not found.");
 
             var pi = new ProcessInstance(processDefinition);
+            pi.InitializeContext(Context.Current);
+
             this.executions.Add(pi);
 
             var context = Context.Current;

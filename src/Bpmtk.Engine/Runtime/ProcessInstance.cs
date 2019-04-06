@@ -75,6 +75,7 @@ namespace Bpmtk.Engine.Runtime
 
             this.super = super;
             this.variableInstances = new List<ProcessVariable>();
+            this.variables = new Dictionary<string, ProcessVariable>();
             this.identityLinks = new List<InstanceIdentityLink>();
             this.processDefinition = processDefinition;
 
@@ -90,48 +91,80 @@ namespace Bpmtk.Engine.Runtime
             this.Created = Clock.Now;
             this.Initiator = null;
             this.Description = processDefinition.Description;
-
-            this.InitializeContext();
         }
 
-        protected virtual void InitializeContext()
+        IDictionary<string, ValuedDataObject> dataObjects = null;
+
+        public virtual void InitializeContext(IContext context)
         {
-            //var deploymentId = this.processDefinition.Deployment.Id;
-            //var processDefinitionKey = this.processDefinition.Key;
+            var deploymentId = this.processDefinition.Deployment.Id;
+            var processDefinitionKey = this.processDefinition.Key;
 
-            //var dm = Context.GetService<IDeploymentManager>();
+            var dm = context.GetService<IDeploymentManager>();
+            var model = dm.GetBpmnModel(deploymentId);
+            var dataObjects = model.GetProcessDataObjects(processDefinitionKey);
 
-            //var model = dm.GetBpmnModel(deploymentId);
-            //var process = model.GetProcess(processDefinitionKey);
+            this.dataObjects = dataObjects.ToDictionary(x => x.Id);
 
-            //var signatures = process.GetContextSignatures();
+            //var em = dataObjects.GetEnumerator();
+            IVariableType type = null;
 
-            //var list = new List<ProcessVariable>();
-            //IDictionary<string, ProcessVariable> map = new Dictionary<string, ProcessVariable>();
-            //var em = signatures.GetEnumerator();
-            //string name = null;
-            //IVariableType type = null;
+            foreach (var dataObject in dataObjects)
+            {
+                //name = em.Current.Key;
+                //type = em.Current.Value;
+                //var dataObject = em.Current;
+                //type = Vari
+                var value = dataObject.Value;
+                type = Variables.VariableType.Resolve(value);
 
-            //while (em.MoveNext())
-            //{
-            //    name = em.Current.Key;
-            //    type = em.Current.Value;
-
-            //    var item = this.CreateVariableInstance(name, type);
-            //    list.Add(item);
-            //    map.Add(name, item);
-            //}
+                this.CreateVariableInstance(dataObject.Id, type, value);
+            }
 
             //this.variableInstances = list;
             //this.variables = map;
+        }
+
+        public virtual bool GetVariable(string name, out object value)
+        {
+            value = null;
+            ProcessVariable variable = null;
+
+            if(this.variables.TryGetValue(name, out variable))
+            {
+                value = variable.GetValue();
+                return true;
+            }
+
+            ValuedDataObject dataObject = null;
+            if(this.dataObjects.TryGetValue(name, out dataObject))
+            {
+                value = dataObject.Value;
+                return true;
+            }
+
+            return false;
+        }
+
+        object IProcessInstance.GetVariable(string name)
+            => this.GetVariable(name);
+
+        public override object GetVariable(string name)
+        {
+            object value = null;
+            if (this.GetVariable(name, out value))
+                return value;
+
+            return null;
         }
 
         protected virtual ProcessVariable CreateVariableInstance(string name, 
             IVariableType type, 
             object initialValue = null)
         {
-            var item = new ProcessVariable(this, name, initialValue);
+            var item = new ProcessVariable(this, name, type, initialValue);
             this.variableInstances.Add(item);
+            this.variables.Add(item.Name, item);
 
             return item;
         }
@@ -195,21 +228,21 @@ namespace Bpmtk.Engine.Runtime
             store.UpdateAsync(this).GetAwaiter().GetResult();
 
             //fire ProcessStartEvent
-            this.OnStart(initialNode);
+            this.OnStart(context, initialNode);
         }
 
-        protected virtual void OnStart(FlowNode initialNode)
+        protected virtual void OnStart(IContext context, FlowNode initialNode)
         {
             // fire the process start event
             if (initialNode != null)
             {
-                var executionContext = new ExecutionContext(this.token);
+                var executionContext = ExecutionContext.Create(context, this.token);
 
                 //CreateActivityInstance
                 this.token.ActivityInstance = ActivityInstance.Create(executionContext);
 
                 //processDefinition.fireEvent(Event.EVENTTYPE_PROCESS_START, executionContext);
-                var store = executionContext.Context.GetService<IInstanceStore>();
+                var store = context.GetService<IInstanceStore>();
                 store.Add(new HistoricToken(executionContext, "start"));
 
                 //execute the start node
@@ -222,7 +255,7 @@ namespace Bpmtk.Engine.Runtime
         ///// </summary>
         ///// <param name="isImplicit">indicates end from endEvent</param>
         ///// <param name="endReason"></param>
-        public virtual void End(bool isImplicit = false, 
+        public virtual void End(IContext context, bool isImplicit = false, 
             string endReason = null)
         {
             var rootToken = this.token;
@@ -238,6 +271,7 @@ namespace Bpmtk.Engine.Runtime
 
             //Remove root-token.
             var store = Context.Current.GetService<IInstanceStore>();
+            store.UpdateAsync(this).GetAwaiter().GetResult();
             store.Remove(rootToken);
 
             this.State = ExecutionState.Completed;
@@ -246,7 +280,7 @@ namespace Bpmtk.Engine.Runtime
             //判断CallActivity
             if(this.super != null)
             {
-                var executionContext = new ExecutionContext(this.super);
+                var executionContext = ExecutionContext.Create(context, this.super);
                 executionContext.SubProcessInstance = this;
 
                 executionContext.LeaveNode();

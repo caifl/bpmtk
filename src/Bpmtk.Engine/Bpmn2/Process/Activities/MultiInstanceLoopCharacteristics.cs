@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Stores;
 
 namespace Bpmtk.Engine.Bpmn2
 {
@@ -185,13 +186,14 @@ namespace Bpmtk.Engine.Bpmn2
         public override void Leave(ExecutionContext executionContext)
         {
             //设置活动实例为结束状态
+            var context = executionContext.Context;
             var token = executionContext.Token;
             token.Inactivate();
 
             var parentToken = token.Parent;
             if (parentToken != null)
             {
-                var parentExecution = new ExecutionContext(parentToken);
+                var parentExecution = ExecutionContext.Create(context, parentToken);
 
                 var numberOfInstances = parentExecution.GetVariable<int>("numberOfInstances");
                 var numberOfCompletedInstances = parentExecution.GetVariable<int>("numberOfCompletedInstances") + 1;
@@ -224,7 +226,7 @@ namespace Bpmtk.Engine.Bpmn2
                 {
                     //remove all child tokens
                     foreach (var item in inactivateTokens)
-                        item.Remove();
+                        item.Remove(context);
 
                     base.Leave(parentExecution);
                 }
@@ -250,9 +252,11 @@ namespace Bpmtk.Engine.Bpmn2
             var node = token.Node;
 
             var tokens = new List<Token>();
+            var context = executionContext.Context;
+
             for (int loopCounter = 0; loopCounter < numberOfInstances; loopCounter++)
             {
-                var instanceToken = token.CreateToken();
+                var instanceToken = token.CreateToken(context);
                 instanceToken.Node = node;
                 tokens.Add(instanceToken);
             }
@@ -271,7 +275,7 @@ namespace Bpmtk.Engine.Bpmn2
                 var innerToken = tokens[loopCounter];
                 innerToken.Activate();
 
-                var innerExecution = new ExecutionContext(innerToken);
+                var innerExecution = ExecutionContext.Create(context, innerToken);
 
                 innerExecution.SetVariable("loopCounter", loopCounter);
 

@@ -71,6 +71,9 @@ namespace Bpmtk.Engine.Stores.Internal
             return this.session.SaveAsync(processInstance);
         }
 
+        public void Update(Token token)
+            => this.session.Update(token);
+
         public Task UpdateAsync(ProcessInstance processInstance)
             => this.session.UpdateAsync(processInstance);
     }

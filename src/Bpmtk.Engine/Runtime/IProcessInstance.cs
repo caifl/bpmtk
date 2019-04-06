@@ -18,5 +18,7 @@ namespace Bpmtk.Engine.Runtime
         {
             get;
         }
+
+        object GetVariable(string name);
     }
 }

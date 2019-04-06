@@ -11,7 +11,6 @@ namespace Bpmtk.Engine.Tasks
     public class TaskInstance : ITaskInstance
     {
         protected ProcessInstance processInstance;
-        //protected Token token;
         protected ActivityInstance activityInstance;
         protected bool isSuspended;
 
@@ -22,6 +21,7 @@ namespace Bpmtk.Engine.Tasks
         {
             this.Token = token;
             this.processInstance = token.ProcessInstance;
+            this.activityInstance = token.ActivityInstance;
             this.Created = Clock.Now;
             this.State = TaskState.Active;
             this.ActivityId = token.ActivityId;
@@ -129,7 +129,7 @@ namespace Bpmtk.Engine.Tasks
             this.Token.Suspend();
         }
 
-        public virtual void Complete(IDictionary<string, object> variables = null)
+        public virtual void Complete(IContext context, IDictionary<string, object> variables = null)
         {
             if (this.State != TaskState.Active)
                 throw new InvalidOperationException("Invalid state transition.");
@@ -140,12 +140,23 @@ namespace Bpmtk.Engine.Tasks
             this.LastStateTime = Clock.Now;
             this.Token = null; //Clear token
 
-            var context = Context.Current;
             var store = context.GetService<ITaskStore>();
             store.Update(this);
 
             if (theToken != null)
-                theToken.Signal();
+            {
+                var executionContext = ExecutionContext.Create(context, theToken);
+                executionContext.LeaveNode();
+            }
+        }
+
+        public virtual object GetVariable(string name)
+        {
+            var act = this.activityInstance;
+            if (act != null)
+                return act.GetVariable(name);
+
+            return null;
         }
     }
 

@@ -23,6 +23,8 @@ namespace Bpmtk.Engine.Runtime
 
             this.processInstance = processInstance;
             this.type = type;
+            this.TypeName = type.Name;
+            type.SetValue(this, value);
         }
 
         public ProcessVariable(ProcessInstance processInstance,

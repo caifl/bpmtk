@@ -59,10 +59,7 @@ namespace Bpmtk.Engine.Bpmn2
             var inactiveTokens = scopeToken.GetInactiveTokensAt(token.Node);
             if(inactiveTokens.Count >= this.incomings.Count)
             {
-                if(this.Name == "Join_B")
-                {
-
-                }
+                var context = executionContext.Context;
 
                 //保留当前token.
                 inactiveTokens.Remove(token);
@@ -75,14 +72,14 @@ namespace Bpmtk.Engine.Bpmn2
                 foreach (var pToken in inactiveTokens)
                 {
                     current = pToken;
-                    current.Remove();
+                    current.Remove(context);
 
                     //往上遍历
                     current = current.Parent;
                     while (current.Parent != null
                         && current.Parent.Children.Count == 1)
                     {
-                        current.Remove();
+                        current.Remove(context);
                         current = current.Parent;
                     }
                 }
@@ -94,7 +91,7 @@ namespace Bpmtk.Engine.Bpmn2
                 while (current.Parent != null
                     && current.Parent.Children.Count == 1)
                 {
-                    current.Remove();
+                    current.Remove(context);
                     current = current.Parent;
                 }
 

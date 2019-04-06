@@ -14,19 +14,38 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
-            var dataObject = context.BpmnFactory.CreateDataObject();
+            var dataObject = context.BpmnFactory.CreateDataObject() as ValuedDataObject;
             parent.FlowElements.Add(dataObject);
 
             //dataObject.Name = element.GetAttribute("name");
             dataObject.IsCollection = element.GetBoolean("isCollection");
-
             var itemSubjectRef = element.GetAttribute("itemSubjectRef");
+            dataObject.TypeName = itemSubjectRef;
+            
             if (itemSubjectRef != null)
                 context.AddReferenceRequest<ItemDefinition>(itemSubjectRef, x => dataObject.ItemSubjectRef = x);
 
             base.Init(dataObject, context, element);
 
             return dataObject;
+        }
+
+        protected override ExtensionElements ParseExtensionElements(BaseElement parent, IParseContext context, XElement element)
+        {
+            var dataObject = parent as ValuedDataObject;
+            var item = context.BpmnFactory.CreateExtensionElements();
+
+            var children = element.Elements();
+            foreach(var child in children)
+            {
+                var localName = child.Name.LocalName;
+                if(localName == "value")
+                {
+                    dataObject.Values.Add(child.Value);
+                }
+            }
+
+            return item;//base.ParseExtensionElements(parent, context, element);
         }
     }
 

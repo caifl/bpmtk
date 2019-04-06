@@ -3,8 +3,7 @@
                    assembly="Bpmtk.Engine"
                    namespace="Bpmtk.Engine.Runtime">
 
-  <class name="Token" table="bpm_token"
-         dynamic-update="true">
+  <class name="Token" table="bpm_token" dynamic-update="true">
     <id name="Id" column="id">
       <generator class="identity"/>
     </id>

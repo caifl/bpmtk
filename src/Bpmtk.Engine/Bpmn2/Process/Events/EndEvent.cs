@@ -13,7 +13,9 @@ namespace Bpmtk.Engine.Bpmn2
         public override void Execute(ExecutionContext executionContext)
         {
             var token = executionContext.Token;
-            token.End();
+            var context = executionContext.Context;
+
+            token.End(context);
         }
     }
 }

@@ -48,25 +48,12 @@ namespace Bpmtk.Engine.Runtime
         protected string text;
         protected string text2;
         protected double? doubleVal;
-        protected long? byteArrayId;
         protected ByteArray byteArray;
 
         public virtual ByteArray ByteArray
         {
             get;
             protected set;
-        }
-
-        protected virtual void EnsureByteArrayInitialized()
-        {
-            if (this.ByteArray == null)
-            {
-                if (this.byteArrayId.HasValue)
-                {
-                    //var repository = BpmContext.Current.ExecutionRepository;
-                    //this.ByteArray = repository.GetByteArray(this.byteArrayId.Value);
-                }
-            }
         }
 
         public virtual object GetValue()
@@ -114,25 +101,17 @@ namespace Bpmtk.Engine.Runtime
         {
             get
             {
-                this.EnsureByteArrayInitialized();
-
-                return this.ByteArray.Value;
+                return this.ByteArray?.Value;
             }
             set
             {
-                if(this.ByteArray != null)
-                    this.ByteArray.Value = value;
-                else
+                if (this.byteArray == null)
                 {
-                    //if (this.byteArrayId.HasValue)
-                    //{
-                    //    this.ByteArray = new ByteArray(this.byteArrayId.Value, value);
-                    //    var repository = BpmContext.Current.ExecutionRepository;
-                    //    repository.Update(this.ByteArray);
-                    //}
-                    //else
-                    //    this.ByteArray = new ByteArray(value);
+                    this.byteArray = new ByteArray(value);
+                    return;
                 }
+
+                this.byteArray.Value = value;
             }
         }
 

@@ -50,7 +50,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 
         public virtual EndEvent CreateEndEvent() => new EndEvent();
 
-        public virtual DataObject CreateDataObject() => new DataObject();
+        public virtual DataObject CreateDataObject() => new ValuedDataObject();
 
         public virtual SequenceFlow CreateSequenceFlow() => new SequenceFlow();
 
