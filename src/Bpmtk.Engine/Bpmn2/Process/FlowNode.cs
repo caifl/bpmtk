@@ -138,9 +138,7 @@ namespace Bpmtk.Engine.Bpmn2
             throw new NotSupportedException("The activity does not support signal event.");
         }
 
-        //public virtual void Leave(ExecutionContext executionContext, bool ignoreConditions)
-
-        public virtual void Leave(ExecutionContext executionContext)
+        public virtual void LeaveDefault(ExecutionContext executionContext)
         {
             Token token = executionContext.Token;
             var context = executionContext.Context;
@@ -160,20 +158,20 @@ namespace Bpmtk.Engine.Bpmn2
                 {
                     var condition = outgoing.ConditionExpression;
                     if (condition == null || string.IsNullOrEmpty(condition.Text)
-                        || !this.Evalute(condition.Text, executionContext))
+                        || !executionContext.EvaluteExpression<bool>(condition.Text))
                         continue;
 
                     transition = outgoing;
                     break;
                 }
 
-                if(transition == null)
+                if (transition == null)
                 {
-                    if(this is Activity)
+                    if (this is Activity)
                     {
                         transition = ((Activity)this).Default;
                     }
-                    else if(this is ExclusiveGateway)
+                    else if (this is ExclusiveGateway)
                     {
                         transition = ((ExclusiveGateway)this).Default;
                     }
@@ -182,7 +180,7 @@ namespace Bpmtk.Engine.Bpmn2
 
             if (transition == null)
                 throw new BpmnError("没有满足条件的分支可走");
-           
+
             token.Node = this;
             executionContext.Transition = transition;
 
@@ -204,18 +202,101 @@ namespace Bpmtk.Engine.Bpmn2
             transition.Take(executionContext);
         }
 
-        protected bool Evalute(string condition, ExecutionContext executionContext)
+        public virtual void Leave(ExecutionContext executionContext, bool ignoreConditions)
         {
-            //extract expression.
-            condition = StringHelper.ExtractExpression(condition);
-            var engine = new JavascriptEngine();
-            var scope = engine.CreateScope(new ScriptingContext(executionContext));
+            Token token = executionContext.Token;
+            var context = executionContext.Context;
 
-            var result = engine.Execute(condition, scope);
-            if (result != null && Convert.ToBoolean(result))
-                return true;
+            if (this.outgoings.Count == 0)
+            {
+                token.End(context, true);
+                return;
+            }
 
-            return false;
+            IList<SequenceFlow> transitions;
+            SequenceFlow transition = null;
+            if (!ignoreConditions)
+            {
+                transitions = new List<SequenceFlow>();
+
+                foreach (var outgoing in this.outgoings)
+                {
+                    var condition = outgoing.ConditionExpression;
+                    if (condition == null || string.IsNullOrEmpty(condition.Text)
+                        || !executionContext.EvaluteExpression<bool>(condition.Text))
+                        continue;
+
+                    transitions.Add(outgoing);
+                }
+
+                if(transitions.Count == 0)
+                {
+                    if (this is Activity)
+                    {
+                        transition = ((Activity)this).Default;
+                        if (transition != null)
+                            transitions.Add(transition);
+                    }
+                    else if (this is ExclusiveGateway)
+                    {
+                        transition = ((ExclusiveGateway)this).Default;
+                        if (transition != null)
+                            transitions.Add(transition);
+                    }
+                }
+            }
+            else
+                transitions = this.outgoings;
+
+            if (transitions.Count == 0)
+                throw new BpmnError("没有满足条件的分支可走");
+
+            if (transitions.Count > 1)
+            {
+                var list = new List<ParallelTransition>();
+                foreach (var outgoing in transitions)
+                {
+                    var childToken = token.CreateToken(context);
+                    childToken.Node = this;
+                    childToken.ActivityInstance = token.ActivityInstance;
+                    childToken.Scope = token.Scope;
+                    list.Add(new ParallelTransition(childToken, outgoing));
+                }
+
+                //fire leaveNode event.
+                this.OnLeave(executionContext);
+
+                foreach (var parallelTransition in list)
+                    parallelTransition.Take(context);
+            }
+            else
+            {
+                transition = transitions[0];
+                token.Node = this;
+                executionContext.Transition = transition;
+
+                // fire the leave-node event for this node
+                //fireEvent(Event.EVENTTYPE_NODE_LEAVE, executionContext);
+                this.OnLeave(executionContext);
+
+                // log this node
+                //if (token.getNodeEnter() != null)
+                //{
+                //    addNodeLog(token);
+                //}
+
+                // update the runtime information for taking the transition
+                // the transitionSource is used to calculate events on superstates
+                executionContext.TransitionSource = this;
+
+                // take the transition
+                transition.Take(executionContext);
+            }
+        }
+
+        public virtual void Leave(ExecutionContext executionContext)
+        {
+            this.LeaveDefault(executionContext);
         }
 
         protected virtual void OnLeave(ExecutionContext executionContext)
@@ -229,36 +310,36 @@ namespace Bpmtk.Engine.Bpmn2
             store.Add(new HistoricToken(executionContext, "leave"));
         }
 
-        protected virtual void LeaveAll(ExecutionContext executionContext)
-        {
-            if (this.outgoings.Count <= 1)
-            {
-                this.Leave(executionContext);
-                return;
-            }
+        //protected virtual void LeaveAll(ExecutionContext executionContext)
+        //{
+        //    if (this.outgoings.Count <= 1)
+        //    {
+        //        this.Leave(executionContext);
+        //        return;
+        //    }
 
-            //fork.
-            var token = executionContext.Token;
-            token.Node = this;
-            token.Inactivate();
+        //    //fork.
+        //    var token = executionContext.Token;
+        //    token.Node = this;
+        //    token.Inactivate();
 
-            var context = executionContext.Context;
-            var list = new List<ParallelTransition>();
-            foreach (var outgoing in this.outgoings)
-            {
-                var childToken = token.CreateToken(context);
-                childToken.Node = this;
-                childToken.ActivityInstance = token.ActivityInstance;
-                childToken.Scope = token.Scope;
-                list.Add(new ParallelTransition(childToken, outgoing));
-            }
+        //    var context = executionContext.Context;
+        //    var list = new List<ParallelTransition>();
+        //    foreach (var outgoing in this.outgoings)
+        //    {
+        //        var childToken = token.CreateToken(context);
+        //        childToken.Node = this;
+        //        childToken.ActivityInstance = token.ActivityInstance;
+        //        childToken.Scope = token.Scope;
+        //        list.Add(new ParallelTransition(childToken, outgoing));
+        //    }
 
-            //fire leaveNode event.
-            this.OnLeave(executionContext);
+        //    //fire leaveNode event.
+        //    this.OnLeave(executionContext);
 
-            foreach (var transition in list)
-                transition.Take(context);
-        }
+        //    foreach (var transition in list)
+        //        transition.Take(context);
+        //}
 
         class ParallelTransition
         {

@@ -76,13 +76,15 @@ namespace Bpmtk.Engine.Bpmn2
 
         public override void Leave(ExecutionContext executionContext)
         {
-            var token = executionContext.Token;
-            if (token.Parent != null &&
-                token.Parent.IsMIRoot &&
-                this.LoopCharacteristics != null)
+            if (this.LoopCharacteristics != null)
             {
-                this.LoopCharacteristics.Leave(executionContext);
-                return;
+                var token = executionContext.Token;
+                if (token.Parent != null &&
+                    token.Parent.IsMIRoot)
+                {
+                    this.LoopCharacteristics.Leave(executionContext);
+                    return;
+                }
             }
 
             base.Leave(executionContext);

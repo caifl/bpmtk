@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Expressions;
+using Bpmtk.Engine.Scripting;
 using Bpmtk.Engine.Tasks;
+using Bpmtk.Engine.Utils;
 using Bpmtk.Engine.Variables;
 
 namespace Bpmtk.Engine.Runtime
@@ -61,15 +63,16 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual object GetVariable(string name)
         {
-            ExecutionObject execution = this.ActivityInstance;
-            if (execution != null)
-                return execution.GetVariable(name);
+            return this.token.GetVariable(name);
+            //ExecutionObject execution = this.ActivityInstance;
+            //if (execution != null)
+            //    return execution.GetVariable(name);
 
-            execution = this.Scope;
-            if (execution != null)
-                return execution.GetVariable(name);
+            //execution = this.Scope;
+            //if (execution != null)
+            //    return execution.GetVariable(name);
 
-            return this.ProcessInstance.GetVariable(name);
+            //return this.ProcessInstance.GetVariable(name);
 
             //VariableInstance varInst = null;
 
@@ -91,9 +94,23 @@ namespace Bpmtk.Engine.Runtime
             //return varInst?.GetValue();
         }
 
+        public virtual object GetVariableLocal(string name)
+        {
+            return this.token.GetVariableLocal(name);
+        }
+
+        public virtual TValue GetVariableLocal<TValue>(string name)
+        {
+            var value = this.token.GetVariableLocal(name);
+            if (value != null)
+                return (TValue)value;
+
+            return default(TValue);
+        }
+
         public virtual TValue GetVariable<TValue>(string name)
         {
-            var value = this.GetVariable(name);
+            var value = this.token.GetVariable(name);
             if (value != null)
                 return (TValue)value;
 
@@ -102,31 +119,49 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual void SetVariable(string name, object value)
         {
-            ExecutionObject execution = this.ActivityInstance;
-            if (execution != null)
-            {
-                execution.SetVariable(name, value);
-                return;
-            }
+            this.token.SetVariable(name, value);
+            //ExecutionObject execution = this.ActivityInstance;
+            //if (execution != null)
+            //{
+            //    execution.SetVariable(name, value);
+            //    return;
+            //}
 
-            execution = this.Scope;
-            if (execution != null)
-            {
-                execution.SetVariable(name, value);
-                return;
-            }
+            //execution = this.Scope;
+            //if (execution != null)
+            //{
+            //    execution.SetVariable(name, value);
+            //    return;
+            //}
 
-            this.ProcessInstance.SetVariable(name, value);
+            //this.ProcessInstance.SetVariable(name, value);
         }
 
-        public virtual IEvaluationContext CreateEvaluationContext()
+        public virtual void SetVariableLocal(string name, object value)
         {
-            return null;
+            this.token.SetVariableLocal(name, value);
         }
 
-        public virtual IExpressionEvaluator CreateExpressionEvaluator(string language = null)
+        //protected IScriptEngine scriptEngine;
+        //protected IScriptingScope scriptingScope;
+
+        public virtual object EvaluteExpression(string expression)
         {
-            return null;
+            //extract expression.
+            expression = StringHelper.ExtractExpression(expression);
+            var engine = new JavascriptEngine();
+            var scope = engine.CreateScope(new ScriptingContext(this));
+
+            return engine.Execute(expression, scope);
+        }
+
+        public virtual TValue EvaluteExpression<TValue>(string expression)
+        {
+            var result = this.EvaluteExpression(expression);
+            if (result != null)
+                return (TValue)result;
+
+            return default(TValue);
         }
 
         public virtual ActivityInstance Scope

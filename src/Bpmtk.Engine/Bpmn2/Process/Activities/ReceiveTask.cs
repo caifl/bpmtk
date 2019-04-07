@@ -1,4 +1,5 @@
 ﻿using System;
+using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2
 {
@@ -31,6 +32,19 @@ namespace Bpmtk.Engine.Bpmn2
         public override void Accept(IFlowNodeVisitor visitor)
         {
             visitor.Visit(this);
+        }
+
+        public override void Execute(ExecutionContext executionContext)
+        {
+            //Waiting ...
+
+            //base.Execute(executionContext);
+        }
+
+        public override void Signal(ExecutionContext executionContext, string signalName, object signalData)
+        {
+            base.Leave(executionContext);
+            //base.Signal(executionContext, signalName, signalData);
         }
     }
 }

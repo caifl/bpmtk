@@ -27,9 +27,11 @@ namespace Bpmtk.Engine.Runtime
             return true;
         }
 
-        public virtual object getVariable(string name) => executionContext.GetVariable(name);
+        public virtual ProcessInstance ProcessInstance => executionContext.ProcessInstance;
 
-        public virtual void setVariable(string name, object value) => executionContext.SetVariable(name, value);
+        public virtual object GetVariable(string name) => executionContext.GetVariable(name);
+
+        public virtual void SetVariable(string name, object value) => executionContext.SetVariable(name, value);
 
     }
 }

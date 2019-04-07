@@ -1,12 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.Serialization;
 
 namespace Bpmtk.Engine.Runtime
 {
-    public class RuntimeException : Exception
+    [Serializable]
+    public class RuntimeException : EngineException
     {
         public RuntimeException(string message) : base(message)
+        {
+        }
+
+        public RuntimeException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected RuntimeException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

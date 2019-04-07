@@ -188,128 +188,217 @@ namespace Bpmtk.Engine.Bpmn2
             //设置活动实例为结束状态
             var context = executionContext.Context;
             var token = executionContext.Token;
-            token.Inactivate();
+
+            if(!this.IsSequential)
+                token.Inactivate();
+
+            //fire ActivityInstance completed event.
+            var actInst = token.ActivityInstance;
+            if (actInst != null)
+                actInst.Finish();
+
+            var store = executionContext.Context.GetService<IInstanceStore>();
+            store.Add(new HistoricToken(executionContext, "leave"));
 
             var parentToken = token.Parent;
             if (parentToken != null)
             {
                 var parentExecution = ExecutionContext.Create(context, parentToken);
 
-                var numberOfInstances = parentExecution.GetVariable<int>("numberOfInstances");
-                var numberOfCompletedInstances = parentExecution.GetVariable<int>("numberOfCompletedInstances") + 1;
-                var numberOfActiveInstances = parentExecution.GetVariable<int>("numberOfActiveInstances") - 1;
+                var loopCounter = (int)executionContext.GetVariableLocal<long>("loopCounter");
+                var numberOfInstances = parentExecution.GetVariableLocal<long>("numberOfInstances");
+                var numberOfCompletedInstances = parentExecution.GetVariableLocal<long>("numberOfCompletedInstances") + 1;
+                var numberOfActiveInstances = parentExecution.GetVariableLocal<long>("numberOfActiveInstances");
 
-                parentExecution.SetVariable("numberOfCompletedInstances", numberOfCompletedInstances);
-                parentExecution.SetVariable("numberOfActiveInstances", numberOfActiveInstances);
+                if (!this.IsSequential)
+                {
+                    numberOfActiveInstances += 1;
+                    parentExecution.SetVariable("numberOfActiveInstances", numberOfActiveInstances);
+                }
+
+                parentExecution.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
+
 
                 //输出变量到集合
-                var loopOutputRef = this.LoopDataOutputRef;
-                if (loopOutputRef != null)
+                //var loopOutputRef = this.LoopDataOutputRef;
+                //if (loopOutputRef != null)
+                //{
+                //    //var loopCounter = executionContext.GetVariable<int>("loopCounter");
+                //    var outputSet = parentExecution.GetVariable<IList>(loopOutputRef.Id);
+
+                //    var outputRef = this.OutputDataItem?.Id;
+                //    if (!string.IsNullOrEmpty(outputRef) && loopCounter < outputSet.Count)
+                //    {
+                //        var result = executionContext.GetVariable(outputRef);
+                //        outputSet[loopCounter] = result;
+
+                //        parentExecution.SetVariable(loopOutputRef.Id, outputSet);
+                //    }
+                //}
+                loopCounter += 1;
+                if(loopCounter >= numberOfInstances || this.IsCompleted(parentExecution))
                 {
-                    var loopCounter = executionContext.GetVariable<int>("loopCounter");
-                    var outputSet = parentExecution.GetVariable<IList>(loopOutputRef.Id);
+                    //Remove token.
+                    token.Remove(context);
 
-                    var outputRef = this.OutputDataItem?.Id;
-                    if (!string.IsNullOrEmpty(outputRef) && loopCounter < outputSet.Count)
-                    {
-                        var result = executionContext.GetVariable(outputRef);
-                        outputSet[loopCounter] = result;
+                    //exit multi-instance loop activity.
+                    parentToken.IsMIRoot = false;
+                    parentToken.Activate();
 
-                        parentExecution.SetVariable(loopOutputRef.Id, outputSet);
-                    }
+                    //leave without check loop.
+                    this.Activity.LeaveDefault(parentExecution);
                 }
-
-                var node = token.Node;
-                var inactivateTokens = parentToken.Children.Where(x => !x.IsActive).ToList();
-                if (inactivateTokens.Count() >= numberOfInstances
-                    || this.IsCompleted(parentExecution))
+                else
                 {
-                    //remove all child tokens
-                    foreach (var item in inactivateTokens)
-                        item.Remove(context);
-
-                    base.Leave(parentExecution);
+                    executionContext.SetVariableLocal("loopCounter", loopCounter);
+                    this.ExecuteOriginalBehavior(executionContext, loopCounter);
                 }
+                
+                //var node = token.Node;
+                //var inactivateTokens = parentToken.Children.Where(x => !x.IsActive).ToList();
+                //if (inactivateTokens.Count() >= numberOfInstances
+                //    || this.IsCompleted(parentExecution))
+                //{
+                //    //remove all child tokens
+                //    foreach (var item in inactivateTokens)
+                //        item.Remove(context);
+
+                //    base.Leave(parentExecution);
+                //}
             }
             else
                 base.Leave(executionContext);
         }
 
+        protected virtual void ExecuteOriginalBehavior(ExecutionContext executionContext, int loopCounter)
+        {
+            var map = new Dictionary<string, object>();
+            map.Add("loopCounter", loopCounter);
+
+            var act = ActivityInstance.Create(executionContext);
+            //act.CreateOrUpdateVariable("loopCounter", loopCounter);
+
+            if (this.InputDataItem != null && this.LoopDataInputRef != null)
+            {
+                //Set inputDataItem = LoopDataInputRef[loopCounter]
+                //executionContext.SetVariableLocal(this.InputDataItem.Id, )
+
+                //Add loop element item data into act-inst.
+                //object value = null;
+                //map.Add(this.InputDataItem.Id, value);
+            }
+
+            //初始化活动变量
+            act.InitializeContext(executionContext.Context, map);
+
+            //Activate activity-instance.
+            
+            executionContext.ActivityInstance = act;
+            act.Activate();
+
+            var store = executionContext.Context.GetService<IInstanceStore>();
+            store.Add(new HistoricToken(executionContext, "activate"));
+
+            this.Activity.Execute(executionContext);
+        }
+
         protected override int CreateInstances(ExecutionContext executionContext)
         {
             var numberOfInstances = this.ResolveNumberOfInstances(executionContext);
-            if (numberOfInstances < 0)
+            if (numberOfInstances == 0)
+                return numberOfInstances;
+            else if (numberOfInstances < 0)
             {
                 throw new RuntimeException("Invalid number of instances: must be non-negative integer value"
               + ", but was " + numberOfInstances);
             }
 
-            executionContext.SetVariable("numberOfInstances", numberOfInstances);
-            executionContext.SetVariable("numberOfCompletedInstances", 0);
-            executionContext.SetVariable("numberOfActiveInstances", numberOfInstances);
-
-            var token = executionContext.Token;
-            var node = token.Node;
-
-            var tokens = new List<Token>();
             var context = executionContext.Context;
+            var token = executionContext.Token;
+            
+            token.IsMIRoot = true;
+            token.Inactivate();
 
-            for (int loopCounter = 0; loopCounter < numberOfInstances; loopCounter++)
+            var store = executionContext.Context.GetService<IInstanceStore>();
+            store.Add(new HistoricToken(executionContext, "activate"));
+
+            var node = this.Activity;
+            int numberOfActiveInstances = this.IsSequential ? 1 : numberOfInstances;
+            int numberOfCompletedInstances = 0;
+
+            executionContext.SetVariableLocal("numberOfInstances", numberOfInstances);
+            executionContext.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
+            executionContext.SetVariableLocal("numberOfActiveInstances", numberOfActiveInstances);
+
+            if(this.IsSequential)
             {
-                var instanceToken = token.CreateToken(context);
-                instanceToken.Node = node;
-                tokens.Add(instanceToken);
+                var childToken = token.CreateToken(context);
+
+                //
+                childToken.Node = this.Activity;
+                childToken.Scope = token.Scope;
+
+                var childExecutionContext = ExecutionContext.Create(context, childToken);
+                childExecutionContext.SetVariableLocal("loopCounter", 0);
+
+                this.ExecuteOriginalBehavior(childExecutionContext, 0);
             }
 
-            var innerExecutions = new List<ExecutionContext>();
+            //var tokens = new List<Token>();
+            //for (int loopCounter = 0; loopCounter < numberOfInstances; loopCounter++)
+            //{
+            //    var instanceToken = token.CreateToken(context);
+            //    instanceToken.Node = node;
+            //    tokens.Add(instanceToken);
+            //}
 
-            IList inputSet = null;
-            var loopDataInputRef = this.LoopDataInputRef;
-            var inputDataItem = this.InputDataItem;
-            if (inputDataItem != null)
-                inputSet = executionContext.GetVariable<IList>(loopDataInputRef.Id);
+            //var innerExecutions = new List<ExecutionContext>();
 
-            //创建活动实例
-            for (int loopCounter = 0; loopCounter < numberOfInstances; loopCounter++)
-            {
-                var innerToken = tokens[loopCounter];
-                innerToken.Activate();
+            //IList inputSet = null;
+            //var loopDataInputRef = this.LoopDataInputRef;
+            //var inputDataItem = this.InputDataItem;
+            //if (inputDataItem != null)
+            //    inputSet = executionContext.GetVariable<IList>(loopDataInputRef.Id);
 
-                var innerExecution = ExecutionContext.Create(context, innerToken);
+            ////创建活动实例
+            //for (int loopCounter = 0; loopCounter < numberOfInstances; loopCounter++)
+            //{
+            //    var innerToken = tokens[loopCounter];
+            //    innerToken.Activate();
 
-                innerExecution.SetVariable("loopCounter", loopCounter);
+            //    var innerExecution = ExecutionContext.Create(context, innerToken);
 
-                if (inputSet != null && loopCounter < inputSet.Count)
-                {
-                    var inputValue = inputSet[loopCounter];
-                    innerExecution.SetVariable(inputDataItem.Id, inputValue);
-                }
+            //    innerExecution.SetVariable("loopCounter", loopCounter);
 
-                innerExecutions.Add(innerExecution);
-            }
+            //    if (inputSet != null && loopCounter < inputSet.Count)
+            //    {
+            //        var inputValue = inputSet[loopCounter];
+            //        innerExecution.SetVariable(inputDataItem.Id, inputValue);
+            //    }
 
-            //执行活动实例
-            for (int loopCounter = 0; loopCounter < numberOfInstances; loopCounter++)
-            {
-                var innerExecution = innerExecutions[loopCounter];
+            //    innerExecutions.Add(innerExecution);
+            //}
 
-                //Execute inner-activity.
-                this.Activity.Execute(innerExecution);
-            }
+            ////执行活动实例
+            //for (int loopCounter = 0; loopCounter < numberOfInstances; loopCounter++)
+            //{
+            //    var innerExecution = innerExecutions[loopCounter];
+
+            //    //Execute inner-activity.
+            //    this.Activity.Execute(innerExecution);
+            //}
 
             return numberOfInstances;
         }
 
         protected override int ResolveNumberOfInstances(ExecutionContext executionContext)
         {
-            //var expressionText = this.LoopCardinality?.Text;
             var loopDataInputRef = this.LoopDataInputRef;
             int count = -1;
-            var elContext = executionContext.CreateEvaluationContext();
 
             if (this.LoopCardinality != null)
             {
-                var value = this.LoopCardinality.GetValue<int?>(elContext);
+                var value = executionContext.EvaluteExpression(this.LoopCardinality.Text);
                 if (value != null)
                     count = Convert.ToInt32(value);
             }
@@ -328,13 +417,8 @@ namespace Bpmtk.Engine.Bpmn2
             if (this.CompletionCondition == null)
                 return false;
 
-            var elContext = executionContext.CreateEvaluationContext();
-            //var condition = this.CompletionCondition.Text;
-
-            //var evaluator = executionContext.CreateExpressionEvaluator();
-            //var result = evaluator.Evaluate<bool>(condition);
-
-            return this.CompletionCondition.GetValue<bool>(elContext);
+            var condition = this.CompletionCondition.Text;
+            return executionContext.EvaluteExpression<bool>(condition);
         }
 
         #endregion

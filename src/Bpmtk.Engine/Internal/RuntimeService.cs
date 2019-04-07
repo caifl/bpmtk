@@ -26,7 +26,7 @@ namespace Bpmtk.Engine.Internal
             this.eventSubscriptions = eventSubscriptions;
         }
 
-        public virtual IProcessInstanceQuery CreateProcessInstanceQuery()
+        public virtual IProcessInstanceQuery CreateProcessQuery()
         {
             return null;
         }
@@ -127,6 +127,16 @@ namespace Bpmtk.Engine.Internal
             }
 
             return null;
+        }
+
+        public IActivityInstanceQuery CreateActivityQuery()
+            => this.executions.CreateActivityQuery();
+
+        public virtual void Trigger(long tokenId)
+        {
+            var token = this.executions.FindToken(tokenId);
+            token.Signal(Context.Current);
+            //throw new NotImplementedException();
         }
     }
 }

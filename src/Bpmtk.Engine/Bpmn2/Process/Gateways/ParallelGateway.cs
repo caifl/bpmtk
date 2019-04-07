@@ -50,7 +50,7 @@ namespace Bpmtk.Engine.Bpmn2
         {
             if(this.incomings.Count == 1)
             {
-                base.LeaveAll(executionContext);
+                base.Leave(executionContext, true);
                 return;
             }
 
@@ -102,7 +102,7 @@ namespace Bpmtk.Engine.Bpmn2
                 base.OnActivate(executionContext);
 
                 //leave
-                base.LeaveAll(executionContext);
+                base.Leave(executionContext, true);
             }
             else
             {

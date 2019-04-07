@@ -37,6 +37,11 @@ namespace Bpmtk.Engine.Stores.Internal
             this.session.Save(activityInstance);
         }
 
+        public IActivityInstanceQuery CreateActivityQuery()
+        {
+            return new ActivityInstanceQuery(this.session);
+        }
+
         //public virtual async Task<IEnumerable<ProcessInstance>> GetAsync()
         //{
         //    return await this.session.Query<ProcessInstance>().ToListAsync();

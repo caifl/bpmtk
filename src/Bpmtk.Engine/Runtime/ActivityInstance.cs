@@ -136,21 +136,31 @@ namespace Bpmtk.Engine.Runtime
         {
             ActivityVariable variable = null;
             if (this.variables.TryGetValue(name, out variable))
+                variable.SetValue(value);
+
+            //if (this.Parent != null)
+            //{
+            //    this.Parent.SetVariable(name, value);
+            //    return;
+            //}
+
+            //this.ProcessInstance.SetVariable(name, value);
+        }
+
+        protected virtual void CreateOrUpdateVariable(string name, object value)
+        {
+            ActivityVariable variable = null;
+            if (this.variables.TryGetValue(name, out variable))
             {
                 variable.SetValue(value);
                 return;
             }
 
-            if (this.Parent != null)
-            {
-                this.Parent.SetVariable(name, value);
-                return;
-            }
-
-            this.ProcessInstance.SetVariable(name, value);
+            this.CreateVariableInstance(name, value);
         }
 
-        public virtual void InitializeContext(IContext context)
+        public virtual void InitializeContext(IContext context,
+            IDictionary<string, object> variables = null)
         {
             var processDefinition = this.ProcessInstance.ProcessDefinition;
             var deploymentId = processDefinition.Deployment.Id;
@@ -158,20 +168,23 @@ namespace Bpmtk.Engine.Runtime
 
             var dm = context.GetService<IDeploymentManager>();
             var model = dm.GetBpmnModel(deploymentId);
-            var dataObjects = model.GetSubProcessDataObjects(this.ActivityId);
+            //var dataObjects = model.GetSubProcessDataObjects(this.ActivityId);
 
-            IVariableType type = null;
+            //IVariableType type = null;
+            //foreach (var dataObject in dataObjects)
+            //{
+            //    var value = dataObject.Value;
+            //    type = Variables.VariableType.Resolve(value);
 
-            foreach (var dataObject in dataObjects)
+            //    this.CreateVariableInstance(dataObject.Id, value);
+            //}
+
+            if (variables != null && variables.Count > 0)
             {
-                var value = dataObject.Value;
-                type = Variables.VariableType.Resolve(value);
-
-                this.CreateVariableInstance(dataObject.Id, value);
+                var em = variables.GetEnumerator();
+                while (em.MoveNext())
+                    this.CreateOrUpdateVariable(em.Current.Key, em.Current.Value);
             }
-
-            //this.variableInstances = list;
-            //this.variables = map;
         }
 
         protected virtual ActivityVariable CreateVariableInstance(string name,

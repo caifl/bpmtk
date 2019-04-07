@@ -106,23 +106,14 @@ namespace Bpmtk.Engine.Runtime
 
             this.dataObjects = dataObjects.ToDictionary(x => x.Id);
 
-            //var em = dataObjects.GetEnumerator();
             IVariableType type = null;
-
             foreach (var dataObject in dataObjects)
             {
-                //name = em.Current.Key;
-                //type = em.Current.Value;
-                //var dataObject = em.Current;
-                //type = Vari
                 var value = dataObject.Value;
                 type = Variables.VariableType.Resolve(value);
 
                 this.CreateVariableInstance(dataObject.Id, type, value);
             }
-
-            //this.variableInstances = list;
-            //this.variables = map;
         }
 
         public virtual bool GetVariable(string name, out object value)
@@ -130,16 +121,9 @@ namespace Bpmtk.Engine.Runtime
             value = null;
             ProcessVariable variable = null;
 
-            if(this.variables.TryGetValue(name, out variable))
+            if (this.variables.TryGetValue(name, out variable))
             {
                 value = variable.GetValue();
-                return true;
-            }
-
-            ValuedDataObject dataObject = null;
-            if(this.dataObjects.TryGetValue(name, out dataObject))
-            {
-                value = dataObject.Value;
                 return true;
             }
 
@@ -155,7 +139,7 @@ namespace Bpmtk.Engine.Runtime
             }
             else
             {
-                this.CreateVariableInstance(name, VariableType.Resolve(name), value);
+                this.CreateVariableInstance(name, VariableType.Resolve(value), value);
             }
         }
 

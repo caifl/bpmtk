@@ -7,7 +7,11 @@ namespace Bpmtk.Engine.Stores
 {
     public interface IInstanceStore
     {
+        IActivityInstanceQuery CreateActivityQuery();
+
         ProcessInstance Find(long id);
+
+        Token FindToken(long id);
 
         void Add(ProcessInstance processInstance);
 

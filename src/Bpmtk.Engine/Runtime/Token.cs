@@ -12,6 +12,8 @@ namespace Bpmtk.Engine.Runtime
         private bool isInitialized;
         private FlowNode node;
         private ICollection<Token> children;
+        private ICollection<Variable> variables;
+        private IDictionary<string, Variable> variableByName;
 
         protected Token()
         {
@@ -26,12 +28,16 @@ namespace Bpmtk.Engine.Runtime
             this.isInitialized = true;
             this.Parent = parent;
             this.children = new List<Token>();
+            this.variables = new List<Variable>();
+            this.variableByName = new Dictionary<string, Variable>();
             this.ProcessInstance = parent.ProcessInstance;
             this.IsActive = true;
         }
 
         public Token(ProcessInstance processInstance, FlowNode initialNode)
         {
+            this.variables = new List<Variable>();
+            this.variableByName = new Dictionary<string, Variable>();
             this.children = new List<Token>();
             this.ProcessInstance = processInstance ?? throw new ArgumentNullException(nameof(processInstance));
             this.node = initialNode ?? throw new ArgumentNullException(nameof(initialNode));
@@ -121,6 +127,11 @@ namespace Bpmtk.Engine.Runtime
             get => this.children.ToList();
         }
 
+        public virtual IReadOnlyList<Variable> Variables
+        {
+            get => this.variables.ToList();
+        }
+
         protected virtual void OnNodeChanged()
         {
             this.ActivityId = this.node?.Id;
@@ -196,16 +207,72 @@ namespace Bpmtk.Engine.Runtime
             return token;
         }
 
-        //public virtual Token CreateToken()
-        //{
-        //    var token = new Token(this);
-        //    this.children.Add(token);
+        protected virtual void EnsureVariablesInitialized()
+        {
+            if (this.variableByName == null)
+                this.variableByName = this.variables.ToDictionary(x => x.Name);
+        }
 
-        //    var store = Context.Current.GetService<IInstanceStore>();
-        //    store.Add(token);
+        public virtual object GetVariableLocal(string name)
+        {
+            this.EnsureVariablesInitialized();
 
-        //    return token;
-        //}
+            Variable variable = null;
+            if (this.variableByName.TryGetValue(name, out variable))
+                return variable.GetValue();
+
+            return null;
+        }
+
+        public virtual object GetVariable(string name)
+        {
+            if(this.variableByName == null)
+                this.variableByName = this.variables.ToDictionary(x => x.Name);
+
+            Variable variable = null;
+            if (this.variableByName.TryGetValue(name, out variable))
+                return variable.GetValue();
+
+            if(this.Parent != null)
+                return this.Parent.GetVariable(name);
+
+            return this.ProcessInstance.GetVariable(name);
+        }
+
+        public virtual void SetVariable(string name, object value)
+        {
+            if (this.variableByName == null)
+                this.variableByName = this.variables.ToDictionary(x => x.Name);
+
+            Variable variable = null;
+            if (this.variableByName.TryGetValue(name, out variable))
+                variable.SetValue(value);
+
+            if (this.Parent != null)
+                this.Parent.SetVariable(name, value);
+
+            this.ProcessInstance.SetVariable(name, value);
+        }
+
+        public virtual void SetVariableLocal(string name, object value)
+        {
+            this.EnsureVariablesInitialized();
+
+            Variable variable = null;
+            if (this.variableByName.TryGetValue(name, out variable))
+            {
+                variable.SetValue(value);
+                return;
+            }
+
+            variable = new Variable(name, value);
+            this.variableByName.Add(name, variable);
+            this.variables.Add(variable);
+
+            //Try update historic data.
+            if (this.ActivityInstance != null)
+                this.ActivityInstance.SetVariable(name, value);
+        }
 
         public virtual Token ResolveScope()
         {
@@ -301,7 +368,7 @@ namespace Bpmtk.Engine.Runtime
         public virtual bool IsMIRoot
         {
             get;
-            protected set;
+            set;
         }
 
         public virtual void Resume()

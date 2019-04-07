@@ -61,13 +61,19 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
     //scriptTask
     class ScriptTaskParseHandler : TaskParseHandler
     {
+        public ScriptTaskParseHandler()
+        {
+            this.handlers.Add("script", new ParseHandlerAction<ScriptTask>((p, c, x) => {
+                p.Script = x.Value;
+            }));
+        }
+
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateScriptTask();
             parent.FlowElements.Add(task);
 
             task.ScriptFormat = element.GetAttribute("scriptFormat");
-            task.Script = element.Value;
 
             base.Init(task, context, element);
 

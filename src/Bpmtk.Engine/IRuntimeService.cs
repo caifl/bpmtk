@@ -8,7 +8,11 @@ namespace Bpmtk.Engine
 {
     public interface IRuntimeService
     {
-        IProcessInstanceQuery CreateProcessInstanceQuery();
+        IProcessInstanceQuery CreateProcessQuery();
+
+        IActivityInstanceQuery CreateActivityQuery();
+
+        void Trigger(long tokenId);
 
         IProcessInstance FindProcessInstanceById(long id);
 

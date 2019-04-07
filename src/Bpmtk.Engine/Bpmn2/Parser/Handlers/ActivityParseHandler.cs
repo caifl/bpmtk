@@ -22,11 +22,14 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 
             this.handlers.Add("loopCharacteristics", new ParseHandlerAction<Activity>((p, c, x) =>
             {
+                LoopCharacteristics loopCharacteristics = null;
                 var localName = Helper.GetRealLocalName(x);
                 if (localName == "multiInstanceLoopCharacteristics")
-                    p.LoopCharacteristics = (LoopCharacteristics)miHandler.Create(p, c, x);
+                    loopCharacteristics = (LoopCharacteristics)miHandler.Create(p, c, x);
                 else
-                    p.LoopCharacteristics = (LoopCharacteristics)stdHandler.Create(p, c, x);
+                    loopCharacteristics = (LoopCharacteristics)stdHandler.Create(p, c, x);
+
+                loopCharacteristics.Activity = p;
             }));
 
             this.handlers.Add("multiInstanceLoopCharacteristics", miHandler);
@@ -123,6 +126,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             //extended attributes.
             //item.CollectionRef = element.GetExtendedAttribute("collectionRef");
             //item.ElementRef = element.GetExtendedAttribute("elementRef");
+
+            base.Init(item, context, element);
 
             return item;
         }

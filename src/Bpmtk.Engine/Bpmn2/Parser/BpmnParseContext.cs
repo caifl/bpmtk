@@ -30,7 +30,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser
             where TBaseElement : IBaseElement
         {
             if (id == null)
-                throw new ArgumentNullException(nameof(id));
+                return;
+                //throw new ArgumentNullException(nameof(id));
 
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
