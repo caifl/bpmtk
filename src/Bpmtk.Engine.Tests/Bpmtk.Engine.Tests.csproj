@@ -7,12 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Parser\ExtendedAttributes.bpmn.xml" />
     <None Remove="Resources\data_association.bpmn.xml" />
     <None Remove="Resources\Event\MessageStartEventTest.testSingleMessageStartEvent.bpmn20.xml" />
     <None Remove="Resources\exclusive_gateway.bpmn.xml" />
     <None Remove="Resources\Gateway\ExclusiveGatewayTest.testDefaultSequenceFlow.bpmn20.xml" />
     <None Remove="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.bpmn20.xml" />
     <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasks.bpmn20.xml" />
+    <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasksCompletionCondition.bpmn20.xml" />
+    <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcessCompletionCondition.bpmn20.xml" />
+    <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialSubprocessEmptyCollection.bpmn20.xml" />
+    <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcessEndEvent.bpmn20.xml" />
     <None Remove="Resources\ScriptTask\JavascriptTest.testSetVariableThroughExecutionInScript.bpmn20.xml" />
     <None Remove="Resources\sequential_flow.bpmn.xml" />
     <None Remove="Resources\SubProcess\SubProcessTest.testDataObjectScope.bpmn20.xml" />
@@ -21,12 +26,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Parser\ExtendedAttributes.bpmn.xml" />
     <EmbeddedResource Include="Resources\data_association.bpmn.xml" />
     <EmbeddedResource Include="Resources\Event\MessageStartEventTest.testSingleMessageStartEvent.bpmn20.xml" />
     <EmbeddedResource Include="Resources\exclusive_gateway.bpmn.xml" />
     <EmbeddedResource Include="Resources\Gateway\ExclusiveGatewayTest.testDefaultSequenceFlow.bpmn20.xml" />
     <EmbeddedResource Include="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.bpmn20.xml" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasks.bpmn20.xml" />
+    <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasksCompletionCondition.bpmn20.xml" />
+    <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcessCompletionCondition.bpmn20.xml" />
+    <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialSubprocessEmptyCollection.bpmn20.xml" />
+    <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcessEndEvent.bpmn20.xml" />
     <EmbeddedResource Include="Resources\ScriptTask\JavascriptTest.testSetVariableThroughExecutionInScript.bpmn20.xml" />
     <EmbeddedResource Include="Resources\sequential_flow.bpmn.xml" />
     <EmbeddedResource Include="Resources\SubProcess\SubProcessTest.testDataObjectScope.bpmn20.xml" />

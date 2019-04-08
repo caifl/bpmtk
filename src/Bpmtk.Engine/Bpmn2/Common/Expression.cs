@@ -6,7 +6,7 @@ namespace Bpmtk.Engine.Bpmn2
     public class Expression : BaseElementWithMixedContent,
          IExpression
     {
-        private IExpression compiledExpression;
+        //private IExpression compiledExpression;
 
         public virtual object GetValue(IEvaluationContext context)
         {

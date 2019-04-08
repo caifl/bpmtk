@@ -6,17 +6,17 @@ using Bpmtk.Engine.Stores;
 
 namespace Bpmtk.Engine.Bpmn2
 {
-    public class SequenceFlow : FlowElement
+    public class SequenceFlow : FlowElement, IScriptEnabledElement
     {
+        protected List<Script> scripts = new List<Script>();
+
         public virtual Expression ConditionExpression
         {
             get;
             set;
         }
 
-        protected List<EventListener> eventListeners = new List<EventListener>();
-
-        public virtual IList<EventListener> EventListeners => this.eventListeners;
+        public virtual IList<Script> Scripts => this.scripts;
 
         public virtual FlowNode SourceRef
         {
@@ -35,6 +35,7 @@ namespace Bpmtk.Engine.Bpmn2
             get;
             set;
         }
+
 
         public override string ToString()
         {

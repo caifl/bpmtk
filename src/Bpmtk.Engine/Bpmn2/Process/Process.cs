@@ -10,24 +10,24 @@ namespace Bpmtk.Engine.Bpmn2
     /// 流程定义信息
     /// </summary>
     public class Process : CallableElement, 
-        IFlowElementsContainer 
+        IFlowElementsContainer,
+        IScriptEnabledElement
     {
         protected bool isExecutable;
         protected ProcessType processType;
         protected bool isClosed;
         protected string definitionalCollaborationRef;
-
-        //extended attributes
-        protected readonly Dictionary<string, string> attributes = new Dictionary<string, string>();
-
+        
         private readonly List<LaneSet> laneSets = new List<LaneSet>();
         protected List<Property> properties = new List<Property>();
         protected List<ResourceRole> resources = new List<ResourceRole>();
         private readonly FlowElementCollection flowElements;
         protected List<Artifact> artifacts = new List<Artifact>();
-        protected List<EventListener> eventListeners = new List<EventListener>();
 
-        private IDictionary<string, FlowElement> flowElementById;
+        //extended attributes
+        protected List<Script> scripts = new List<Script>();
+
+        //private IDictionary<string, FlowElement> flowElementById;
 
         public Process()
         {
@@ -45,46 +45,47 @@ namespace Bpmtk.Engine.Bpmn2
 
         public virtual IList<LaneSet> LaneSets => this.laneSets;
 
-        /// <summary>
-        /// Get extended attributes of Process.
-        /// </summary>
-        public virtual IReadOnlyDictionary<string, string> Attributes
+        private FlowNode initialNode;
+        
+        public virtual FlowNode InitialNode
         {
             get
             {
-                return new ReadOnlyDictionary<string, string>(this.attributes);
-            }
-        }
-
-        public virtual IList<StartEvent> StartEvents
-        {
-            get => this.flowElements.OfType<StartEvent>().ToList();
-        }
-
-        public virtual FlowElement FindFlowElementById(string id, bool recurive = false)
-        {
-            if (this.flowElementById == null)
-            {
-                this.flowElementById = this.flowElements.ToDictionary(x => x.Id);
-            }
-
-            FlowElement flowElement = null;
-            if (this.flowElementById.TryGetValue(id, out flowElement))
-                return flowElement;
-
-            if (recurive)
-            {
-                var subProcessList = this.flowElements.OfType<SubProcess>();
-                foreach (var subProcess in subProcessList)
+                if(initialNode == null)
                 {
-                    flowElement = subProcess.FindFlowElementById(id, recurive);
-                    if (flowElement != null)
-                        return flowElement;
+                    this.initialNode = this.flowElements.OfType<StartEvent>()
+                        .Where(x => x.EventDefinitions.Count == 0
+                            && x.EventDefinitionRefs.Count == 0).FirstOrDefault();
                 }
-            }
 
-            return null;
+                return initialNode;
+            }
         }
+
+        //public virtual FlowElement FindFlowElementById(string id, bool recurive = false)
+        //{
+        //    if (this.flowElementById == null)
+        //    {
+        //        this.flowElementById = this.flowElements.ToDictionary(x => x.Id);
+        //    }
+
+        //    FlowElement flowElement = null;
+        //    if (this.flowElementById.TryGetValue(id, out flowElement))
+        //        return flowElement;
+
+        //    if (recurive)
+        //    {
+        //        var subProcessList = this.flowElements.OfType<SubProcess>();
+        //        foreach (var subProcess in subProcessList)
+        //        {
+        //            flowElement = subProcess.FindFlowElementById(id, recurive);
+        //            if (flowElement != null)
+        //                return flowElement;
+        //        }
+        //    }
+
+        //    return null;
+        //}
 
         //public virtual TFlowElement GetFlowElementById<TFlowElement>(string id, bool recursive = false) 
         //    where TFlowElement : FlowElement
@@ -186,7 +187,7 @@ namespace Bpmtk.Engine.Bpmn2
         //}
         public virtual IList<FlowElement> FlowElements => this.flowElements;
 
-        public virtual IList<EventListener> EventListeners => this.eventListeners;
+        public virtual IList<Script> Scripts => this.scripts;
 
         //[XmlElement("group", typeof(Group), Order = 5)]
         public virtual IList<Artifact> Artifacts => this.artifacts;
@@ -238,21 +239,6 @@ namespace Bpmtk.Engine.Bpmn2
         }
 
         public virtual bool IsExecutable
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// The form handler key or class name.(extended)
-        /// </summary>
-        public virtual string FormHandler
-        {
-            get;
-            set;
-        }
-
-        public virtual string VersionTag
         {
             get;
             set;

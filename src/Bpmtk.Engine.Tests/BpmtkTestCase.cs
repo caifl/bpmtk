@@ -16,6 +16,7 @@ namespace Bpmtk.Engine.Tests
         protected readonly IRepositoryService repositoryService;
         protected readonly IRuntimeService runtimeService;
         protected readonly ITaskService taskService;
+        protected readonly IIdentityService identityService;
         protected readonly IUnitOfWork unitOfWork;
 
         public BpmtkTestCase(ITestOutputHelper output)
@@ -29,8 +30,14 @@ namespace Bpmtk.Engine.Tests
             this.repositoryService = context.GetService<IRepositoryService>();
             this.runtimeService = context.GetService<IRuntimeService>();
             this.taskService = context.GetService<ITaskService>();
+            this.identityService = context.GetService<IIdentityService>();
 
             this.unitOfWork = context.GetService<IUnitOfWork>();
+
+            var user = new Models.User() { Name = "felix" };
+            this.identityService.CreateUser(user);
+
+            this.context.SetAuthenticatedUser(user.Id);
         }
 
         protected virtual IProcessEngine BuildProcessEngine()

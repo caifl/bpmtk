@@ -20,7 +20,8 @@
     <property name="State" column="`state`" not-null="true" type="ExecutionState"/>
     <property name="Created" column="created" not-null="true"/>
     <property name="StartTime" column="start_time"/>
-    <property name="EndTime" column="end_time"/>
+    <property name="LastStateTime" column="last_state_time" not-null="true"/>
+    <property name="EndReason" column="end_reason" length="255"/>
     <property name="Description" column="description" length="255"/>
 
     <many-to-one name="CallActivityInstance"

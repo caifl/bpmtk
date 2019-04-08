@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bpmtk.Engine.Bpmn2.Extensions;
+using System;
 using System.Collections.Generic;
 
 namespace Bpmtk.Engine.Bpmn2
@@ -6,6 +7,7 @@ namespace Bpmtk.Engine.Bpmn2
     public abstract class BaseElement : IBaseElement
     {
         protected List<Documentation> documentations = new List<Documentation>();
+        protected List<ExtendedAttribute> attributes = new List<ExtendedAttribute>();
 
         /// <remarks/>
         //[XmlElement(Order = 1)]
@@ -19,6 +21,11 @@ namespace Bpmtk.Engine.Bpmn2
         {
             get;
             set;
+        }
+
+        public virtual IList<ExtendedAttribute> Attributes
+        {
+            get => this.attributes;
         }
 
         public virtual IList<Documentation> Documentations => this.documentations;

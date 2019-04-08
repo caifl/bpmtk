@@ -31,24 +31,6 @@ namespace Bpmtk.Engine.Bpmn2
             set;
         }
 
-        ///// <summary>
-        ///// Gets or sets collection variable id.(extended)
-        ///// </summary>
-        //public virtual string CollectionRef
-        //{
-        //    get;
-        //    set;
-        //}
-
-        ///// <summary>
-        ///// Gets or sets element variable id.(extended)
-        ///// </summary>
-        //public virtual string ElementRef
-        //{
-        //    get;
-        //    set;
-        //}
-
         /// <summary>
         /// This ItemAwareElement is used to determine the number of Activity
         //        instances, one Activity instance per item in the collection of data stored
@@ -189,117 +171,111 @@ namespace Bpmtk.Engine.Bpmn2
             var context = executionContext.Context;
             var token = executionContext.Token;
 
-            if(!this.IsSequential)
+            var parentToken = token.Parent;
+            if (parentToken == null || !parentToken.IsMIRoot)
+                throw new RuntimeException("Invalid multiInstance execution.");
+
+            if (!this.IsSequential)
                 token.Inactivate();
 
-            //fire ActivityInstance completed event.
-            var actInst = token.ActivityInstance;
-            if (actInst != null)
-                actInst.Finish();
+            //fire inner activity leave event.
+            this.Activity.OnInnerActivityEnded(executionContext);
 
-            var store = executionContext.Context.GetService<IInstanceStore>();
-            store.Add(new HistoricToken(executionContext, "leave"));
+            var parentExecution = ExecutionContext.Create(context, parentToken);
+            
+            var numberOfInstances = parentExecution.GetVariableLocal<int>("numberOfInstances");
+            var numberOfCompletedInstances = parentExecution.GetVariableLocal<int>("numberOfCompletedInstances") + 1;
+            var numberOfActiveInstances = parentExecution.GetVariableLocal<int>("numberOfActiveInstances");
 
-            var parentToken = token.Parent;
-            if (parentToken != null)
+            if (!this.IsSequential)
             {
-                var parentExecution = ExecutionContext.Create(context, parentToken);
+                numberOfActiveInstances += 1;
+                parentExecution.SetVariable("numberOfActiveInstances", numberOfActiveInstances);
+            }
 
-                var loopCounter = (int)executionContext.GetVariableLocal<long>("loopCounter");
-                var numberOfInstances = parentExecution.GetVariableLocal<long>("numberOfInstances");
-                var numberOfCompletedInstances = parentExecution.GetVariableLocal<long>("numberOfCompletedInstances") + 1;
-                var numberOfActiveInstances = parentExecution.GetVariableLocal<long>("numberOfActiveInstances");
+            parentExecution.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
 
-                if (!this.IsSequential)
+            var loopCounter = executionContext.GetVariableLocal<int>("loopCounter");
+
+            //Update outputDataItem
+            var loopOutputRef = this.LoopDataOutputRef;
+            if (loopOutputRef != null && this.OutputDataItem != null)
+            {
+                var collection = executionContext.GetVariable(loopOutputRef.Id);
+                if (collection != null && collection is IList)
                 {
-                    numberOfActiveInstances += 1;
-                    parentExecution.SetVariable("numberOfActiveInstances", numberOfActiveInstances);
+                    var itemVarName = this.OutputDataItem.Id;
+                    var list = collection as IList;
+                    if (list.Count > loopCounter)
+                    {
+                        var itemValue = executionContext.GetVariable(itemVarName);
+                        list[loopCounter] = itemValue;
+                        executionContext.SetVariable(loopOutputRef.Id, itemValue);
+                    }
                 }
+            }
 
-                parentExecution.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
+            loopCounter += 1;
+            if (loopCounter >= numberOfInstances || this.IsCompleted(parentExecution))
+            {
+                //Remove token.
+                token.Remove(context);
 
+                //exit multi-instance loop activity.
+                parentToken.IsMIRoot = false;
+                parentToken.Activate();
 
-                //输出变量到集合
-                //var loopOutputRef = this.LoopDataOutputRef;
-                //if (loopOutputRef != null)
-                //{
-                //    //var loopCounter = executionContext.GetVariable<int>("loopCounter");
-                //    var outputSet = parentExecution.GetVariable<IList>(loopOutputRef.Id);
-
-                //    var outputRef = this.OutputDataItem?.Id;
-                //    if (!string.IsNullOrEmpty(outputRef) && loopCounter < outputSet.Count)
-                //    {
-                //        var result = executionContext.GetVariable(outputRef);
-                //        outputSet[loopCounter] = result;
-
-                //        parentExecution.SetVariable(loopOutputRef.Id, outputSet);
-                //    }
-                //}
-                loopCounter += 1;
-                if(loopCounter >= numberOfInstances || this.IsCompleted(parentExecution))
-                {
-                    //Remove token.
-                    token.Remove(context);
-
-                    //exit multi-instance loop activity.
-                    parentToken.IsMIRoot = false;
-                    parentToken.Activate();
-
-                    //leave without check loop.
-                    this.Activity.LeaveDefault(parentExecution);
-                }
-                else
-                {
-                    executionContext.SetVariableLocal("loopCounter", loopCounter);
-                    this.ExecuteOriginalBehavior(executionContext, loopCounter);
-                }
-                
-                //var node = token.Node;
-                //var inactivateTokens = parentToken.Children.Where(x => !x.IsActive).ToList();
-                //if (inactivateTokens.Count() >= numberOfInstances
-                //    || this.IsCompleted(parentExecution))
-                //{
-                //    //remove all child tokens
-                //    foreach (var item in inactivateTokens)
-                //        item.Remove(context);
-
-                //    base.Leave(parentExecution);
-                //}
+                //leave without check loop.
+                this.Activity.LeaveDefault(parentExecution);
             }
             else
-                base.Leave(executionContext);
+            {
+                executionContext.SetVariableLocal("loopCounter", loopCounter);
+                this.ExecuteOriginalBehavior(executionContext, loopCounter);
+            }
+
+            //var node = token.Node;
+            //var inactivateTokens = parentToken.Children.Where(x => !x.IsActive).ToList();
+            //if (inactivateTokens.Count() >= numberOfInstances
+            //    || this.IsCompleted(parentExecution))
+            //{
+            //    //remove all child tokens
+            //    foreach (var item in inactivateTokens)
+            //        item.Remove(context);
+
+            //    base.Leave(parentExecution);
+            //}
         }
 
         protected virtual void ExecuteOriginalBehavior(ExecutionContext executionContext, int loopCounter)
         {
             var map = new Dictionary<string, object>();
             map.Add("loopCounter", loopCounter);
-
-            var act = ActivityInstance.Create(executionContext);
-            //act.CreateOrUpdateVariable("loopCounter", loopCounter);
-
+            
             if (this.InputDataItem != null && this.LoopDataInputRef != null)
             {
-                //Set inputDataItem = LoopDataInputRef[loopCounter]
-                //executionContext.SetVariableLocal(this.InputDataItem.Id, )
+                var itemVarName = this.InputDataItem.Id;
+                var collectionVarName = this.LoopDataInputRef.Id;
 
-                //Add loop element item data into act-inst.
-                //object value = null;
-                //map.Add(this.InputDataItem.Id, value);
+                var collection = executionContext.GetVariable(this.LoopDataInputRef.Id);
+                if(collection != null && collection is IList)
+                {
+                    var list = collection as IList;
+                    if(list.Count > loopCounter)
+                    {
+                        var itemValue = list[loopCounter];
+                        map[itemVarName] = itemValue;
+                    }
+                }
+
+                if (this.OutputDataItem != null)
+                {
+                    //var dataObject = this.OutputDataItem.
+                    //map[this.OutputDataItem.Id] = ;
+                }
             }
 
-            //初始化活动变量
-            act.InitializeContext(executionContext.Context, map);
-
-            //Activate activity-instance.
-            
-            executionContext.ActivityInstance = act;
-            act.Activate();
-
-            var store = executionContext.Context.GetService<IInstanceStore>();
-            store.Add(new HistoricToken(executionContext, "activate"));
-
-            this.Activity.Execute(executionContext);
+            this.Activity.ExecuteInnerActivity(executionContext, map);
         }
 
         protected override int CreateInstances(ExecutionContext executionContext)
@@ -391,7 +367,7 @@ namespace Bpmtk.Engine.Bpmn2
             return numberOfInstances;
         }
 
-        protected override int ResolveNumberOfInstances(ExecutionContext executionContext)
+        protected virtual int ResolveNumberOfInstances(ExecutionContext executionContext)
         {
             var loopDataInputRef = this.LoopDataInputRef;
             int count = -1;
@@ -418,7 +394,11 @@ namespace Bpmtk.Engine.Bpmn2
                 return false;
 
             var condition = this.CompletionCondition.Text;
-            return executionContext.EvaluteExpression<bool>(condition);
+            var result = executionContext.EvaluteExpression(condition);
+            if(result != null)
+                return Convert.ToBoolean(result);
+
+            return false;
         }
 
         #endregion

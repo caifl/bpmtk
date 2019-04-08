@@ -10,7 +10,6 @@ namespace Bpmtk.Engine.Bpmn2
     {
         private readonly FlowElementCollection flowElements;
         protected List<Artifact> artifacts = new List<Artifact>();
-        private IDictionary<string, FlowElement> flowElementById;
 
         public SubProcess()
         {
@@ -20,31 +19,6 @@ namespace Bpmtk.Engine.Bpmn2
         public override void Accept(IFlowNodeVisitor visitor)
         {
             visitor.Visit(this);
-        }
-
-        public virtual FlowElement FindFlowElementById(string id, bool recurive = false)
-        {
-            if (this.flowElementById == null)
-            {
-                this.flowElementById = this.flowElements.ToDictionary(x => x.Id);
-            }
-
-            FlowElement flowElement = null;
-            if (this.flowElementById.TryGetValue(id, out flowElement))
-                return flowElement;
-
-            if (recurive)
-            {
-                var subProcessList = this.flowElements.OfType<SubProcess>();
-                foreach (var subProcess in subProcessList)
-                {
-                    flowElement = subProcess.FindFlowElementById(id, recurive);
-                    if (flowElement != null)
-                        return flowElement;
-                }
-            }
-
-            return null;
         }
 
         public virtual bool TriggeredByEvent
@@ -57,68 +31,39 @@ namespace Bpmtk.Engine.Bpmn2
 
         public virtual IList<Artifact> Artifacts => this.artifacts;
 
-        protected override void OnActivate(ExecutionContext executionContext)
+        protected override void OnActivating(ExecutionContext executionContext)
         {
-            //base.OnActivate(executionContext);
+            base.OnActivating(executionContext);
+
+            var context = executionContext.Context;
+            var act = executionContext.ActivityInstance;
+
+            //initialize data-objects.
+            act.InitializeContext(context);
         }
 
         public override void Execute(ExecutionContext executionContext)
         {
             var context = executionContext.Context;
 
-            IList<FlowNode> initialNodes = this.FlowElements
-                .OfType<FlowNode>()
-                .Where(x => x.Incomings.Count == 0)
-                .ToList();
+            var startEvent = this.FlowElements
+                .OfType<StartEvent>()
+                .Where(x => x.EventDefinitions.Count == 0 && x.EventDefinitionRefs.Count == 0)
+                .FirstOrDefault();
 
-            if (initialNodes.Count == 0)
-                throw new BpmnError("子流程没有起始节点");
+            if (startEvent == null)
+                throw new RuntimeException($"No initial activity found for subprocess '{this.Id}'.");
 
             var token = executionContext.Token;
             var scope = executionContext.ActivityInstance;
 
-            var act = executionContext.ActivityInstance;
-            act.InitializeContext(context);
+            //create sub-process scope token.
+            var child = token.CreateToken(context);
+            child.Node = startEvent;
+            child.Scope = scope;
 
-            base.OnActivate(executionContext);
-
-            var list = new List<Token>();
-            foreach(var initialNode in initialNodes)
-            {
-                var child = token.CreateToken(context);
-                child.Node = initialNode;
-                child.Scope = scope;
-
-                list.Add(child);
-            }
-
-            var store = executionContext.Context.GetService<IInstanceStore>();
-
-            foreach (var subToken in list)
-            {
-                var subExecution = ExecutionContext.Create(context, subToken);
-                var node = subToken.Node;
-
-                //CreateActivityInstance
-                subExecution.ActivityInstance = ActivityInstance.Create(subExecution);
-
-                //processDefinition.fireEvent(Event.EVENTTYPE_PROCESS_START, executionContext);
-                
-                store.Add(new HistoricToken(subExecution, "start"));
-
-                node.Execute(subExecution);
-            }
-
-            //base.Execute(executionContext);
-        }
-
-        public override void Leave(ExecutionContext executionContext)
-        {
-            var token = executionContext.Token;
-            if (token.Children.Count > 0)
-                throw new BpmnError("该子流程还有环节未完成");
-
-            base.Leave(executionContext);
+            var subExecution = ExecutionContext.Create(context, child);
+            startEvent.Enter(subExecution);
         }
     }
 }

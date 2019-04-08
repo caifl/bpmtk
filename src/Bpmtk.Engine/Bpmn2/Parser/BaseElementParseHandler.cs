@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Xml.Linq;
+using Bpmtk.Engine.Bpmn2.Extensions;
 using Bpmtk.Engine.Bpmn2.Parser.Handlers;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
@@ -13,6 +15,34 @@ namespace Bpmtk.Engine.Bpmn2.Parser
             }));
 
             this.handlers.Add("extensionElements", new ParseHandlerAction<BaseElement>((p, c, x) => {
+
+                //extended attribute.
+                var items = x.GetExtendedElements("attribute");
+                foreach(var item in items)
+                {
+                    var attrName = item.Attribute("name").Value;
+
+                    p.Attributes.Add(new ExtendedAttribute() { Name = attrName, Value = item.Value });
+                }
+
+                if (p is IScriptEnabledElement)
+                {
+                    items = x.GetExtendedElements("script");
+                    if (items.Any())
+                    {
+                        var owner = p as IScriptEnabledElement;
+                        foreach (var item in items)
+                        {
+                            var script = new Script();
+                            script.ScriptFormat = item.Attribute("scriptFormat").Value;
+                            script.On = item.GetAttribute("on");
+                            script.Text = item.Value;
+
+                            owner.Scripts.Add(script);
+                        }
+                    }
+                }
+
                 this.ParseExtensionElements(p, c, x);
             }));
         }
@@ -45,45 +75,6 @@ namespace Bpmtk.Engine.Bpmn2.Parser
         {
             return null;
         }
-
-        //protected virtual IList<EventListener> ParseEventListeners(ExtensionElements extensionElements)
-        //{
-        //    List<EventListener> list = new List<EventListener>();
-
-        //    if (extensionElements != null && extensionElements.Items.Count > 0)
-        //    {
-        //        string value = null;
-        //        foreach (var item in extensionElements.Items)
-        //        {
-        //            if (item.Name.LocalName != "eventListener")
-        //                continue;
-
-        //            var eventListener = new EventListener();
-        //            eventListener.Event = item.GetAttribute("event");
-
-        //            value = item.GetAttribute("class");
-        //            if (!string.IsNullOrEmpty(value))
-        //                eventListener.Class = value;
-
-        //            list.Add(eventListener);
-
-        //            var children = item.Elements();
-        //            foreach (var child in children)
-        //            {
-        //                if (child.Name.LocalName == "script")
-        //                {
-        //                    value = child.Value;
-        //                    if (!string.IsNullOrEmpty(value))
-        //                        eventListener.Script = child.Value;
-        //                    eventListener.ScriptFormat = child.GetAttribute("scriptFormat");
-        //                    continue;
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    return list;
-        //}
     }
 
     public abstract class BaseElementParseHandler<TParent> : ParseHandler<TParent>
@@ -95,6 +86,32 @@ namespace Bpmtk.Engine.Bpmn2.Parser
             }));
 
             this.handlers.Add("extensionElements", new ParseHandlerAction<BaseElement>((p, c, x) => {
+                var items = x.GetExtendedElements("attribute");
+                foreach (var item in items)
+                {
+                    var attrName = item.Attribute("name").Value;
+
+                    p.Attributes.Add(new Extensions.ExtendedAttribute() { Name = attrName, Value = item.Value });
+                }
+
+                if (p is IScriptEnabledElement)
+                {
+                    items = x.GetExtendedElements("script");
+                    if (items.Any())
+                    {
+                        var owner = p as IScriptEnabledElement;
+                        foreach (var item in items)
+                        {
+                            var script = new Script();
+                            script.ScriptFormat = item.Attribute("scriptFormat").Value;
+                            script.On = item.GetAttribute("on");
+                            script.Text = item.Value;
+
+                            owner.Scripts.Add(script);
+                        }
+                    }
+                }
+
                 this.ParseExtensionElements(p, c, x);
             }));
         }

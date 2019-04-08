@@ -42,17 +42,44 @@ namespace Bpmtk.Engine.Bpmn2
             set;
         }
 
+        public override void Execute(ExecutionContext executionContext)
+        {
+            var loopCounter = executionContext.GetVariableLocal<int?>("loopCounter");
+            if (loopCounter != null)
+                throw new RuntimeException("The loop activity can't call execute.");
+
+            if (this.LoopCondition == null 
+                    && this.LoopMaximum == null)
+                throw new RuntimeException("Either loopCondition or loopMaximum was not specified.");
+
+            if (LoopMaximum.HasValue && LoopMaximum.Value < 1)
+                throw new RuntimeException("Invalid loopMaximum.");
+
+            if (this.TestBefore)
+            {
+                bool canLoop = false;
+                if(this.LoopCondition != null)
+                    canLoop = executionContext.EvaluteExpression<bool>(this.LoopCondition.Text);
+
+                if(canLoop)
+                {
+                    executionContext.SetVariableLocal("loopCounter", 0);
+                    this.Activity.Execute(executionContext);
+                }
+            }
+        }
+
+        public override void Leave(ExecutionContext executionContext)
+        {
+            //base.Leave(executionContext);
+        }
+
         protected override int CreateInstances(ExecutionContext executionContext)
         {
             throw new NotImplementedException();
         }
 
         protected override bool IsCompleted(ExecutionContext executionContext)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override int ResolveNumberOfInstances(ExecutionContext executionContext)
         {
             throw new NotImplementedException();
         }

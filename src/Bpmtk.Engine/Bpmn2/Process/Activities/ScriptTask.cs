@@ -31,12 +31,7 @@ namespace Bpmtk.Engine.Bpmn2
                 var engine = new JavascriptEngine();
 
                 var scope = engine.CreateScope(scriptingContext);
-                engine.Execute(this.Script, scope);
-                //var context = executionContext.Context;
-                //var scriptEngineManager = context.GetService<IScriptEngineManager>();
-
-                //var engine = scriptEngineManager.Get(this.ScriptFormat);
-                //engine.Execute(this.Script);
+                var completionValue = engine.Execute(this.Script, scope);
             }
 
             base.Execute(executionContext);

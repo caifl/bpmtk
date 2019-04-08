@@ -27,6 +27,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             this.handlers.Add("parallelGateway", new ParallelGatewayParseHandler());
             this.handlers.Add("exclusiveGateway", new ExclusiveGatewayParseHandler());
             this.handlers.Add("inclusiveGateway", new InclusiveGatewayParseHandler());
+            this.handlers.Add("complexGateway", new ComplexGatewayParseHandler());
             this.handlers.Add("scriptTask", new ScriptTaskParseHandler());
             this.handlers.Add("serviceTask", new ServiceTaskParseHandler());
             this.handlers.Add("receiveTask", new ReceiveTaskParseHandler());
@@ -34,6 +35,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             this.handlers.Add("task", new TaskParseHandler());
             this.handlers.Add("manualTask", new ManualTaskParseHandler());
             this.handlers.Add("businessRuleTask", new BusinessRuleTaskParseHandler());
+            this.handlers.Add("callActivity", new CallActivityParseHandler());
 
             this.handlers.Add("subProcess", new SubProcessParseHandler());
             this.handlers.Add("transaction",new TransactionParseHandler());

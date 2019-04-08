@@ -58,36 +58,37 @@ namespace Bpmtk.Engine.Bpmn2
             set;
         }
 
-        public override void Enter(ExecutionContext executionContext)
+        protected override void Activate(ExecutionContext executionContext)
         {
-            if(this.LoopCharacteristics != null)
+            if (this.LoopCharacteristics != null)
             {
                 this.LoopCharacteristics.Execute(executionContext);
                 return;
             }
 
-            base.Enter(executionContext);
+            base.Activate(executionContext);
         }
-
-        //public override void Execute(ExecutionContext executionContext)
-        //{
-        //    base.Execute(executionContext);
-        //}
 
         public override void Leave(ExecutionContext executionContext)
         {
             if (this.LoopCharacteristics != null)
             {
-                var token = executionContext.Token;
-                if (token.Parent != null &&
-                    token.Parent.IsMIRoot)
-                {
-                    this.LoopCharacteristics.Leave(executionContext);
-                    return;
-                }
+                this.LoopCharacteristics.Leave(executionContext);
+                return;
             }
 
             base.Leave(executionContext);
+        }
+
+        internal virtual void ExecuteInnerActivity(ExecutionContext executionContext,
+            IDictionary<string, object> variables)
+        {
+            base.Activate(executionContext, variables);
+        }
+
+        internal virtual void OnInnerActivityEnded(ExecutionContext executionContext)
+        {
+            base.OnLeave(executionContext);
         }
     }
 }

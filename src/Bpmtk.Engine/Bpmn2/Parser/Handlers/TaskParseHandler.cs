@@ -43,14 +43,9 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var userTask = context.BpmnFactory.CreateUserTask();
+            userTask.Implementation = element.GetAttribute("implementation");
+
             parent.FlowElements.Add(userTask);
-            //userTask.TaskName = element.GetExtendedAttribute("taskName");
-            //userTask.AssignmentStrategy = element.GetExtendedAttribute("assignmentStrategy");
-            //userTask.Assignee = element.GetExtendedAttribute("assignee");
-            
-            var value = element.GetExtendedAttribute("priority");
-            if (value != null)
-                userTask.Priority = (TaskPriority)Enum.Parse(typeof(TaskPriority), value);
 
             base.Init(userTask, context, element);
 

@@ -1,28 +1,29 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Query;
 using Bpmtk.Engine.Stores;
-using Bpmtk.Engine.Repository;
 using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Events;
 using Bpmtk.Engine.Events.Internal;
+using Bpmtk.Engine.Repository;
 
 namespace Bpmtk.Engine.Internal
 {
     public class ExecutionService : IRuntimeService
     {
-        private readonly IInstanceStore executions;
-        protected readonly IDeploymentStore deployments;
+        private readonly IInstanceStore instances;
+        protected readonly IDeploymentManager deploymentManager;
         private readonly IEventSubscriptionStore eventSubscriptions;
 
-        public ExecutionService(IInstanceStore executions,
-            IDeploymentStore deployments,
+        public ExecutionService(IInstanceStore instances,
+            IDeploymentManager deploymentManager,
             IEventSubscriptionStore eventSubscriptions)
         {
-            this.executions = executions;
-            this.deployments = deployments;
+            this.instances = instances;
+            this.deploymentManager = deploymentManager;
             this.eventSubscriptions = eventSubscriptions;
         }
 
@@ -33,32 +34,35 @@ namespace Bpmtk.Engine.Internal
 
         public virtual IEnumerable<string> GetActiveActivityIds(long id)
         {
-            return this.executions.GetActiveActivityIds(id);
+            return this.instances.GetActiveActivityIds(id);
         }
 
         public virtual ProcessInstance StartProcessByKey(string processDefinitionKey,
             IDictionary<string, object> variables)
         {
-            var processDefinition = deployments.GetProcessDefintionByKey(processDefinitionKey);
+            var processDefinition = this.deploymentManager.FindLatestProcessDefinitionByKey(processDefinitionKey);
             if (processDefinition == null)
                 throw new KeyNotFoundException("The specified process-definition was not found.");
 
+            var model = this.deploymentManager.GetBpmnModel(processDefinition.DeploymentId);
+            var process = model.GetProcess(processDefinition.Key);
+            if (process == null)
+                throw new RuntimeException($"The BPMN model not contains process '{processDefinition.Key}'");
+
+            var initialNode = process.InitialNode;
+            if (initialNode == null)
+                throw new RuntimeException($"No start element found for process definition " + processDefinition.Key) ;
+
             var pi = new ProcessInstance(processDefinition);
-            pi.InitializeContext(Context.Current);
             
-            if(variables != null && variables.Count > 0)
-            {
-                var em = variables.GetEnumerator();
-                while(em.MoveNext())
-                {
-                    pi.SetVariable(em.Current.Key, em.Current.Value);
-                }
-            }
-
-            this.executions.Add(pi);
-
             var context = Context.Current;
-            pi.Start(context);
+
+            pi.Initiator = new User() { Id = context.UserId };
+
+            pi.InitializeContext(context, variables);
+
+            this.instances.Add(pi);
+            pi.Start(context, initialNode);
 
             return pi;
         }
@@ -68,7 +72,7 @@ namespace Bpmtk.Engine.Internal
 
         public virtual IProcessInstance FindProcessInstanceById(long id)
         {
-            return this.executions.Find(id);
+            return this.instances.Find(id);
         }
 
         public virtual Task<IEnumerable<IdentityLink>> GetIdentityLinksAsync(long id)
@@ -95,31 +99,31 @@ namespace Bpmtk.Engine.Internal
 
         public virtual Task SetProcessInstanceKeyAsync(long id, string key)
         {
-            var inst = this.executions.Find(id);
+            var inst = this.instances.Find(id);
             inst.Key = key;
 
-            return this.executions.UpdateAsync(inst);
+            return this.instances.UpdateAsync(inst);
         }
 
         public virtual Task SetProcessInstanceNameAsync(long id, string name)
         {
-            var inst = this.executions.Find(id);
+            var inst = this.instances.Find(id);
             inst.Name = name;
 
-            return this.executions.UpdateAsync(inst);
+            return this.instances.UpdateAsync(inst);
         }
 
         public virtual IProcessInstance StartProcessInstanceByMessage(string messageName, object messageData = null)
         {
             var eventSubscr = this.eventSubscriptions.FindByName(messageName, "message");
             if (eventSubscr == null)
-                throw new Bpmn2.BpmnError($"The message '{messageName}' event handler does not exists.");
+                throw new RuntimeException($"The message '{messageName}' event handler does not exists.");
 
             if(eventSubscr.ProcessDefinition != null
                 && eventSubscr.ActivityId != null)
             {
-                var store = Context.Current.GetService<IInstanceStore>();
-                IMessageStartEventHandler handler = new MessageStartEventHandler(store);
+                IMessageStartEventHandler handler = new MessageStartEventHandler(this.deploymentManager,
+                    this.instances);
 
                 var task = handler.Execute(eventSubscr, messageData);
 
@@ -130,13 +134,15 @@ namespace Bpmtk.Engine.Internal
         }
 
         public IActivityInstanceQuery CreateActivityQuery()
-            => this.executions.CreateActivityQuery();
+            => this.instances.CreateActivityQuery();
+
+        public virtual ITokenQuery CreateTokenQuery()
+            => this.instances.CreateTokenQuery();
 
         public virtual void Trigger(long tokenId)
         {
-            var token = this.executions.FindToken(tokenId);
+            var token = this.instances.FindToken(tokenId);
             token.Signal(Context.Current);
-            //throw new NotImplementedException();
         }
     }
 }

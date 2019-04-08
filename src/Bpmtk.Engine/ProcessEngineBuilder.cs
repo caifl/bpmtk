@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bpmtk.Engine.Identity;
 using Bpmtk.Engine.Internal;
 using Bpmtk.Engine.Repository;
 using Bpmtk.Engine.Repository.Internal;
@@ -44,6 +45,7 @@ namespace Bpmtk.Engine
             this.services.AddTransient<ITaskService, TaskService>();
             this.services.AddTransient<IRepositoryService, RepositoryService>();
             this.services.AddTransient<IRuntimeService, ExecutionService>();
+            this.services.AddTransient<IIdentityService, IdentityService>();
         }
 
         protected virtual void AddInternalServices()

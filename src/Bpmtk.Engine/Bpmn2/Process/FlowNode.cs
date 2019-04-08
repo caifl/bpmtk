@@ -9,33 +9,18 @@ using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Bpmn2
 {
-    public abstract class FlowNode : FlowElement
+    public abstract class FlowNode : FlowElement, IScriptEnabledElement
     {
         protected List<SequenceFlow> incomings = new List<SequenceFlow>();
         protected List<SequenceFlow> outgoings = new List<SequenceFlow>();
 
-        protected readonly Dictionary<string, string> attributes = new Dictionary<string, string>();
-        protected readonly List<EventListener> eventListeners = new List<EventListener>();
+        protected List<Script> scripts = new List<Script>();
 
         public virtual IList<SequenceFlow> Incomings => this.incomings;
 
         public virtual IList<SequenceFlow> Outgoings => this.outgoings;
 
-        /// <summary>
-        /// Get extended attributes of flow node.
-        /// </summary>
-        public virtual IDictionary<string, string> Attributes
-        {
-            get
-            {
-                return this.attributes;
-            }
-        }
-
-        /// <summary>
-        /// Gets the event listeners of flow node.
-        /// </summary>
-        public virtual IList<EventListener> EventListeners => this.eventListeners;
+        public virtual IList<Script> Scripts => this.scripts;
 
         public override string ToString()
         {
@@ -48,53 +33,53 @@ namespace Bpmtk.Engine.Bpmn2
 
         protected virtual void OnEnter(ExecutionContext executionContext)
         {
-            //创建活动实例
-            //bool canActivate = true;
-            //if (joinedTokens != null)
-            //{
-            //    var token = executionContext.Token;
-
-            //    //CreateActivityInstance
-            //    if (joinedTokens.Count == 1)
-            //    {
-            //        token.ActivityInstance = new ActivityInstance();
-            //    }
-            //    else
-            //    {
-            //        //findActivityInstance
-            //        var act = joinedTokens.Where(x => x.ActivityInstance != null)
-            //            .Select(x => x.ActivityInstance)
-            //            .FirstOrDefault();
-            //        token.ActivityInstance = act;
-            //    }
-
-            //    canActivate = this.incomings.Count == joinedTokens.Count;
-            //}
-            //Create activity-instance.
-            executionContext.ActivityInstance = this.CreateActivityInstance(executionContext);
-
+            //fire node-enter event.
             var store = executionContext.Context.GetService<IInstanceStore>();
             store.Add(new HistoricToken(executionContext, "enter"));
-
-            //create activity instance
-            //if (canActivate)
-            this.OnActivate(executionContext);
         }
 
-        protected virtual ActivityInstance CreateActivityInstance(ExecutionContext executionContext)
+        protected virtual void OnActivating(ExecutionContext executionContext)
         {
-            return ActivityInstance.Create(executionContext);
-        }
+            var token = executionContext.Token;
+            
+            var activityInstance = ActivityInstance.Create(executionContext);
+            token.ActivityInstance = activityInstance;
 
-        protected virtual void OnActivate(ExecutionContext executionContext)
-        {
-            //激活活动实例
-            var act = executionContext.ActivityInstance;
-            if(act != null)
-                act.Activate();
+            // remove the transition references from the runtime context
+            executionContext.Transition = null;
+            executionContext.TransitionSource = null;
 
             var store = executionContext.Context.GetService<IInstanceStore>();
-            store.Add(new HistoricToken(executionContext, "activate"));
+            store.Add(new HistoricToken(executionContext, "activating"));
+        }
+
+        protected virtual void OnActivated(ExecutionContext executionContext)
+        {
+            //fire activated event.
+            var store = executionContext.Context.GetService<IInstanceStore>();
+            store.Add(new HistoricToken(executionContext, "activated"));
+        }
+
+        protected virtual void Activate(ExecutionContext executionContext)
+        {
+            this.Activate(executionContext, null);
+        }
+
+        protected virtual void Activate(ExecutionContext executionContext, 
+            IDictionary<string, object> variables = null)
+        {
+            this.OnActivating(executionContext);
+
+            var activityInstance = executionContext.ActivityInstance;
+            if (activityInstance != null)
+            {
+                activityInstance.InitializeContext(executionContext.Context, variables);
+                activityInstance.Activate();
+            }
+
+            this.OnActivated(executionContext);
+
+            this.Execute(executionContext);
         }
 
         public virtual void Enter(ExecutionContext executionContext)
@@ -106,24 +91,13 @@ namespace Bpmtk.Engine.Bpmn2
             token.ActivityInstance = null;
 
             // register entrance time so that a node-log can be generated upon leaving
-            //token.setNodeEnter(Clock.getCurrentTime());
+            token.EnterTime = Clock.Now;
 
-            // fire the leave-node event for this node
+            // fire the enter-node event for this node
             this.OnEnter(executionContext);
 
-            // remove the transition references from the runtime context
-            executionContext.Transition = null;
-            executionContext.TransitionSource = null;
-
-            // execute the node
-            //if (isAsync)
-            //{
-            //    ExecuteNodeJob job = createAsyncContinuationJob(token);
-            //    executionContext.getJbpmContext().getServices().getMessageService().send(job);
-            //    token.lock (job.toString()) ;
-            //}
-            //else
-            this.Execute(executionContext);
+            // Activate
+            this.Activate(executionContext);
         }
 
         public virtual void Execute(ExecutionContext executionContext)
@@ -179,7 +153,7 @@ namespace Bpmtk.Engine.Bpmn2
             }
 
             if (transition == null)
-                throw new BpmnError("没有满足条件的分支可走");
+                throw new RuntimeException("没有满足条件的分支可走");
 
             token.Node = this;
             executionContext.Transition = transition;
@@ -249,7 +223,7 @@ namespace Bpmtk.Engine.Bpmn2
                 transitions = this.outgoings;
 
             if (transitions.Count == 0)
-                throw new BpmnError("没有满足条件的分支可走");
+                throw new RuntimeException("没有满足条件的分支可走");
 
             if (transitions.Count > 1)
             {

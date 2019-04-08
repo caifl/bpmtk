@@ -66,6 +66,18 @@ namespace Bpmtk.Engine.Runtime
             protected set;
         }
 
+        public virtual DateTime EnterTime
+        {
+            get;
+            set;
+        }
+
+        public virtual DateTime LeaveTime
+        {
+            get;
+            set;
+        }
+
         public virtual void Activate()
         {
             this.IsActive = true;
@@ -326,7 +338,19 @@ namespace Bpmtk.Engine.Runtime
                         return;
 
                     var subProcess = container as SubProcess;
-                    subProcess.Leave(ExecutionContext.Create(context, parentToken));
+
+                    //删除并发Token
+                    var p = parentToken;
+                    while (!p.Node.Equals(subProcess))
+                    {
+                        if (p.children.Count > 0) //还有未完成的并发执行
+                            return;
+
+                        p.Remove(context);
+                        p = p.Parent;
+                    }
+                    
+                    subProcess.Leave(ExecutionContext.Create(context, p));
                     return;
                 }
             }

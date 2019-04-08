@@ -15,6 +15,6 @@ namespace Bpmtk.Engine.Bpmn2
             get;
         }
 
-        FlowElement FindFlowElementById(string id, bool recurive = false);
+        //FlowElement FindFlowElementById(string id, bool recurive = false);
     }
 }

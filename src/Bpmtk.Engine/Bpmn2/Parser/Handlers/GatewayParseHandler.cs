@@ -59,4 +59,26 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             return gateway;
         }
     }
+
+    class ComplexGatewayParseHandler : GatewayParseHandler
+    {
+        public ComplexGatewayParseHandler()
+        {
+            this.handlers.Add("activationCondition", new ExpressionParseHandler<ComplexGateway>((p, r) =>
+            {
+                p.ActivationCondition = r;
+            }));
+        }
+
+        public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
+        {
+            var gateway = context.BpmnFactory.CreateComplexGateway();
+            
+            parent.FlowElements.Add(gateway);
+
+            base.Init(gateway, context, element);
+
+            return gateway;
+        }
+    }
 }

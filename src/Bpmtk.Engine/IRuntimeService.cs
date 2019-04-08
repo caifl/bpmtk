@@ -12,6 +12,8 @@ namespace Bpmtk.Engine
 
         IActivityInstanceQuery CreateActivityQuery();
 
+        ITokenQuery CreateTokenQuery();
+
         void Trigger(long tokenId);
 
         IProcessInstance FindProcessInstanceById(long id);

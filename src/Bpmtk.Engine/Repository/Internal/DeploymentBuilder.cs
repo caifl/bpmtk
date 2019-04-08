@@ -39,7 +39,7 @@ namespace Bpmtk.Engine.Repository.Internal
             var model = BpmnModel.FromBytes(this.modelData, this.disableModelValidations);
             var processes = model.Processes;
             if (processes.Count() == 0)
-                throw new BpmnError("The BPMN model does not contains any processes.");
+                throw new DeploymentException("The BPMN model does not contains any processes.");
 
             var keys = processes.Select(x => x.Id).ToArray();
             var prevProcessDefinitions = this.deployments.GetProcessDefinitionLatestVersionsAsync(keys).Result;

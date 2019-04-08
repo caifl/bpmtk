@@ -19,6 +19,7 @@ namespace Bpmtk.Engine.Variables
             var defaultTypes = new IVariableType[]
             {
                 new StringType(),
+                new IntegerType(),
                 new LongType(),
                 new DoubleType(),
                 new BooleanType(),

@@ -42,6 +42,11 @@ namespace Bpmtk.Engine.Stores.Internal
             return new ActivityInstanceQuery(this.session);
         }
 
+        public virtual ITokenQuery CreateTokenQuery()
+        {
+            return new TokenQuery(this.session);
+        }
+
         //public virtual async Task<IEnumerable<ProcessInstance>> GetAsync()
         //{
         //    return await this.session.Query<ProcessInstance>().ToListAsync();
@@ -50,6 +55,11 @@ namespace Bpmtk.Engine.Stores.Internal
         public virtual ProcessInstance Find(long id)
         {
             return this.session.Get<ProcessInstance>(id);
+        }
+
+        public virtual Token FindToken(long id)
+        {
+            return this.session.Get<Token>(id);
         }
 
         public virtual IEnumerable<string> GetActiveActivityIds(long id)

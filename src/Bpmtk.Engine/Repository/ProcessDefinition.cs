@@ -45,7 +45,6 @@ namespace Bpmtk.Engine.Repository
             this.Created = deployment.Created;
             this.Modified = this.Created;
             this.Category = deployment.Category;
-            this.VersionTag = process.VersionTag;
 
             if (process.Documentations.Count > 0)
             {

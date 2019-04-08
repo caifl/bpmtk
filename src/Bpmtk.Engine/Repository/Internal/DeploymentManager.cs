@@ -34,6 +34,9 @@ namespace Bpmtk.Engine.Repository.Internal
                 this.scheduledJobStore);
         }
 
+        public ProcessDefinition FindLatestProcessDefinitionByKey(string processDefinitionKey)
+            => this.deployments.GetProcessDefintionByKey(processDefinitionKey);
+
         public virtual BpmnModel GetBpmnModel(int deploymentId)
         {
             var model = modelCache.GetOrAdd(deploymentId, (id) =>

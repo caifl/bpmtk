@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definition" 
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="Examples">
+  
+  <process id="miSequentialScriptTaskCompletionCondition">
+  
+    <startEvent id="theStart" />
+    <sequenceFlow id="flow1" sourceRef="theStart" targetRef="miScriptTask" />
+    
+    <scriptTask id="miScriptTask">
+      <multiInstanceLoopCharacteristics isSequential="true">
+        <loopCardinality>${10}</loopCardinality>
+        <completionCondition>${numberOfCompletedInstances/numberOfInstances >= 0.5}</completionCondition>
+      </multiInstanceLoopCharacteristics>
+      <script>
+        <![CDATA[
+	        var processInstance = execution.ProcessInstance;
+	        var value = processInstance.GetVariable("sum");
+	        if (value == null) {
+            sum = 0;     
+	        } else {
+	         sum = value;
+	        }
+	        processInstance.SetVariable("sum", sum + 1)
+        ]]>
+      </script>
+    </scriptTask>
+    
+    <sequenceFlow id="flow3" sourceRef="miScriptTask" targetRef="waitState" />
+    <receiveTask id="waitState" />
+    
+     <sequenceFlow id="flow4" sourceRef="waitState" targetRef="theEnd" />
+    <endEvent id="theEnd" />
+    
+  </process>
+
+</definitions>

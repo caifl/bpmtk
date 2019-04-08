@@ -17,64 +17,42 @@ namespace Bpmtk.Engine.Bpmn2
             var token = executionContext.Token;
             token.Node = this.Activity;
 
-            
+            int numberOfInstances = 0;
 
-            var loopCounter = executionContext.GetVariableLocal("loopCounter");
-            if (loopCounter == null)
+            try
             {
-                int numberOfInstances = 0;
-
-                try
-                {
-                    numberOfInstances = this.CreateInstances(executionContext);
-                }
-                catch (BpmnError error)
-                {
-                    throw error;
-                    //ErrorPropagation.propagateError(error, execution);
-                }
-
-                if (numberOfInstances == 0) //实例数量为零的情况下仍然建立一个活动实例, 只是不执行该节点的任何行为
-                {
-                    var act = ActivityInstance.Create(executionContext);
-
-                    executionContext.ActivityInstance = act;
-
-                    //fire nodeEnter event
-                    var store = executionContext.Context.GetService<IInstanceStore>();
-                    store.Add(new HistoricToken(executionContext, "enter"));
-
-                    act.Activate();
-                    store.Add(new HistoricToken(executionContext, "activate"));
-
-                    // remove the transition references from the runtime context
-                    executionContext.Transition = null;
-                    executionContext.TransitionSource = null;
-
-                    this.Activity.LeaveDefault(executionContext);
-                }
+                numberOfInstances = this.CreateInstances(executionContext);
             }
-            else
+            catch (BpmnError error)
             {
-                //fire ActivityInstance activated event.
+                throw error;
+                //ErrorPropagation.propagateError(error, execution);
+            }
+
+            if (numberOfInstances == 0) //实例数量为零的情况下仍然建立一个活动实例, 只是不执行该节点的任何行为
+            {
                 var act = ActivityInstance.Create(executionContext);
 
                 executionContext.ActivityInstance = act;
-                act.Activate();
 
+                //fire nodeEnter event
                 var store = executionContext.Context.GetService<IInstanceStore>();
+                store.Add(new HistoricToken(executionContext, "enter"));
+
+                act.Activate();
                 store.Add(new HistoricToken(executionContext, "activate"));
 
-                this.Activity.Execute(executionContext);
+                // remove the transition references from the runtime context
+                executionContext.Transition = null;
+                executionContext.TransitionSource = null;
+
+                this.Activity.LeaveDefault(executionContext);
             }
         }
 
-        public virtual void Leave(ExecutionContext executionContext)
-        {
-            this.Activity.Leave(executionContext);
-        }
+        public abstract void Leave(ExecutionContext executionContext);
 
-        protected abstract int ResolveNumberOfInstances(ExecutionContext executionContext);
+        //protected abstract int ResolveNumberOfInstances(ExecutionContext executionContext);
         //{
         //    var expressionText = this.LoopCardinality?.Text;
         //    var loopDataInputRef = this.LoopDataInputRef;

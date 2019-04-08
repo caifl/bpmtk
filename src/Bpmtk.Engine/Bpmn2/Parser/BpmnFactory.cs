@@ -76,6 +76,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 
         public virtual AdHocSubProcess CreateAdHocSubProcess() => new AdHocSubProcess();
 
+        public virtual CallActivity CreateCallActivity() => new CallActivity();
+
         #endregion
 
         #region Gateways
@@ -85,6 +87,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser
         public virtual InclusiveGateway CreateInclusiveGateway() => new InclusiveGateway();
 
         public virtual ParallelGateway CreateParallelGateway() => new ParallelGateway();
+
+        public virtual ComplexGateway CreateComplexGateway() => new ComplexGateway();
 
         #endregion
 

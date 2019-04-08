@@ -21,6 +21,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             this.handlers.Add("parallelGateway", new ParallelGatewayParseHandler());
             this.handlers.Add("exclusiveGateway", new ExclusiveGatewayParseHandler());
             this.handlers.Add("inclusiveGateway", new InclusiveGatewayParseHandler());
+            this.handlers.Add("complexGateway", new ComplexGatewayParseHandler());
             this.handlers.Add("scriptTask", new ScriptTaskParseHandler());
             this.handlers.Add("serviceTask", new ServiceTaskParseHandler());
             this.handlers.Add("receiveTask", new ReceiveTaskParseHandler());
@@ -28,12 +29,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             this.handlers.Add("task", new TaskParseHandler());
             this.handlers.Add("manualTask", new ManualTaskParseHandler());
             this.handlers.Add("businessRuleTask", new BusinessRuleTaskParseHandler());
+            this.handlers.Add("callActivity", new CallActivityParseHandler());
 
-            //var handler = processParserHandler.SubProcessParseHandler;
-
-            //this.handlers.Add("subProcess", handler);
-            //this.handlers.Add("transaction", ProcessParseHandler.TransactionParseHandler);
-            //this.handlers.Add("adHocSubProcess", ProcessParseHandler.AdHocSubProcessParseHandler);
             this.handlers.Add("subProcess", new BpmnHandlerCallback((p, c, x) =>
             {
                 return _SubProcessHandler.Create(p, c, x);

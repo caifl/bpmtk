@@ -60,7 +60,7 @@ namespace Bpmtk.Engine.Runtime
             protected set;
         }
 
-        public virtual DateTime? EndTime
+        public virtual DateTime LastStateTime
         {
             get;
             protected set;

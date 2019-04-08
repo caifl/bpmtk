@@ -40,7 +40,13 @@ namespace Bpmtk.Engine.Runtime
         public virtual User Initiator
         {
             get;
-            protected set;
+            set;
+        }
+
+        public virtual string EndReason
+        {
+            get;
+            set;
         }
 
         public override IEnumerable<VariableInstance> VariableInstances => this.variableInstances;
@@ -89,13 +95,15 @@ namespace Bpmtk.Engine.Runtime
                 this.Name = processDefinition.Key;
 
             this.Created = Clock.Now;
+            this.LastStateTime = this.Created;
             this.Initiator = null;
             this.Description = processDefinition.Description;
         }
 
         IDictionary<string, ValuedDataObject> dataObjects = null;
 
-        public virtual void InitializeContext(IContext context)
+        public virtual void InitializeContext(IContext context, 
+            IDictionary<string, object> variables = null)
         {
             var deploymentId = this.processDefinition.Deployment.Id;
             var processDefinitionKey = this.processDefinition.Key;
@@ -113,6 +121,15 @@ namespace Bpmtk.Engine.Runtime
                 type = Variables.VariableType.Resolve(value);
 
                 this.CreateVariableInstance(dataObject.Id, type, value);
+            }
+
+            if (variables != null && variables.Count > 0)
+            {
+                var em = variables.GetEnumerator();
+                while (em.MoveNext())
+                {
+                    this.SetVariable(em.Current.Key, em.Current.Value);
+                }
             }
         }
 
@@ -184,33 +201,16 @@ namespace Bpmtk.Engine.Runtime
         }
 
         public virtual void Start(IContext context,
-            string initialActivityId = null)
+            FlowNode initialNode)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            if (initialNode == null)
+                throw new ArgumentNullException(nameof(initialNode));
+
             if (this.token != null)
                 throw new RuntimeException("The process instance has already started.");
-
-            var dm = context.GetService<IDeploymentManager>();
-            var model = dm.GetBpmnModel(this.processDefinition.DeploymentId);
-            var process = model.GetProcess(this.processDefinition.Key);
-            if (process == null)
-                throw new BpmnError($"The BPMN model not contains process '{this.processDefinition.Key}'");
-
-            FlowNode initialNode = null;
-            if (initialActivityId != null)
-            {
-                initialNode = process.FlowElements.Where(x => x.Id == initialActivityId)
-                    .OfType<StartEvent>()
-                    .SingleOrDefault();
-            }
-            else
-            {
-                var startEvents = process.FlowElements
-                    .OfType<StartEvent>();
-                if (startEvents.Count() > 1)
-                    throw new BpmnError($"The Process '{this.processDefinition.Key}' contains multiple startEvents.");
-
-                initialNode = startEvents.FirstOrDefault();
-            }
 
             var store = context.GetService<IInstanceStore>();
 
@@ -235,15 +235,8 @@ namespace Bpmtk.Engine.Runtime
             {
                 var executionContext = ExecutionContext.Create(context, this.token);
 
-                //CreateActivityInstance
-                this.token.ActivityInstance = ActivityInstance.Create(executionContext);
-
-                //processDefinition.fireEvent(Event.EVENTTYPE_PROCESS_START, executionContext);
-                var store = context.GetService<IInstanceStore>();
-                store.Add(new HistoricToken(executionContext, "start"));
-
                 //execute the start node
-                initialNode.Execute(executionContext);
+                initialNode.Enter(executionContext);
             }
         }
 
@@ -272,10 +265,10 @@ namespace Bpmtk.Engine.Runtime
             store.Remove(rootToken);
 
             this.State = ExecutionState.Completed;
-            this.EndTime = Clock.Now;
-                
+            this.LastStateTime = Clock.Now;
+
             //判断CallActivity
-            if(this.super != null)
+            if (this.super != null)
             {
                 var executionContext = ExecutionContext.Create(context, this.super);
                 executionContext.SubProcessInstance = this;

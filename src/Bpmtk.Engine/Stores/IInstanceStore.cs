@@ -9,6 +9,8 @@ namespace Bpmtk.Engine.Stores
     {
         IActivityInstanceQuery CreateActivityQuery();
 
+        ITokenQuery CreateTokenQuery();
+
         ProcessInstance Find(long id);
 
         Token FindToken(long id);

@@ -16,15 +16,6 @@ namespace Bpmtk.Engine.Bpmn2
             set;
         }
 
-        /// <summary>
-        /// 异步执行
-        /// </summary>
-        public virtual bool IsAsync
-        {
-            get;
-            set;
-        }
-
         public override void Accept(IFlowNodeVisitor visitor)
         {
             visitor.Visit(this);

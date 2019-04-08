@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+                  xmlns:bpmtk="http://www.bpmtk.com/bpmn/extensions"
+                  id="Definitions_0f2yaoj" 
+                  targetNamespace="http://bpmn.io/schema/bpmn" 
+                  exporter="bpmn-js (https://demo.bpmn.io)" 
+                  exporterVersion="3.3.0">
+  <bpmn:resource id="resource-1" name="区域经理">
+    <bpmn:resourceParameter id="area" name="区域" type="string" isRequired="true">
+      <bpmn:extensionElements>
+        <bpmtk:value>xyz</bpmtk:value>
+      </bpmn:extensionElements>
+    </bpmn:resourceParameter>
+  </bpmn:resource>
+  <bpmn:process id="Process_0cyms8o" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_0busnrn" name="start">
+      <bpmn:extensionElements>
+        <bpmtk:attribute name="verionTag"><![CDATA[测试版]]></bpmtk:attribute>
+        <bpmtk:attribute name="category"><![CDATA[类别一]]></bpmtk:attribute>
+        <bpmtk:script on="leave" scriptFormat="javascript">
+          <![CDATA[execution.SetVariable("a", 100)]]>
+        </bpmtk:script>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_0bbuw2i</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_105g1f1" name="Hello Word">
+      <bpmn:extensionElements>
+        <bpmtk:attribute name="taskName"><![CDATA[TASK-${assignee}-001]]></bpmtk:attribute>
+        <bpmtk:attribute name="taskImpl"><![CDATA[ddddd]]></bpmtk:attribute>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0bbuw2i</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_03g0j1u</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="SequenceFlow_0bbuw2i" sourceRef="StartEvent_0busnrn" targetRef="Task_105g1f1">
+      <bpmn:extensionElements>
+        <bpmtk:script on="take">
+          <![CDATA[log('transition taken.')]]>
+        </bpmtk:script>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="EndEvent_1ruiztz" name="end">
+      <bpmn:incoming>SequenceFlow_03g0j1u</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_03g0j1u" sourceRef="Task_105g1f1" targetRef="EndEvent_1ruiztz" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0cyms8o">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_0busnrn">
+        <dc:Bounds x="156" y="103" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="163" y="146" width="23" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_105g1f1_di" bpmnElement="Task_105g1f1">
+        <dc:Bounds x="288" y="81" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0bbuw2i_di" bpmnElement="SequenceFlow_0bbuw2i">
+        <di:waypoint x="192" y="121" />
+        <di:waypoint x="288" y="121" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_1ruiztz_di" bpmnElement="EndEvent_1ruiztz">
+        <dc:Bounds x="481" y="103" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="490" y="146" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_03g0j1u_di" bpmnElement="SequenceFlow_03g0j1u">
+        <di:waypoint x="388" y="121" />
+        <di:waypoint x="481" y="121" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

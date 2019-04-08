@@ -10,10 +10,11 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 {
     public class BpmnParser
     {
+        protected static readonly XmlSchemaSet schemaSet = new XmlSchemaSet();
         protected BpmnFactory factory = new BpmnFactory();
         protected Definitions definitions;
 
-        protected static readonly XmlReaderSettings settings;
+        protected readonly XmlReaderSettings settings;
         private const string schemaLocation = "Bpmtk.Engine.Bpmn2.Schema";
         private static readonly string[] schemaNames = new string[]
             {
@@ -22,19 +23,8 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 
         static BpmnParser()
         {
-            settings = new XmlReaderSettings();
-            settings.IgnoreComments = true;
-            settings.IgnoreWhitespace = true;
-            settings.ValidationType = ValidationType.Schema;
-            settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessInlineSchema;
-            //_settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessSchemaLocation;
-            settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
-            settings.ValidationEventHandler += Settings_ValidationEventHandler; ;
-
             var assembly = typeof(BpmnParser).Assembly;
             var names = assembly.GetManifestResourceNames();
-
-            var schemaSet = new XmlSchemaSet();
 
             foreach (var name in schemaNames)
             {
@@ -45,12 +35,27 @@ namespace Bpmtk.Engine.Bpmn2.Parser
                     schemaSet.Add(schema);
                 }
             }
+        }
+
+        protected BpmnParser()
+        {
+            settings = new XmlReaderSettings();
+            settings.IgnoreComments = true;
+            settings.IgnoreWhitespace = true;
+            settings.ValidationType = ValidationType.Schema;
+            settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessInlineSchema;
+            //_settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessSchemaLocation;
+            settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
+            settings.ValidationEventHandler += OnValidationEventHandler;
 
             settings.Schemas.Add(schemaSet);
         }
 
-        private static void Settings_ValidationEventHandler(object sender, ValidationEventArgs e)
+        private List<Exception> exceptions = new List<Exception>();
+
+        protected virtual void OnValidationEventHandler(object sender, ValidationEventArgs e)
         {
+            this.exceptions.Add(e.Exception);
         }
 
         public static BpmnParser Create()
@@ -60,6 +65,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 
         public virtual BpmnParserResults Parse(Stream stream)
         {
+            this.exceptions.Clear();
             XDocument document = null;
             using (var reader = XmlReader.Create(stream, settings))
             {
@@ -78,7 +84,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 
             var flowElements = context.FlowElements;
 
-            return new BpmnParserResults(definitions, flowElements, new List<Exception>());
+            return new BpmnParserResults(definitions, flowElements, this.exceptions);
         }
     }
 }

@@ -41,6 +41,7 @@ namespace Bpmtk.Engine.Runtime
             //Set initial state.
             this.State = ExecutionState.Ready;
             this.Created = Clock.Now;
+            this.LastStateTime = this.Created;
 
             this.Name = activity.Name;
             if (string.IsNullOrEmpty(this.Name))
@@ -83,6 +84,18 @@ namespace Bpmtk.Engine.Runtime
             protected set;
         }
 
+        public virtual bool IsMIRoot
+        {
+            get;
+            set;
+        }
+
+        public virtual ActivityInstance MIRoot
+        {
+            get;
+            set;
+        }
+
         public virtual ICollection<ActivityInstance> Children
         {
             get => this.children;
@@ -94,12 +107,13 @@ namespace Bpmtk.Engine.Runtime
         {
             this.State = ExecutionState.Active;
             this.StartTime = Clock.Now;
+            this.LastStateTime = this.StartTime.Value;
         }
 
         public virtual void Finish()
         {
             this.State = ExecutionState.Completed;
-            this.EndTime = Clock.Now;
+            this.LastStateTime = Clock.Now;
         }
 
         public static ActivityInstance Create(ExecutionContext executionContext)
@@ -110,6 +124,7 @@ namespace Bpmtk.Engine.Runtime
             var processInstance = executionContext.ProcessInstance;
             var scope = executionContext.Scope;
             act = new ActivityInstance(processInstance, node, scope);
+            act.IsMIRoot = token.IsMIRoot;
             if (scope != null)
                 scope.Children.Add(act);
 

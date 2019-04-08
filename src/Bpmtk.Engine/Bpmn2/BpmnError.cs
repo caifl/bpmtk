@@ -1,13 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Bpmtk.Engine.Bpmn2
 {
-    public class BpmnError : Exception
+    [Serializable]
+    public class BpmnError : EngineException
     {
-        public BpmnError(string message) : base(message)
+        public BpmnError(string errorCode, string message) 
+            : base(message)
         {
+            this.ErrorCode = errorCode;
+        }
+
+        protected BpmnError(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+
+        public virtual string ErrorCode
+        {
+            get;
         }
     }
 }

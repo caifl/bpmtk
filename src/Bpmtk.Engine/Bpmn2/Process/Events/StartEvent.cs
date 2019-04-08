@@ -28,23 +28,17 @@ namespace Bpmtk.Engine.Bpmn2
             visitor.Visit(this);
         }
 
-        public override void Enter(ExecutionContext executionContext)
-        {
-            this.Execute(executionContext);
-            //throw new BpmnError("The startEvent not supported enter.");
-        }
+        //public override void Execute(ExecutionContext executionContext)
+        //{
+        //    //create act-inst
+        //    //executionContext.ActivityInstance = base.CreateActivityInstance(executionContext);
 
-        public override void Execute(ExecutionContext executionContext)
-        {
-            //create act-inst
-            //executionContext.ActivityInstance = base.CreateActivityInstance(executionContext);
+        //    //activate act-inst and fire event.
+        //    this.Activate(executionContext);
 
-            //activate act-inst and fire event.
-            this.OnActivate(executionContext);
-
-            //Push DataOutputs.
-            //this.DataOutputAssociations
-            base.Leave(executionContext);
-        }
+        //    //Push DataOutputs.
+        //    //this.DataOutputAssociations
+        //    base.Leave(executionContext);
+        //}
     }
 }
