@@ -8,5 +8,7 @@ namespace Bpmtk.Engine.Stores
     public interface IIdentityStore
     {
         void Add(User user);
+
+        User FindUserByName(string name);
     }
 }

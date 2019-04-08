@@ -103,7 +103,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser
                         foreach (var item in items)
                         {
                             var script = new Script();
-                            script.ScriptFormat = item.Attribute("scriptFormat").Value;
+                            script.ScriptFormat = item.GetAttribute("scriptFormat");
                             script.On = item.GetAttribute("on");
                             script.Text = item.Value;
 

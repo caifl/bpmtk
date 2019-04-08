@@ -12,43 +12,7 @@ namespace Bpmtk.Engine.Bpmn2
             set;
         }
 
-        public virtual void Execute(ExecutionContext executionContext)
-        {
-            var token = executionContext.Token;
-            token.Node = this.Activity;
-
-            int numberOfInstances = 0;
-
-            try
-            {
-                numberOfInstances = this.CreateInstances(executionContext);
-            }
-            catch (BpmnError error)
-            {
-                throw error;
-                //ErrorPropagation.propagateError(error, execution);
-            }
-
-            if (numberOfInstances == 0) //实例数量为零的情况下仍然建立一个活动实例, 只是不执行该节点的任何行为
-            {
-                var act = ActivityInstance.Create(executionContext);
-
-                executionContext.ActivityInstance = act;
-
-                //fire nodeEnter event
-                var store = executionContext.Context.GetService<IInstanceStore>();
-                store.Add(new HistoricToken(executionContext, "enter"));
-
-                act.Activate();
-                store.Add(new HistoricToken(executionContext, "activate"));
-
-                // remove the transition references from the runtime context
-                executionContext.Transition = null;
-                executionContext.TransitionSource = null;
-
-                this.Activity.LeaveDefault(executionContext);
-            }
-        }
+        
 
         public abstract void Leave(ExecutionContext executionContext);
 
@@ -75,7 +39,7 @@ namespace Bpmtk.Engine.Bpmn2
         //    return count;
         //}
 
-        protected abstract int CreateInstances(ExecutionContext executionContext);
+        public abstract int CreateInstances(ExecutionContext executionContext);
 
         protected abstract bool IsCompleted(ExecutionContext executionContext);
     }

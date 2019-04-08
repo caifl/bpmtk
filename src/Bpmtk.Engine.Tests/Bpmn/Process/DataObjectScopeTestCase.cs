@@ -45,7 +45,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
             //taskService.Complete(tasks[0].Id);
             tasks = query.List();
             taskService.Complete(tasks[0].Id);
-            AssertProcessInstanceEnd(pi.Id);
+            AssertProcessEnded(pi.Id);
 
             this.unitOfWork.Commit();
         }

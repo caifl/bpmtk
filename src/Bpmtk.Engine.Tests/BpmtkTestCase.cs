@@ -71,7 +71,7 @@ namespace Bpmtk.Engine.Tests
             }
         }
 
-        protected virtual void AssertProcessInstanceEnd(long id)
+        protected virtual void AssertProcessEnded(long id)
         {
             var pi = this.runtimeService.FindProcessInstanceById(id);
             Assert.True(pi.State == Runtime.ExecutionState.Completed);

@@ -57,6 +57,9 @@ namespace Bpmtk.Engine.Repository.Internal
 
             foreach (var bpmnProcess in processes)
             {
+                if (!bpmnProcess.IsExecutable)
+                    throw new DeploymentException($"The process '{bpmnProcess.Id}' is not executabe.");
+
                 prevProcessDefinition = null;
                 if(prevProcessDefinitions.Count > 0)
                     prevProcessDefinitions.TryGetValue(bpmnProcess.Id, out prevProcessDefinition);

@@ -18,6 +18,12 @@
       <one-to-many class="Token"/>
     </set>
 
+    <set name="variables" inverse="true" cascade="all-delete-orphan"
+         access="field">
+      <key column="token_id"/>
+      <one-to-many class="Variable"/>
+    </set>
+
     <many-to-one name="ActivityInstance"
                  class="ActivityInstance"
                  column="act_inst_id"/>
@@ -33,6 +39,7 @@
     <many-to-one name="Parent"
                  class="Token"
                  column="parent_id"/>
+
   </class>
   
 </hibernate-mapping>

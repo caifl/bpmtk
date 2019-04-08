@@ -82,6 +82,7 @@ namespace Bpmtk.Engine.Runtime
 
         }
 
+        public abstract void Terminate(IContext context, string endReason = null);
     }
 
     public enum ExecutionState : int
@@ -94,6 +95,8 @@ namespace Bpmtk.Engine.Runtime
 
         Completed = 4,
 
-        Aborted = 8
+        Aborted = 8,
+
+        Terminated = 16
     }
 }

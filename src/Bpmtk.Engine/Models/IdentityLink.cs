@@ -13,13 +13,13 @@ namespace Bpmtk.Engine.Models
         public virtual User User
         {
             get;
-            protected set;
+            set;
         }
 
         public virtual Group Group
         {
             get;
-            protected set;
+            set;
         }
 
         public virtual string Type
@@ -39,17 +39,5 @@ namespace Bpmtk.Engine.Models
             get;
             set;
         }
-    }
-
-    public class InstanceIdentityLink : IdentityLink
-    {
-    }
-
-    public class ActivityIdentityLink : IdentityLink
-    {
-    }
-
-    public class DefinitionIdentityLink : IdentityLink
-    {
     }
 }

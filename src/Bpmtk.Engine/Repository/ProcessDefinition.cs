@@ -1,38 +1,25 @@
 ﻿using System;
 using System.Linq;
-using System.IO;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-//using Bpmtk.Engine.Bpmn2;
-using Bpmtk.Infrastructure;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Utils;
-//using Bpmtk.Engine.Bpmn2.Parser;
 
 namespace Bpmtk.Engine.Repository
 {
-    public class ProcessDefinition : IAggregateRoot
+    public class ProcessDefinition
     {
         protected ICollection<DefinitionIdentityLink> identityLinks;
 
-        //protected readonly static ConcurrentDictionary<int, Process> modelCache = new ConcurrentDictionary<int, Process>();
-
-        //protected Package package;
-        //protected Model model;
-        //protected Process process;
-        //protected List<DefinitionResourceLink> resourceLinks = new List<DefinitionResourceLink>();
-
         protected ProcessDefinition()
-        {
-
-        }
+        {}
 
         public ProcessDefinition(Deployment deployment, 
             Process process, 
             bool hasDiagram,
             int version)
         {
+            this.identityLinks = new List<DefinitionIdentityLink>();
             this.Deployment = deployment;
             this.DeploymentId = deployment.Id;
             this.TenantId = deployment.TenantId;
@@ -53,7 +40,19 @@ namespace Bpmtk.Engine.Repository
             }
         }
 
-        public virtual IEnumerable<IdentityLink> IdentityLinks => this.identityLinks.AsEnumerable<IdentityLink>(); 
+        public virtual void AddIdentityLink(params DefinitionIdentityLink[] identityLinks)
+        {
+            if (identityLinks == null)
+                throw new ArgumentNullException(nameof(identityLinks));
+
+            foreach (var identityLink in identityLinks)
+            {
+                identityLink.ProcessDefinition = this;
+                this.identityLinks.Add(identityLink);
+            }
+        }
+
+        public virtual IReadOnlyList<IdentityLink> IdentityLinks => this.identityLinks.ToList(); 
 
         public virtual int Id
         {

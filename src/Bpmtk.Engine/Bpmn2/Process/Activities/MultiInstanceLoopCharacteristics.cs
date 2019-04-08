@@ -278,7 +278,7 @@ namespace Bpmtk.Engine.Bpmn2
             this.Activity.ExecuteInnerActivity(executionContext, map);
         }
 
-        protected override int CreateInstances(ExecutionContext executionContext)
+        public override int CreateInstances(ExecutionContext executionContext)
         {
             var numberOfInstances = this.ResolveNumberOfInstances(executionContext);
             if (numberOfInstances == 0)
@@ -367,8 +367,15 @@ namespace Bpmtk.Engine.Bpmn2
             return numberOfInstances;
         }
 
+        /// <summary>
+        /// In order to initialize a valid multi-instance, either the
+        /// loopCardinality Expression or the loopDataInput MUST be specified.
+        /// </summary>
         protected virtual int ResolveNumberOfInstances(ExecutionContext executionContext)
         {
+            if (this.LoopCardinality == null && this.LoopDataInputRef == null)
+                throw new RuntimeException("The multi-instance either the loopCardinality Expression or the loopDataInput MUST be specified.");
+
             var loopDataInputRef = this.LoopDataInputRef;
             int count = -1;
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Stores;
@@ -13,12 +13,15 @@ namespace Bpmtk.Engine.Tasks
         protected ProcessInstance processInstance;
         protected ActivityInstance activityInstance;
         protected bool isSuspended;
+        protected ICollection<TaskIdentityLink> identityLinks;
 
         protected TaskInstance()
         { }
 
         public TaskInstance(Token token)
         {
+            this.identityLinks = new List<TaskIdentityLink>();
+
             this.Token = token;
             this.processInstance = token.ProcessInstance;
             this.activityInstance = token.ActivityInstance;
@@ -108,7 +111,13 @@ namespace Bpmtk.Engine.Tasks
         public virtual User Assignee
         {
             get;
-            protected set;
+            set;
+        }
+
+        public virtual DateTime? DueDate
+        {
+            get;
+            set;
         }
 
         public virtual string Description
@@ -117,16 +126,51 @@ namespace Bpmtk.Engine.Tasks
             set;
         }
 
-        public virtual void Resume()
+        public virtual void AddIdentityLink(int userId, string type)
         {
-            this.isSuspended = false;
-            this.Token.Resume();
+            var item = new TaskIdentityLink();
+            item.Task = this;
+            item.User = new User() { Id= userId };
+            item.Type = type;
+
+            this.identityLinks.Add(item);
         }
 
-        public virtual void Suspend()
+        public virtual IReadOnlyList<IdentityLink> IdentityLinks
+        {
+            get => this.identityLinks.ToList();
+        }
+
+        public virtual void Resume(IContext context)
+        {
+            this.isSuspended = false;
+            this.Token.Resume(context);
+        }
+
+        public virtual void Suspend(IContext context)
         {
             this.isSuspended = true;
-            this.Token.Suspend();
+            this.Token.Suspend(context);
+        }
+
+        public virtual bool IsClosed
+        {
+            get => this.State == TaskState.Completed || this.State == TaskState.Terminated;
+        }
+
+        internal virtual void TerminateInternal(IContext context)
+        {
+            this.State = TaskState.Terminated;
+            this.LastStateTime = Clock.Now;
+        }
+
+        public virtual void Terminate(IContext context, string endReason)
+        {
+            if (this.IsClosed)
+                throw new EngineException("The task has closed already.");
+
+            if (this.processInstance != null)
+                this.processInstance.Terminate(context, endReason);
         }
 
         public virtual void Complete(IContext context, IDictionary<string, object> variables = null)
@@ -166,6 +210,10 @@ namespace Bpmtk.Engine.Tasks
 
         Active = 1,
 
-        Completed = 2
+        Suspended = 2,
+
+        Completed = 4,
+
+        Terminated = 8
     }
 }

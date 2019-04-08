@@ -49,7 +49,7 @@
     <set name="identityLinks" inverse="true" cascade="all-delete-orphan"
          access="field">
       <key column="proc_inst_id"/>
-      <one-to-many class="Bpmtk.Engine.Models.InstanceIdentityLink"/>
+      <one-to-many class="InstanceIdentityLink"/>
     </set>
   </class>
 

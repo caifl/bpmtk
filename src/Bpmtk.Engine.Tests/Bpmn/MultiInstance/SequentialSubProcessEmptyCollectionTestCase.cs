@@ -41,7 +41,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
                 tasks = query.List();
             }
 
-            this.AssertProcessInstanceEnd(pi.Id);
+            this.AssertProcessEnded(pi.Id);
 
             this.unitOfWork.Commit();
         }

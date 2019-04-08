@@ -84,7 +84,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             ////trigger
             //this.runtimeService.Trigger(tokens[0].Id);
 
-            this.AssertProcessInstanceEnd(pi.Id);
+            this.AssertProcessEnded(pi.Id);
 
             this.unitOfWork.Commit();
         }

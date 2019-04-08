@@ -18,7 +18,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
             base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.Gateway.ExclusiveGatewayTest.testDefaultSequenceFlow.bpmn20.xml");
 
             var map = new Dictionary<string, object>();
-            map.Add("input", 2);
+            map.Add("input", 3);
 
             var pi = this.runtimeService.StartProcessInstanceByKey("exclusiveGwDefaultSequenceFlow",
                 map);
@@ -30,7 +30,9 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
             var tasks = query.List();
             while(tasks.Count > 0)
             {
+                this.taskService.AddUserPotentialOwner(tasks[0].Id, 1, "owner");
                 this.taskService.Complete(tasks[0].Id);
+                
                 tasks = query.List();
             }
             //Assert.True(tasks.Count == 1);
@@ -41,7 +43,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
 
             //this.taskService.Complete(tasks[0].Id);
 
-            this.AssertProcessInstanceEnd(pi.Id);
+            this.AssertProcessEnded(pi.Id);
 
             this.unitOfWork.Commit();
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2
 {
@@ -14,6 +15,15 @@ namespace Bpmtk.Engine.Bpmn2
         {
             get;
             set;
+        }
+
+        public override void Execute(ExecutionContext executionContext)
+        {
+            var context = executionContext.Context;
+            var token = executionContext.Token;
+
+            var subProcessInstance = token.CreateSubProcessInstance(context);
+            subProcessInstance.Start(context, null);
         }
 
         public override void Accept(IFlowNodeVisitor visitor)

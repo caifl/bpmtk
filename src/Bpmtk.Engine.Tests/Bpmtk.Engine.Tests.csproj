@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Bpmn\UserTask\AssignTaskByVariableTestCase.bpmn.xml" />
+    <None Remove="Deploy\CreateInstanceIdentityLinkTestCase.bpmn.xml" />
+    <None Remove="Event\BpmnInlineScriptEventTestCase.bpmn.xml" />
     <None Remove="Parser\ExtendedAttributes.bpmn.xml" />
     <None Remove="Resources\data_association.bpmn.xml" />
     <None Remove="Resources\Event\MessageStartEventTest.testSingleMessageStartEvent.bpmn20.xml" />
@@ -26,6 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Bpmn\UserTask\AssignTaskByVariableTestCase.bpmn.xml" />
+    <EmbeddedResource Include="Deploy\CreateInstanceIdentityLinkTestCase.bpmn.xml" />
+    <EmbeddedResource Include="Event\BpmnInlineScriptEventTestCase.bpmn.xml" />
     <EmbeddedResource Include="Parser\ExtendedAttributes.bpmn.xml" />
     <EmbeddedResource Include="Resources\data_association.bpmn.xml" />
     <EmbeddedResource Include="Resources\Event\MessageStartEventTest.testSingleMessageStartEvent.bpmn20.xml" />
@@ -57,7 +63,6 @@
 
   <ItemGroup>
     <Folder Include="Bpmn\ScriptTask\" />
-    <Folder Include="Deploy\" />
   </ItemGroup>
 
 </Project>

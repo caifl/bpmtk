@@ -61,7 +61,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
             taskService.Complete(tasks[0].Id);
             tasks = query.List();
             Assert.True(0 == tasks.Count); //all tasks completed.
-            AssertProcessInstanceEnd(pi.Id);
+            AssertProcessEnded(pi.Id);
 
             this.unitOfWork.Commit();
         }

@@ -31,7 +31,7 @@
     <set name="identityLinks" inverse="true" cascade="all-delete-orphan"
          access="field">
       <key column="proc_def_id"/>
-      <one-to-many class="Bpmtk.Engine.Models.DefinitionIdentityLink"/>
+      <one-to-many class="DefinitionIdentityLink"/>
     </set>
     
   </class>

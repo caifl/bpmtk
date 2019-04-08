@@ -155,6 +155,14 @@ namespace Bpmtk.Engine.Runtime
             return engine.Execute(expression, scope);
         }
 
+        public virtual object ExecutScript(string script, string scriptFormat)
+        {
+            var engine = new JavascriptEngine();
+            var scope = engine.CreateScope(new ScriptingContext(this));
+
+            return engine.Execute(script, scope);
+        }
+
         public virtual TValue EvaluteExpression<TValue>(string expression)
         {
             var result = this.EvaluteExpression(expression);

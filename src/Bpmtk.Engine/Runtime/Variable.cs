@@ -1,16 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bpmtk.Engine.Runtime
+﻿namespace Bpmtk.Engine.Runtime
 {
     /// <summary>
     /// Runtime Variable Object.
     /// </summary>
     public class Variable : VariableInstance
     {
-        public Variable(string name, object value) : base(name, value)
+        protected Variable()
         {
+        }
+
+        public Variable(Token token, string name, object value) : base(name, value)
+        {
+            this.Token = token;
+        }
+
+        public virtual Token Token
+        {
+            get;
+            protected set;
         }
     }
 }

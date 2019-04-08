@@ -46,9 +46,9 @@ namespace Bpmtk.Engine.Bpmn2
             return new BpmnModel(results.Definitions, results.FlowElements, bytes);
         }
 
-        public virtual IEnumerable<Process> Processes
+        public virtual IReadOnlyList<Process> Processes
         {
-            get => this.processes;
+            get => this.processes.ToList();
         }
 
         public virtual bool HasDiagram(string processId)

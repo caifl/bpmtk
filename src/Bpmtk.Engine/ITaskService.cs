@@ -8,6 +8,8 @@ namespace Bpmtk.Engine
     {
         ITaskInstance Find(long id);
 
+        void AddUserPotentialOwner(long taskId, int userId, string type);
+
         ITaskQuery CreateQuery();
 
         void Complete(long id, IDictionary<string, object> variables = null);

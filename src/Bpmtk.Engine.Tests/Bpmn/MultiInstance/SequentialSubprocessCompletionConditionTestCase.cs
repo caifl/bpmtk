@@ -53,7 +53,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
                 taskService.Complete(tasks[1].Id);
             }
 
-            this.AssertProcessInstanceEnd(pi.Id);
+            this.AssertProcessEnded(pi.Id);
 
             this.unitOfWork.Commit();
         }

@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
                   xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
-                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
-                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
-                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0f2yaoj" 
                   xmlns:bpmtk="http://www.bpmtk.com/bpmn/extensions"
-                  targetNamespace="http://bpmn.io/schema/bpmn" 
-                  exporter="bpmn-js (https://demo.bpmn.io)" 
-                  exporterVersion="3.3.0">
-  <bpmn:process id="Process_0cyms8o" isExecutable="false">
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0f2yaoj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="3.3.0">
+  <bpmn:process id="BpmnInlineScriptEventTestCase" isExecutable="true">
     <bpmn:startEvent id="StartEvent_0busnrn" name="start">
+      <bpmn:extensionElements>
+        <bpmtk:script on="activated">
+          <![CDATA[execution.SetVariable('greeting', 'hello bpmtk!')]]>
+        </bpmtk:script>
+      </bpmn:extensionElements>
       <bpmn:outgoing>SequenceFlow_0bbuw2i</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:task id="Task_105g1f1" name="Hello Word">
+      <bpmn:extensionElements>
+        <bpmtk:script on="leave">
+          <![CDATA[execution.SetVariable('taskEnded', true)]]>
+        </bpmtk:script>
+      </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_0bbuw2i</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_03g0j1u</bpmn:outgoing>
     </bpmn:task>
@@ -21,17 +26,9 @@
       <bpmn:incoming>SequenceFlow_03g0j1u</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="SequenceFlow_03g0j1u" sourceRef="Task_105g1f1" targetRef="EndEvent_1ruiztz" />
-    <bpmn:resourceRole name="会签人员" bpmtk:type="group">
-      <bpmn:resourceAssignmentExpression>
-        <bpmn:extensionElements>
-          <bpmtk:type>group</bpmtk:type>
-        </bpmn:extensionElements>
-        <bpmn:formalExpression>${groups}</bpmn:formalExpression>
-      </bpmn:resourceAssignmentExpression>
-    </bpmn:resourceRole>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0cyms8o">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="BpmnInlineScriptEventTestCase">
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_0busnrn">
         <dc:Bounds x="156" y="103" width="36" height="36" />
         <bpmndi:BPMNLabel>

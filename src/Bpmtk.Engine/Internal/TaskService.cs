@@ -15,6 +15,15 @@ namespace Bpmtk.Engine.Internal
             this.tasks = tasks;
         }
 
+        public void AddUserPotentialOwner(long taskId, int userId, string type)
+        {
+            var task = this.tasks.Find(taskId);
+            if (task == null)
+                throw new EngineException("The specified task not found.");
+
+            task.AddIdentityLink(userId, type);
+        }
+
         public void Complete(long id, IDictionary<string, object> variables = null)
         {
             var task = this.tasks.Find(id);

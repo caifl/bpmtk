@@ -42,11 +42,11 @@
       <one-to-many class="ActivityVariable"/>
     </set>
 
-    <set name="identityLinks" inverse="true" cascade="all-delete-orphan"
+    <!--<set name="identityLinks" inverse="true" cascade="all-delete-orphan"
          access="field">
       <key column="act_inst_id"/>
       <one-to-many class="Bpmtk.Engine.Models.ActivityIdentityLink"/>
-    </set>
+    </set>-->
     
   </class>
 

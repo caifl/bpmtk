@@ -208,6 +208,19 @@ namespace Bpmtk.Engine.Runtime
             protected set;
         }
 
+        public virtual ProcessInstance SubProcessInstance
+        {
+            get;
+            set;
+        }
+
+        public virtual ProcessInstance CreateSubProcessInstance(IContext context)
+        {
+            var procInst = new ProcessInstance(null, null);
+
+            return procInst;
+        }
+
         public virtual Token CreateToken(IContext context)
         {
             var token = new Token(this);
@@ -277,7 +290,7 @@ namespace Bpmtk.Engine.Runtime
                 return;
             }
 
-            variable = new Variable(name, value);
+            variable = new Variable(this, name, value);
             this.variableByName.Add(name, variable);
             this.variables.Add(variable);
 
@@ -378,7 +391,7 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual void Signal(IContext context,
             string signalName, 
-            object signalData)
+            IDictionary<string, object> signalData)
         {
             this.node.Signal(ExecutionContext.Create(context, this), signalName, signalData);
         }
@@ -395,12 +408,29 @@ namespace Bpmtk.Engine.Runtime
             set;
         }
 
-        public virtual void Resume()
+        public virtual void Terminate(IContext context,
+            string endReason = null)
+        {
+            var tokens = this.children.ToList();
+
+            foreach (var child in tokens)
+            {
+                child.Terminate(context, endReason);
+                this.children.Remove(child);
+            }
+
+            this.Inactivate();
+
+            if (this.ActivityInstance != null)
+                this.ActivityInstance.Terminate(context, endReason);
+        }
+
+        public virtual void Resume(IContext context)
         {
             this.IsSuspended = false;
         }
 
-        public virtual void Suspend()
+        public virtual void Suspend(IContext context)
         {
             this.IsSuspended = false;
         }

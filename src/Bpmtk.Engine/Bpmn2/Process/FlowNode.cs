@@ -58,6 +58,18 @@ namespace Bpmtk.Engine.Bpmn2
             //fire activated event.
             var store = executionContext.Context.GetService<IInstanceStore>();
             store.Add(new HistoricToken(executionContext, "activated"));
+
+            this.ExecuteScripts("activated", executionContext);
+        }
+
+        protected virtual void ExecuteScripts(string eventName, ExecutionContext executionContext)
+        {
+            if (this.scripts.Count > 0)
+            {
+                var list = this.scripts.Where(x => x.On.Equals(eventName)).ToList();
+                foreach (var item in list)
+                    executionContext.ExecutScript(item.Text, item.ScriptFormat);
+            }
         }
 
         protected virtual void Activate(ExecutionContext executionContext)
@@ -107,7 +119,7 @@ namespace Bpmtk.Engine.Bpmn2
 
         public virtual void Signal(ExecutionContext executionContext,
             string signalName,
-            object signalData)
+            IDictionary<string, object> signalData)
         {
             throw new NotSupportedException("The activity does not support signal event.");
         }
@@ -282,6 +294,8 @@ namespace Bpmtk.Engine.Bpmn2
 
             var store = executionContext.Context.GetService<IInstanceStore>();
             store.Add(new HistoricToken(executionContext, "leave"));
+
+            this.ExecuteScripts("leave", executionContext);
         }
 
         //protected virtual void LeaveAll(ExecutionContext executionContext)

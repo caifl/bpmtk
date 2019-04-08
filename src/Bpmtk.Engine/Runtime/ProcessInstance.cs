@@ -276,5 +276,29 @@ namespace Bpmtk.Engine.Runtime
                 executionContext.LeaveNode();
             }
         }
+
+        /// <summary>
+        /// Terminate the process-instance.
+        /// </summary>
+        public override void Terminate(IContext context, string endReason)
+        {
+            if (this.token == null)
+                throw new EngineException("The process-instance has ended already.");
+
+            this.State = ExecutionState.Terminated;
+            this.EndReason = endReason;
+            this.LastStateTime = Clock.Now;
+
+            this.token.Terminate(context, endReason);
+
+            //terminate all active tasks
+            var taskStore = context.GetService<ITaskStore>();
+            var tasks = taskStore.CreateQuery()
+                .SetProcessInstanceId(this.Id)
+                .List();
+
+            foreach (var task in tasks)
+                task.TerminateInternal(context);
+        }
     }
 }

@@ -48,7 +48,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             Assert.True(tokens.Count == 1);
 
             //trigger
-            this.runtimeService.Trigger(tokens[0].Id);
+            //this.runtimeService.Trigger(tokens[0].Id);
 
             //var query = this.taskService.CreateQuery().SetState(Tasks.TaskState.Active);
 
@@ -66,7 +66,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
             //this.taskService.Complete(tasks[0].Id);
 
-            this.AssertProcessInstanceEnd(pi.Id);
+            //this.AssertProcessInstanceEnd(pi.Id);
 
             this.unitOfWork.Commit();
         }

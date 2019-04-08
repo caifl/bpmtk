@@ -15,7 +15,8 @@
     <property name="State" column="state" type="TaskState" not-null="true"/>
     <property name="LastStateTime" column="last_state_time" not-null="true"/>
     <property name="Priority" column="priority" type="short" not-null="true"/>
-
+    <property name="DueDate" column="due_date"/>
+    
     <many-to-one name="ProcessInstance"
                  class="Bpmtk.Engine.Runtime.ProcessInstance"
                  column="proc_inst_id"/>
@@ -37,6 +38,12 @@
     <property name="ClaimedTime" column="claimed_time"/>
     <property name="ActivityId" column="activity_id" length="64"/>
     <property name="Description" column="description" length="255"/>
+
+    <set name="identityLinks" inverse="true" cascade="all-delete-orphan"
+         access="field">
+      <key column="task_id"/>
+      <one-to-many class="TaskIdentityLink"/>
+    </set>
   </class>
 
 </hibernate-mapping>

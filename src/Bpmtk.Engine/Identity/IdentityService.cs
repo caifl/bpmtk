@@ -19,5 +19,10 @@ namespace Bpmtk.Engine.Identity
         {
             this.identityStore.Add(user);
         }
+
+        public virtual User FindUserByName(string name)
+        {
+            return this.identityStore.FindUserByName(name);
+        }
     }
 }

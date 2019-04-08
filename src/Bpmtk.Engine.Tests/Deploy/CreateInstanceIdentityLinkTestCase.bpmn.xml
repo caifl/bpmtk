@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
-                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
-                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
-                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0f2yaoj" 
-                  xmlns:bpmtk="http://www.bpmtk.com/bpmn/extensions"
-                  targetNamespace="http://bpmn.io/schema/bpmn" 
-                  exporter="bpmn-js (https://demo.bpmn.io)" 
-                  exporterVersion="3.3.0">
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0f2yaoj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="3.3.0">
   <bpmn:process id="Process_0cyms8o" isExecutable="false">
     <bpmn:startEvent id="StartEvent_0busnrn" name="start">
       <bpmn:outgoing>SequenceFlow_0bbuw2i</bpmn:outgoing>
@@ -21,14 +13,6 @@
       <bpmn:incoming>SequenceFlow_03g0j1u</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="SequenceFlow_03g0j1u" sourceRef="Task_105g1f1" targetRef="EndEvent_1ruiztz" />
-    <bpmn:resourceRole name="会签人员" bpmtk:type="group">
-      <bpmn:resourceAssignmentExpression>
-        <bpmn:extensionElements>
-          <bpmtk:type>group</bpmtk:type>
-        </bpmn:extensionElements>
-        <bpmn:formalExpression>${groups}</bpmn:formalExpression>
-      </bpmn:resourceAssignmentExpression>
-    </bpmn:resourceRole>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0cyms8o">

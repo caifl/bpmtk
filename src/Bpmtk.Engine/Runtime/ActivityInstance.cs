@@ -15,7 +15,7 @@ namespace Bpmtk.Engine.Runtime
     {
         private ICollection<ActivityVariable> variableInstances;
         private IDictionary<string, ActivityVariable> variables;
-        private ICollection<ActivityIdentityLink> identityLinks;
+        //private ICollection<ActivityIdentityLink> identityLinks;
         private FlowNode activity;
         protected ICollection<ActivityInstance> children;
 
@@ -223,5 +223,26 @@ namespace Bpmtk.Engine.Runtime
 
             return this.ProcessInstance.GetVariable(name);
         }
+
+        public override void Terminate(IContext context, string endReason = null)
+        {
+            this.State = ExecutionState.Terminated;
+            this.LastStateTime = Clock.Now;
+        }
+    }
+
+    public enum ActivityInstanceState
+    {
+        Ready = 0,
+
+        Active = 1,
+
+        Completed = 2,
+
+        Failed = 4,
+
+        Compensated = 8,
+
+        Terminated = 16
     }
 }
