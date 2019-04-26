@@ -18,7 +18,7 @@ namespace Bpmtk.Engine.Tests.Parser
         }
 
         [Fact]
-        public virtual void Execute()
+        public virtual async Task Execute()
         {
             var ms = this.GetType().Assembly.GetManifestResourceStream("Bpmtk.Engine.Tests.Parser.ExtendedAttributes.bpmn.xml");
             Assert.NotNull(ms);

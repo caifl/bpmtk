@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,19 +13,20 @@ namespace Bpmtk.Engine.Tests.Bpmn
         {
         }
 
-        public override void Execute()
+        public override async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.Event.MessageStartEventTest.testSingleMessageStartEvent.bpmn20.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.Event.MessageStartEventTest.testSingleMessageStartEvent.bpmn20.xml");
 
-            var pi = this.runtimeService.StartProcessInstanceByMessage("newInvoiceMessage", new
-            {
-                a = "a"
-            });
+            var map = new Dictionary<string, object>();
+            map.Add("a", "a");
 
-            var tasks = this.taskService.CreateQuery().SetState(Tasks.TaskState.Active).List();
+            var pi = this.runtimeManager.StartProcessByMessageAsync("newInvoiceMessage", 
+                map);
+
+            var tasks = this.taskManager.CreateQuery().SetState(TaskState.Active).List();
             Assert.True(tasks.Count == 1);
 
-            this.taskService.Complete(tasks[0].Id);
+            await taskManager.CompleteAsync(tasks[0].Id);
 
             this.AssertProcessEnded(pi.Id);
 

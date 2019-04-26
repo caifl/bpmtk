@@ -7,17 +7,17 @@ namespace Bpmtk.Engine.Models
         public virtual long Id
         {
             get;
-            protected set;
+            set;
         }
 
-        protected ByteArray()
-        { }
+        //protected ByteArray()
+        //{ }
 
-        public ByteArray(long id, byte[] value)
-            : this(value)
-        {
-            this.Id = id;
-        }
+        //public ByteArray(long id, byte[] value)
+        //    : this(value)
+        //{
+        //    this.Id = id;
+        //}
 
         public ByteArray(byte[] value)
         {

@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="Bpmtk.Engine"
+                   namespace="Bpmtk.Engine.Models">
+
+  <class name="Deployment" table="bpm_deployment"
+         dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+    <property name="TenantId" column="tenant_id" length="32"/>
+    
+    <many-to-one name="Package"
+                 class="Package"
+                 column="package_id" />
+    
+    <property name="Name" column="name" length="100" not-null="true"/>
+    <property name="Category" column="category" length="50"/>
+    <property name="Created" column="created" not-null="true"/>
+    
+    <many-to-one name="Model"
+                 class="Bpmtk.Engine.Models.ByteArray"
+                 column="model_id" not-null="true" cascade="all" unique="true"/>
+
+    <many-to-one name="User"
+                 class="Bpmtk.Engine.Models.User"
+                 column="user_id"/>
+
+    <property name="Memo" column="memo" length="255"/>
+
+    <set name="ProcessDefinitions" inverse="true" cascade="all-delete-orphan">
+      <key column="deployment_id"/>
+      <one-to-many class="ProcessDefinition"/>
+    </set>
+
+  </class>
+
+</hibernate-mapping>

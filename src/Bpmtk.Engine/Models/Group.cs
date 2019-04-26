@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Bpmtk.Engine.Models
 {
@@ -9,10 +8,16 @@ namespace Bpmtk.Engine.Models
         public virtual int Id
         {
             get;
-            protected set;
+            set;
         }
 
         public virtual string Name
+        {
+            get;
+            set;
+        }
+
+        public virtual ICollection<UserGroup> Users
         {
             get;
             set;

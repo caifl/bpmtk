@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Jint;
 using Jint.Native;
 using Jint.Runtime.References;
+using System.Threading.Tasks;
 
 namespace Bpmtk.Engine.Tests
 {
@@ -27,13 +28,11 @@ namespace Bpmtk.Engine.Tests
 
         
 
-        public override void Execute()
+        public override async Task Execute()
         {
-            this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.sequential_flow.bpmn.xml");
+            await this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.sequential_flow.bpmn.xml");
 
-            var runtimeService = context.GetService<IRuntimeService>();
-
-            var pi = runtimeService.StartProcessInstanceByKey("Process_0cyms8o");
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("Process_0cyms8o");
 
             this.unitOfWork.Commit();
 

@@ -1,28 +1,16 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using Bpmtk.Infrastructure;
+using Microsoft.Extensions.Logging;
+using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine
 {
     public interface IProcessEngineBuilder
     {
-        IServiceCollection Services
-        {
-            get;
-        }
+        IProcessEngineBuilder SetDbSessionFactory(IDbSessionFactory dbSessionFactory);
 
-        IProcessEngineBuilder ConfigureServices(Action<IServiceCollection> configureAction);
-
-        IProcessEngineBuilder AddUnitOfWork(Func<IServiceProvider, IUnitOfWork> buildAction);
-
-        IProcessEngineBuilder AddUnitOfWork<TUnitOfWork>()
-            where TUnitOfWork : IUnitOfWork;
-
-        IProcessEngineBuilder AddDeploymentStore<TDeploymentStore>();
-
-        IProcessEngineBuilder UseApplicationServices(IServiceProvider serviceProvider);
+        IProcessEngineBuilder SetLoggerFactory(ILoggerFactory loggerFactory);
 
         IProcessEngine Build();
     }

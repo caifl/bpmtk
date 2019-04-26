@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
-using Bpmtk.Engine.Bpmn2.Extensions;
+using Bpmtk.Bpmn2;
+using Bpmtk.Bpmn2.Extensions;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
 {

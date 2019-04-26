@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<schema targetNamespace="http://www.bpmtk.com/bpmn/extensions"
+    elementFormDefault="qualified"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:bpmtk="http://www.bpmtk.com/bpmn/extensions">
+
+  <import namespace="http://www.omg.org/spec/BPMN/20100524/MODEL" schemaLocation="Semantic.xsd" />
+
+  <!--type of resource-->
+  <attribute name="type">
+    <annotation>
+      <documentation>
+        Attribute used on a humanPerformer, potentialOwner, resourceRole, .
+      </documentation>
+    </annotation>
+    <simpleType>
+      <restriction base="string">
+        <enumeration value="Group" />
+        <enumeration value="User" />
+      </restriction>
+    </simpleType>
+  </attribute>
+
+  <!--<attribute name="taskPriority">
+    <annotation>
+      <documentation>
+        Attribute used on a userTask.
+      </documentation>
+    </annotation>
+    <simpleType>
+      <restriction base="string">
+        <enumeration value="Normal" />
+        <enumeration value="AboveNormal" />
+        <enumeration value="High" />
+        <enumeration value="VeryHigh" />
+        <enumeration value="Highest" />
+        <enumeration value="Low" />
+        <enumeration value="VeryLow" />
+        <enumeration value="Lowest" />
+      </restriction>
+    </simpleType>
+  </attribute>-->
+
+  <element name="script">
+    <annotation>
+      <documentation>
+        Subelement of the extensionsElements of flowNode, sequenceFlow, process. See documentation chapter on event.
+      </documentation>
+    </annotation>
+    <complexType mixed="true">
+      <attribute name="on" type="string" use="required"></attribute>
+      <attribute name="scriptFormat" type="string" use="optional"></attribute>
+    </complexType>
+  </element>
+
+  <element name="attribute">
+    <annotation>
+      <documentation>
+        Subelement of the extensionsElements of baseElement. See documentation chapter on
+        attribute.
+      </documentation>
+    </annotation>
+    <complexType mixed="true">
+      <attribute name="name" use="required" type="QName">
+        <annotation>
+          <documentation>
+            The key used to submit the property through the API.
+          </documentation>
+        </annotation>
+      </attribute>
+    </complexType>
+  </element>
+
+  <element name="value" type="string">
+    <annotation>
+      <documentation>
+        Subelement of the extensionsElements of ItemAwareElement. See documentation chapter on ItemAwareElement.
+      </documentation>
+    </annotation>
+  </element>
+
+</schema>

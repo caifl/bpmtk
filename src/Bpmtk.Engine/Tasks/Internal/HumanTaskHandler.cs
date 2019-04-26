@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bpmtk.Engine.Bpmn2;
+using Bpmtk.Bpmn2;
+using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
-using Bpmtk.Engine.Stores;
 using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Tasks.Internal
 {
     public class HumanTaskHandler : IHumanTaskHandler
     {
-        public virtual void Execute(ExecutionContext executionContext)
+        public virtual async System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
         {
             if (executionContext == null)
                 throw new ArgumentNullException(nameof(executionContext));
+
+            var taskManager = executionContext.Context.TaskManager;
+            var identityManager = executionContext.Context.IdentityManager;
 
             var token = executionContext.Token;
             var userTask = token.Node as UserTask;
@@ -24,7 +27,8 @@ namespace Bpmtk.Engine.Tasks.Internal
             if (string.IsNullOrEmpty(taskName))
                 taskName = userTask.Id;
 
-            var taskInstance = new TaskInstance(token);
+            var taskInstance = new TaskInstance();
+            taskInstance.Token = token;
             taskInstance.Name = taskName;
             if (userTask.Documentations.Count > 0)
             {
@@ -44,8 +48,7 @@ namespace Bpmtk.Engine.Tasks.Internal
                             var v = executionContext.EvaluteExpression(value);
                             if(v != null)
                             {
-                                var idStore = executionContext.Context.GetService<IIdentityStore>();
-                                taskInstance.Assignee = idStore.FindUserByName(v.ToString());
+                                taskInstance.Assignee = await identityManager.FindUserByNameAsync(v.ToString());
                                 taskInstance.AssigneeId = taskInstance.Assignee.Id;
                             }
                         }
@@ -73,8 +76,7 @@ namespace Bpmtk.Engine.Tasks.Internal
                 }
             }
 
-            var store = executionContext.Context.GetService<ITaskStore>();
-            store.Add(taskInstance);
+            await taskManager.CreateAsync(taskInstance);
         }
     }
 }

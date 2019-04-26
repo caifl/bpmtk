@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
+using Bpmtk.Bpmn2;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
 {
@@ -83,7 +84,6 @@ namespace Bpmtk.Engine.Bpmn2.Parser
             context.Complete();
 
             var flowElements = context.FlowElements;
-
             return new BpmnParserResults(definitions, flowElements, this.exceptions);
         }
     }

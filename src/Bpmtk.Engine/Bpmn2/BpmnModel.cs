@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using Bpmtk.Engine.Bpmn2;
+using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Bpmn2.Parser;
 using Bpmtk.Engine.Bpmn2.Types;
 
@@ -134,6 +134,13 @@ namespace Bpmtk.Engine.Bpmn2
                 return element;
 
             return null;
+        }
+
+        private class NoneStartEventActivityBehavior
+        {
+            public NoneStartEventActivityBehavior()
+            {
+            }
         }
     }
 }

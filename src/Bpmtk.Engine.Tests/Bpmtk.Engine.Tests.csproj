@@ -58,6 +58,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Bpmtk.Engine.Hibernate\Bpmtk.Engine.Hibernate.csproj" />
     <ProjectReference Include="..\Bpmtk.Engine\Bpmtk.Engine.csproj" />
   </ItemGroup>
 

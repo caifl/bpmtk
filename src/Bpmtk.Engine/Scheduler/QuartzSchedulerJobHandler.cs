@@ -3,28 +3,25 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Internal;
-using Bpmtk.Engine.Stores;
-using Bpmtk.Infrastructure;
 using Quartz;
 
 namespace Bpmtk.Engine.Scheduler
 {
     public class QuartzSchedulerJobHandler : Quartz.IJob
     {
-        public virtual async Task Execute(IJobExecutionContext context)
+        public virtual async Task Execute(IJobExecutionContext jobExecutionContext)
         {
-            var jobDetail = context.JobDetail;
+            var jobDetail = jobExecutionContext.JobDetail;
 
             var engine = ProcessEngine.GetInstance();
 
-            using (var scopedContext = engine.CreateContext())
+            using (var context = engine.CreateContext())
             {
-                var unitOfWork = scopedContext.GetService<IUnitOfWork>();
-                var store = scopedContext.GetService<IScheduledJobStore>();
+                var jobManager = context.ScheduledJobManager;
 
                 var key = jobDetail.Key;
 
-                var scheduledJob = await store.FindByKeyAsync(key.Name);
+                var scheduledJob = await jobManager.FindByKeyAsync(key.Name);
                 var handerClass = scheduledJob.Handler;
                 if (scheduledJob != null && handerClass != null)
                 {
@@ -33,15 +30,13 @@ namespace Bpmtk.Engine.Scheduler
                         var type = Type.GetType(handerClass, true);
                         var handler = Activator.CreateInstance(type) as IScheduledJobHandler;
                         if (handler != null)
-                            await handler.Execute(scheduledJob, scopedContext);
+                            await handler.ExecuteAsync(context, scheduledJob);
                     }
                     catch (Exception ex)
                     {
                         scheduledJob.Message = ex.Message;
                         scheduledJob.StackTrace = ex.StackTrace;
                     }
-
-                    unitOfWork.Commit();
                 }            
             }
         }

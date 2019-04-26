@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Bpmtk.Engine.Models
 {
@@ -13,6 +12,18 @@ namespace Bpmtk.Engine.Models
         }
 
         public virtual string Name
+        {
+            get;
+            set;
+        }
+
+        public virtual string UserName
+        {
+            get;
+            set;
+        }
+
+        public virtual ICollection<UserGroup> Groups
         {
             get;
             set;

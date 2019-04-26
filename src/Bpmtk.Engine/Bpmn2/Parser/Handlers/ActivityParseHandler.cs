@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Xml.Linq;
+using Bpmtk.Bpmn2;
+using Bpmtk.Engine.Bpmn2.Behaviors;
 
 namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 {
@@ -22,12 +24,26 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 
             this.handlers.Add("loopCharacteristics", new ParseHandlerAction<Activity>((p, c, x) =>
             {
+                var activityBehavior = p.Tag as ActivityBehavior;
+
                 LoopCharacteristics loopCharacteristics = null;
                 var localName = Helper.GetRealLocalName(x);
                 if (localName == "multiInstanceLoopCharacteristics")
+                {
                     loopCharacteristics = (LoopCharacteristics)miHandler.Create(p, c, x);
+                    activityBehavior = new StandardLoopActivityBehavior(activityBehavior, (StandardLoopCharacteristics)loopCharacteristics);
+                }
                 else
+                {
                     loopCharacteristics = (LoopCharacteristics)stdHandler.Create(p, c, x);
+                    var mi = loopCharacteristics as MultiInstanceLoopCharacteristics;
+                    if (mi.IsSequential)
+                        activityBehavior = new SequentialMultiInstanceActivityBehavior(activityBehavior, mi);
+                    else
+                        activityBehavior = new ParallelMultiInstanceActivityBehavior(activityBehavior, mi);
+                }
+
+                p.Tag = activityBehavior;
 
                 loopCharacteristics.Activity = p;
             }));
@@ -126,7 +142,6 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             //extended attributes.
             //item.CollectionRef = element.GetExtendedAttribute("collectionRef");
             //item.ElementRef = element.GetExtendedAttribute("elementRef");
-
             base.Init(item, context, element);
 
             return item;

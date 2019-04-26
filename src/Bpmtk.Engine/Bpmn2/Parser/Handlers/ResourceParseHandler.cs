@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Xml.Linq;
+using Bpmtk.Bpmn2;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
 {

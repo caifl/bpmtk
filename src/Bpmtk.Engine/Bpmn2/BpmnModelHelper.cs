@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using Bpmtk.Bpmn2;
 
 namespace Bpmtk.Engine.Bpmn2
 {

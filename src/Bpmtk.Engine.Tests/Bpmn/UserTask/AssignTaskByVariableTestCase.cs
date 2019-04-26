@@ -13,13 +13,13 @@ namespace Bpmtk.Engine.Tests.Bpmn.UserTask
         }
 
       
-        public override void Execute()
+        public override async Task Execute()
         {
             base.DeployBpmnModel("Bpmtk.Engine.Tests.Bpmn.UserTask.AssignTaskByVariableTestCase.bpmn.xml");
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("AssignTaskByVariableTestCase");
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("AssignTaskByVariableTestCase");
 
-            var query = this.taskService.CreateQuery()
+            var query = this.taskManager.CreateQuery()
                 .SetProcessInstanceId(pi.Id);
 
             var tasks = query.List();

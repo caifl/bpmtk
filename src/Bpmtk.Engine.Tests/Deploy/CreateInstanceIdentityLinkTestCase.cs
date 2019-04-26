@@ -12,7 +12,7 @@ namespace Bpmtk.Engine.Tests.Deploy
         }
 
       
-        public override void Execute()
+        public override async Task Execute()
         {
         }
     }

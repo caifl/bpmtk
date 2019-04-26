@@ -13,11 +13,11 @@ namespace Bpmtk.Engine.Tests.Event
         }
 
       
-        public override void Execute()
+        public override async Task Execute()
         {
             base.DeployBpmnModel("Bpmtk.Engine.Tests.Event.BpmnInlineScriptEventTestCase.bpmn.xml");
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("BpmnInlineScriptEventTestCase");
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("BpmnInlineScriptEventTestCase");
 
             var greeting = pi.GetVariable("greeting");
             Assert.True("hello bpmtk!".Equals(greeting));

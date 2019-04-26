@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="Bpmtk.Engine"
+                   namespace="Bpmtk.Engine.Models">
+
+  <class name="ProcessInstance" table="bpm_proc_inst"
+         dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+
+    <property name="TenantId" column="tenant_id" length="32"/>
+    
+    <many-to-one name="ProcessDefinition"
+               class="Bpmtk.Engine.Repository.ProcessDefinition"
+               column="proc_def_id"
+               not-null="true"/>
+    
+    <property name="Name" column="`name`" length="100" not-null="true"/>
+    <property name="State" column="`state`" not-null="true" type="ExecutionState"/>
+    <property name="Created" column="created" not-null="true"/>
+    <property name="StartTime" column="start_time"/>
+    <property name="LastStateTime" column="last_state_time" not-null="true"/>
+    <property name="EndReason" column="end_reason" length="255"/>
+    <property name="Description" column="description" length="255"/>
+
+    <many-to-one name="CallActivityInstance"
+               class="ActivityInstance"
+               column="call_act_id"/>
+
+    <many-to-one name="Super"
+               class="Token"
+               column="super_id"/>
+
+    <many-to-one name="Token"
+               class="Token"
+               column="token_id" cascade="all" unique="true"/>
+
+    <many-to-one name="Initiator"
+               class="Bpmtk.Engine.Models.User"
+               column="initiator_id"/>
+
+    <set name="variableInstances" inverse="true" cascade="all-delete-orphan"
+         access="field">
+      <key column="proc_inst_id"/>
+      <one-to-many class="ProcessVariable"/>
+    </set>
+
+    <set name="identityLinks" inverse="true" cascade="all-delete-orphan"
+         access="field">
+      <key column="proc_inst_id"/>
+      <one-to-many class="InstanceIdentityLink"/>
+    </set>
+  </class>
+
+</hibernate-mapping>

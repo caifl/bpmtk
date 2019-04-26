@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.Runtime
 {
     public interface ITokenQuery
     {
-        ITokenQuery SetProcessInstance(long id);
+        ITokenQuery SetProcessInstanceId(long id);
 
         IList<Token> List();
     }

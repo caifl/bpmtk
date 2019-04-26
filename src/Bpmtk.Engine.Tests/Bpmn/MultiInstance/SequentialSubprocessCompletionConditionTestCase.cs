@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,19 +15,19 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
         }
 
-        public override void Execute()
+        public override async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialSubProcessCompletionCondition.bpmn20.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialSubProcessCompletionCondition.bpmn20.xml");
 
             var map = new Dictionary<string, object>();
             //map.Add("collection", new string[0] { });
             //map.Add("nrOfLoops", 5);
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("miSequentialSubprocessCompletionCondition",
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("miSequentialSubprocessCompletionCondition",
                 map);
 
-            var query = this.taskService.CreateQuery()
-                .SetState(Tasks.TaskState.Active)
+            var query = this.taskManager.CreateQuery()
+                .SetState(TaskState.Active)
                 .SetProcessInstanceId(pi.Id);
 
             //var tasks = query.List();
@@ -49,8 +51,8 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
                 Assert.True("task one" == tasks[0].Name);
                 Assert.True("task two" == tasks[1].Name);
 
-                taskService.Complete(tasks[0].Id);
-                taskService.Complete(tasks[1].Id);
+                await taskManager.CompleteAsync(tasks[0].Id);
+                await taskManager.CompleteAsync(tasks[1].Id);
             }
 
             this.AssertProcessEnded(pi.Id);

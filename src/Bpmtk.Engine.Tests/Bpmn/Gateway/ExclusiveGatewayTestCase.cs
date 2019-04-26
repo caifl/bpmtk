@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,25 +14,25 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
 
         }
 
-        public override void Execute()
+        public override async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.Gateway.ExclusiveGatewayTest.testDefaultSequenceFlow.bpmn20.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.Gateway.ExclusiveGatewayTest.testDefaultSequenceFlow.bpmn20.xml");
 
             var map = new Dictionary<string, object>();
             map.Add("input", 3);
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("exclusiveGwDefaultSequenceFlow",
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("exclusiveGwDefaultSequenceFlow",
                 map);
 
             //var myVar = pi.GetVariable("myVar");
             //Assert.True("test123".Equals(myVar));
-            var query = this.taskService.CreateQuery().SetState(Tasks.TaskState.Active);
+            var query = this.taskManager.CreateQuery().SetState(TaskState.Active);
 
             var tasks = query.List();
             while(tasks.Count > 0)
             {
-                this.taskService.AddUserPotentialOwner(tasks[0].Id, 1, "owner");
-                this.taskService.Complete(tasks[0].Id);
+                //this.taskManager.AddUserPotentialOwner(tasks[0].Id, 1, "owner");
+                await taskManager.CompleteAsync(tasks[0].Id);
                 
                 tasks = query.List();
             }

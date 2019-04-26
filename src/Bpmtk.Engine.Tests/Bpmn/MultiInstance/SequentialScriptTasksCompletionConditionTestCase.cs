@@ -13,7 +13,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
         }
 
-        public override void Execute()
+        public override async Task Execute()
         {
             base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialScriptTasksCompletionCondition.bpmn20.xml");
 
@@ -21,13 +21,13 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             map.Add("sum", 0);
             map.Add("nrOfLoops", 5);
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("miSequentialScriptTaskCompletionCondition",
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("miSequentialScriptTaskCompletionCondition",
                 map);
 
             var myVar = pi.GetVariable("sum");
             Assert.True(5 == Convert.ToInt32(myVar));
 
-            var actInsts = this.runtimeService.CreateActivityQuery()
+            var actInsts = this.runtimeManager.CreateActivityQuery()
                 .List();
 
             //var list = actInsts.Where(x => x.ActivityType == "ScriptTask")
@@ -40,8 +40,8 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             //    Assert.True(item.State == Runtime.ExecutionState.Completed);
             //}
 
-            var tokenQuery = this.runtimeService.CreateTokenQuery();
-            tokenQuery.SetProcessInstance(pi.Id);
+            var tokenQuery = this.runtimeManager.CreateTokenQuery();
+            tokenQuery.SetProcessInstanceId(pi.Id);
 
             var tokens = tokenQuery.List();
 
@@ -50,7 +50,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             //trigger
             //this.runtimeService.Trigger(tokens[0].Id);
 
-            //var query = this.taskService.CreateQuery().SetState(Tasks.TaskState.Active);
+            //var query = this.taskService.CreateQuery().SetState(TaskState.Active);
 
             //var tasks = query.List();
             //while(tasks.Count > 0)

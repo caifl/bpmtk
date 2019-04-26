@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bpmtk.Engine.Runtime;
 
-namespace Bpmtk.Engine.Query
+namespace Bpmtk.Engine.Runtime
 {
     public interface IProcessInstanceQuery
     {
@@ -11,16 +11,16 @@ namespace Bpmtk.Engine.Query
 
         //IProcessInstanceQuery SetPagedSize(int pageSize);
 
-        IProcessInstance Single();
+        ProcessInstance Single();
 
-        Task<IProcessInstance> SingleAsync();
+        Task<ProcessInstance> SingleAsync();
 
         int Count();
 
         int CountAsync();
 
-        IEnumerable<IProcessInstance> List(int pageIndex = 0, int pageSize = 10);
+        IEnumerable<ProcessInstance> List(int pageIndex = 0, int pageSize = 10);
 
-        Task<IEnumerable<IProcessInstance>> ListAsync();
+        Task<IEnumerable<ProcessInstance>> ListAsync();
     }
 }

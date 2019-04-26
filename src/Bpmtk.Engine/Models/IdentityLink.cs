@@ -2,12 +2,12 @@
 
 namespace Bpmtk.Engine.Models
 {
-    public abstract class IdentityLink
+    public class IdentityLink
     {
         public virtual long Id
         {
             get;
-            protected set;
+            set;
         }
 
         public virtual User User
@@ -23,12 +23,6 @@ namespace Bpmtk.Engine.Models
         }
 
         public virtual string Type
-        {
-            get;
-            set;
-        }
-
-        public virtual int Ordinal
         {
             get;
             set;

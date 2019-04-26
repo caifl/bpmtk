@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bpmtk.Engine</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ActivityInstance.cs" />
+    <Compile Remove="ActivityVariable.cs" />
+    <Compile Remove="ByteArray.cs" />
+    <Compile Remove="ByteArrayObject.cs" />
+    <Compile Remove="DateObject.cs" />
+    <Compile Remove="ExecutionContext.cs" />
+    <Compile Remove="ProcessInstance.cs" />
+    <Compile Remove="Token.cs" />
+    <Compile Remove="Variable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.1.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bpmtk.Engine\Bpmtk.Engine.csproj" />
+  </ItemGroup>
+
+</Project>

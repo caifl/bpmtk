@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,16 +14,16 @@ namespace Bpmtk.Engine.Tests.Bpmn
         {
         }
 
-        public override void Execute()
+        public override async Task Execute()
         {
-            this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.SubProcess.SubProcessTest.testDataObjectScope.bpmn20.xml");
+            await this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.SubProcess.SubProcessTest.testDataObjectScope.bpmn20.xml");
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("dataObjectScope");
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("dataObjectScope");
             //var value = pi.GetVariable("dObj123");
             //value = pi.GetVariable("noData123");
 
-            var query = this.taskService.CreateQuery()
-                .SetState(Tasks.TaskState.Active)
+            var query = this.taskManager.CreateQuery()
+                .SetState(TaskState.Active)
                 .SetProcessInstanceId(pi.Id);
 
             // After process start, only task 0 should be active
@@ -32,7 +34,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
             var value = tasks[0].GetVariable("noData123");
 
             // Completing Task in subprocess will finish the process.
-            taskService.Complete(tasks[0].Id);
+            await taskManager.CompleteAsync(tasks[0].Id);
             tasks = query.List();
             Assert.True(1 == tasks.Count);
 
@@ -40,11 +42,11 @@ namespace Bpmtk.Engine.Tests.Bpmn
             Assert.True("Testing456".Equals(var1));
             Assert.True(tasks[0].Name == "Complete SubTask");
 
-            taskService.Complete(tasks[0].Id);
+            await taskManager.CompleteAsync(tasks[0].Id);
             //Assert.True("Testing456".Equals(var1));
             //taskService.Complete(tasks[0].Id);
             tasks = query.List();
-            taskService.Complete(tasks[0].Id);
+            await taskManager.CompleteAsync(tasks[0].Id);
             AssertProcessEnded(pi.Id);
 
             this.unitOfWork.Commit();

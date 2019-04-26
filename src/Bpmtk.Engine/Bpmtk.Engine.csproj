@@ -6,13 +6,17 @@
 
   <ItemGroup>
     <Compile Remove="Bpmn2\Behaviors\**" />
+    <Compile Remove="Hibernate\**" />
     <EmbeddedResource Remove="Bpmn2\Behaviors\**" />
+    <EmbeddedResource Remove="Hibernate\**" />
     <None Remove="Bpmn2\Behaviors\**" />
+    <None Remove="Hibernate\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Bpmn2\BpmnActivity.cs" />
     <Compile Remove="Bpmn2\BpmnProcess.cs" />
+    <Compile Remove="Runtime\Execution.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,10 +26,40 @@
     <None Remove="Bpmn2\Schema\DI.xsd" />
     <None Remove="Bpmn2\Schema\Extensions.xsd" />
     <None Remove="Bpmn2\Schema\Semantic.xsd" />
-    <None Remove="Stores\ByteArray.hbm.xml" />
-    <None Remove="Stores\Group.hbm.xml" />
-    <None Remove="Stores\IdentityLink.hbm.xml" />
-    <None Remove="Stores\User.hbm.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Bpmn2\Behaviors\ActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\AdHocSubProcessActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\BusinessRuleTaskActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\CallActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ComplexGatewayActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\EndEventActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\EventBasedGatewayActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ExclusiveGatewayActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\FlowNodeActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\GatewayActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\IActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\IFlowNodeActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ILoopActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\InclusiveGatewayActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ISignallableActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\LoopActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ManualTaskActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\MultiInstanceActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\StartEventActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ParallelGatewayActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ParallelMultiInstanceActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ReceiveTaskActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ScriptTaskActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\SendTaskActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\SequentialMultiInstanceActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\ServiceTaskActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\StandardLoopActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\SubProcessActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\TaskActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\TransactionActivityBehavior.cs" />
+    <Compile Include="Bpmn2\Behaviors\UserTaskActivityBehavior.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,67 +73,13 @@
 
   <ItemGroup>
     <PackageReference Include="Jint" Version="3.0.0-beta-1525" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="NHibernate" Version="5.2.5" />
     <PackageReference Include="Quartz" Version="3.0.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Stores\Mappings\ActivityInstance.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\Variable.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\ActivityVariable.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\ByteArray.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\Deployment.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\Group.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\IdentityLink.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\ScheduledJob.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\Package.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\EventSubscription.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\ProcessDefinition.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\ProcessInstance.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\ProcessVariable.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\TaskInstance.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\HistoricToken.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\Token.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\Mappings\User.hbm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Stores\nhibernate.cfg.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\Bpmtk.Bpmn2\Bpmtk.Bpmn2.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Xml.Linq;
-using Bpmtk.Engine.Bpmn2.Extensions;
+using Bpmtk.Bpmn2;
+using Bpmtk.Bpmn2.Extensions;
+using Bpmtk.Engine.Bpmn2.Behaviors;
 
 namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 {
@@ -31,6 +33,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateManualTask();
+            
             parent.FlowElements.Add(task);
 
             return task;
@@ -82,6 +85,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateServiceTask();
+            
             parent.FlowElements.Add(task);
 
             task.Implementation = element.GetAttribute("implementation");
@@ -102,6 +106,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var task = context.BpmnFactory.CreateSendTask();
+            
             parent.FlowElements.Add(task);
 
             task.Implementation = element.GetAttribute("implementation");

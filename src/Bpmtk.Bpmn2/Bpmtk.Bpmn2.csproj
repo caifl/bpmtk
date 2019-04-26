@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Schema\BPMN20.xsd" />
+    <None Remove="Schema\BPMNDI.xsd" />
+    <None Remove="Schema\DC.xsd" />
+    <None Remove="Schema\DI.xsd" />
+    <None Remove="Schema\Extensions.xsd" />
+    <None Remove="Schema\Semantic.xsd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Schema\BPMN20.xsd" />
+    <EmbeddedResource Include="Schema\BPMNDI.xsd" />
+    <EmbeddedResource Include="Schema\DC.xsd" />
+    <EmbeddedResource Include="Schema\DI.xsd" />
+    <EmbeddedResource Include="Schema\Extensions.xsd" />
+    <EmbeddedResource Include="Schema\Semantic.xsd" />
+  </ItemGroup>
+
+</Project>

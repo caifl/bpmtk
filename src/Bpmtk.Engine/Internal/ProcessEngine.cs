@@ -1,33 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Logging;
+using System;
 
 namespace Bpmtk.Engine.Internal
 {
     public class ProcessEngine : IProcessEngine, IDisposable
     {
-        private readonly IServiceProvider services;
+        private readonly ProcessEngineBuilder builder;
         private static ProcessEngine instance = null;
 
         public static ProcessEngine GetInstance() => instance;
 
-        public ProcessEngine(IServiceProvider services)
+        public ProcessEngine(ProcessEngineBuilder builder)
         {
-            this.services = services;
             instance = this;
-        }
-
-        public virtual IContext CreateContext(IServiceProvider serviceProvider)
-        {
-            var scope = this.services.CreateScope();
-            return new Context(this, scope);
+            this.builder = builder;
         }
 
         public virtual IContext CreateContext()
         {
-            var scope = this.services.CreateScope();
-            return new Context(this, scope);
+            var sessionFactory = builder.DbSessionFactory;
+            var session = sessionFactory.Create();
+            return new Context(this, session);
         }
+
+        public virtual ILoggerFactory LoggerFactory => this.builder.LoggerFactory;
 
         #region IDisposable Support
         private bool isDisposed = false; // To detect redundant calls

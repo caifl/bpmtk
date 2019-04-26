@@ -1,7 +1,15 @@
 ﻿using System;
 using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
 using Bpmtk.Engine.Internal;
+using Bpmtk.Engine.Tasks;
+using Bpmtk.Engine.Repository;
+using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Models;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Bpmtk.Engine.Scheduler;
+using Bpmtk.Engine.Identity;
+using Bpmtk.Engine.Infrastructure;
 
 namespace Bpmtk.Engine
 {
@@ -9,20 +17,16 @@ namespace Bpmtk.Engine
     {
         private static AsyncLocal<IContext> current = new AsyncLocal<IContext>();
         private readonly ProcessEngine engine;
-        private readonly IServiceScope scope;
-        private readonly IServiceProvider services;
 
-        internal Context(ProcessEngine engine, IServiceScope scope)
+        internal Context(ProcessEngine engine, IDbSession dbSession)
         {
             this.engine = engine;
-            this.scope = scope;
-            this.services = scope.ServiceProvider;
+            this.DbSession = dbSession;
         }
 
-        internal Context(ProcessEngine engine, IServiceProvider services)
+        public virtual IDbSession DbSession
         {
-            this.engine = engine;
-            this.services = services;
+            get;
         }
 
         public static IContext Current => current.Value;
@@ -37,13 +41,31 @@ namespace Bpmtk.Engine
             protected set;
         }
 
+        public virtual ITaskManager TaskManager
+        {
+            get => new TaskManager(this);
+        }
+
+        public virtual IDeploymentManager DeploymentManager
+        {
+            get => new DeploymentManager(this);
+        }
+
+        public virtual IHistoryManager HistoryManager => new HistoryManager(this);
+
+        public virtual IRuntimeManager RuntimeManager => new RuntimeManager(this);
+
+        public virtual IIdentityManager IdentityManager => new IdentityManager(this);
+
+        public virtual IScheduledJobManager ScheduledJobManager => new ScheduledJobManager(this);
+
         public static void SetCurrent(IContext context)
         {
             current.Value = context;
         }
 
-        public virtual TService GetService<TService>() => 
-            this.scope.ServiceProvider.GetRequiredService<TService>();
+        //public virtual TService GetService<TService>() => 
+        //    this.scope.ServiceProvider.GetRequiredService<TService>();
 
         #region IDisposable Support
 
@@ -56,8 +78,8 @@ namespace Bpmtk.Engine
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects).
-                    if(this.scope != null)
-                        this.scope.Dispose();
+                    //if(this.scope != null)
+                    //    this.scope.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
@@ -89,6 +111,47 @@ namespace Bpmtk.Engine
 
             return this;
         }
+
+        public virtual async Task<ProcessInstance> StartProcessByKeyAsync(string processDefintionKey,
+            IDictionary<string, object> variables = null)
+        {
+            var processDefinition = await this.DeploymentManager.FindProcessDefinitionByKeyAsync(processDefintionKey);
+            var builder = this.RuntimeManager.CreateProcessInstanceBuilder();
+            builder.SetProcessDefinition(processDefinition);
+            var procInst = await builder.BuildAsync();
+
+            //var initialNode = null;
+
+            var token = new Token(procInst);
+            var executionContext = Runtime.ExecutionContext.Create(this, token);
+            await executionContext.StartAsync(null);
+
+            return procInst;
+        }
+
+        public virtual Task<ProcessInstance> StartProcessByMessageAsync(string messageName,
+            IDictionary<string, object> messageData = null)
+        {
+            //var eventSubscr = this.eventSubscriptions.FindByName(messageName, "message");
+            //if (eventSubscr == null)
+            //    throw new RuntimeException($"The message '{messageName}' event handler does not exists.");
+
+            //if (eventSubscr.ProcessDefinition != null
+            //    && eventSubscr.ActivityId != null)
+            //{
+            //    IMessageStartEventHandler handler = new MessageStartEventHandler(this.deploymentManager,
+            //        this.instances);
+
+            //    var task = handler.Execute(eventSubscr, messageData);
+
+            //    return task.Result;
+            //}
+            throw new NotImplementedException();
+        }
+
+        public virtual ITransaction BeginTransaction()
+            => this.DbSession.BeginTransaction();
+
         #endregion
     }
 }

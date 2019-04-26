@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,14 +14,14 @@ namespace Bpmtk.Engine.Tests.Bpmn
         {
         }
 
-        public override void Execute()
+        public override async Task Execute()
         {
-            this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.SubProcess.SubProcessTest.testNestedSimpleSubProcess.bpmn20.xml");
+            await this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.SubProcess.SubProcessTest.testNestedSimpleSubProcess.bpmn20.xml");
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("nestedSimpleSubProcess");
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("nestedSimpleSubProcess");
 
-            var query = this.taskService.CreateQuery()
-                .SetState(Tasks.TaskState.Active)
+            var query = this.taskManager.CreateQuery()
+                .SetState(TaskState.Active)
                 .SetProcessInstanceId(pi.Id);
 
             // After process start, only task 0 should be active
@@ -28,13 +30,13 @@ namespace Bpmtk.Engine.Tests.Bpmn
             Assert.True(tasks[0].Name == "Task in subprocess");
 
             // Completing Task in subprocess will finish the process.
-            taskService.Complete(tasks[0].Id);
+            await taskManager.CompleteAsync(tasks[0].Id);
             tasks = query.List();
             Assert.True(1 == tasks.Count); 
             Assert.True(tasks[0].Name == "Task after subprocesses");
             //this.unitOfWork.Commit();
 
-            taskService.Complete(tasks[0].Id);
+            await taskManager.CompleteAsync(tasks[0].Id);
             AssertProcessEnded(pi.Id);
 
             this.unitOfWork.Commit();

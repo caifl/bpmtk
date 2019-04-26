@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Bpmtk.Engine
 {
     public interface IProcessEngine
     {
-        IContext CreateContext();
+        ILoggerFactory LoggerFactory
+        {
+            get;
+        }
 
-        IContext CreateContext(IServiceProvider services);
+        IContext CreateContext();
     }
 }

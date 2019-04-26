@@ -1,38 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using Bpmtk.Engine.Stores;
-using Bpmtk.Engine.Runtime;
-using Bpmtk.Engine.Repository;
+using Bpmtk.Bpmn2;
+using Bpmtk.Engine.Models;
 
-namespace Bpmtk.Engine.Events.Internal
+namespace Bpmtk.Engine.Events
 {
     class MessageStartEventHandler : IMessageStartEventHandler
     {
-        private readonly IInstanceStore store;
-        private IDeploymentManager deploymentManager;
-
-        public MessageStartEventHandler(IDeploymentManager deploymentManager, IInstanceStore store)
-        {
-            this.deploymentManager = deploymentManager;
-            this.store = store;
-        }
-
-        public async Task<ProcessInstance> Execute(EventSubscription eventSubscription, object messageData)
+        public async Task<ProcessInstance> ExecuteAsync(IContext context,
+            EventSubscription eventSubscription, 
+            IDictionary<string, object> messageData)
         {
             var processDefinition = eventSubscription.ProcessDefinition;
-            var model = this.deploymentManager.GetBpmnModel(processDefinition.DeploymentId);
+            var model = await context.DeploymentManager.GetBpmnModelAsync(processDefinition.DeploymentId);
             var flowNode = model.GetFlowElement(eventSubscription.ActivityId) 
-                as Bpmn2.FlowNode;
+                as FlowNode;
 
-            var processInstance = new ProcessInstance(processDefinition);
+            var builder = context.RuntimeManager.CreateProcessInstanceBuilder();
+            builder.SetProcessDefinition(processDefinition);
 
-            await this.store.SaveAsync(processInstance);
+            var pi = await context.RuntimeManager.StartProcessAsync(builder);
 
-            processInstance.Start(Context.Current, flowNode);
-
-            return processInstance;
+            return pi;
         }
     }
 }

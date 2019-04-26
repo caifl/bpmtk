@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.ObjectModel;
+using Bpmtk.Bpmn2;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
 {

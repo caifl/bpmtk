@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.Scheduler
 {
     class TimerStartEventJobHandler : IScheduledJobHandler
     {
-        public Task Execute(ScheduledJob job, IContext context)
+        public virtual Task ExecuteAsync(IContext context, ScheduledJob job)
         {
             return Task.CompletedTask;
         }

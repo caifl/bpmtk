@@ -1,144 +1,147 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Bpmtk.Engine.Bpmn2;
+using System.Collections;
+using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
-    abstract class MultiInstanceActivityBehavior : BpmnActivityBehavior
-        //ICompositeActivityBehavior,
-        //ISubProcessBehavior
+    abstract class MultiInstanceActivityBehavior : LoopActivityBehavior
     {
-        protected Activity activity;
-        protected BpmnActivityBehavior innerActivityBehavior;
+        protected readonly MultiInstanceLoopCharacteristics loopCharacteristics;
 
-        public MultiInstanceActivityBehavior(Activity activity, BpmnActivityBehavior innerActivityBehavior)
+        public MultiInstanceActivityBehavior(ActivityBehavior innerActivityBehavior,
+            MultiInstanceLoopCharacteristics loopCharacteristics) : base(innerActivityBehavior)
         {
-            this.activity = activity;
-            this.innerActivityBehavior = innerActivityBehavior;
-            this.innerActivityBehavior.MultiInstanceActivityBehavior = this;
-        }
-
-        //protected virtual async Task<int> ResolveNrOfInstancesAsync(ExecutionContext executionContext)
-        //{
-        //    var value = await executionContext.GetVariableAsync("numberOfInstances");
-
-        //    return value ?? 1;
-        //}
-
-        //protected virtual int? GetLoopVariable(ExecutionContext executionContext, string variableName)
-        //{
-        //    return (int?)executionContext.GetVariable(variableName);
-        //}
-        //protected override async Task CreateInstanceAsync(ExecutionContext executionContext)
-        //{
-        //    //标记为多实例
-        //    var token = executionContext.Token;
-        //    token.IsMIRoot = true;
-        //    await executionContext.FlushAsync();
-
-        //    await base.CreateInstanceAsync(executionContext);
-        //}
-        //public override Task EnterAsync(ExecutionContext executionContext)
-        //{
-        //    //Set IsMIRoot
-        //    var token = executionContext.Token;
-        //    token.IsMIRoot = true; 
-
-        //    return base.EnterAsync(executionContext);
-        //}
-
-        //protected override Task CreateAsync(ExecutionContext executionContext)
-        //{
-        //    return base.CreateAsync(executionContext);
-        //}
-
-        public override void Execute(ExecutionContext executionContext)
-        {
-            this.CreateInstances(executionContext);
-        }
-
-        //public override void Execute(ExecutionContext executionContext)
-        //{
-        //    throw new NotImplementedException(nameof(MultiInstanceActivityBehavior));
-        //    //var loopCounter = (int?)executionContext.GetVariable("loopCounter");
-        //    //if (loopCounter == null)
-        //    //{
-
-        //    //}
-        //    //else
-        //    //    await this.innerActivityBehavior.ExecuteAsync(executionContext);
-        //    //var token = executionContext.Token;
-        //    //var node = token.Node;
-
-        //    //var store = executionContext.InstanceStore;
-
-        //    //int count = 3;
-        //    //var list = new List<Token>();
-
-        //    //for (int i = 0; i < count; i++)
-        //    //{
-        //    //    var child = token.CreateToken();
-        //    //    child.Node = node;
-
-        //    //    await child.SaveAsync(store);
-
-        //    //    list.Add(child);
-        //    //}
-
-        //    //foreach (var item in list)
-        //    //{
-        //    //    var context = new ExecutionContext(item);
-        //    //    await this.innerActivityBehavior.EnterAsync(context);
-        //    //}
-        //}
-
-        protected virtual bool IsCompleted(ExecutionContext executionContext)
-        {
-            throw new NotImplementedException();
+            this.loopCharacteristics = loopCharacteristics;
         }
 
         protected abstract int CreateInstances(ExecutionContext executionContext);
 
-        public virtual BpmnActivityBehavior InnerActivityBehavior
+        protected virtual bool IsCompleted(ExecutionContext executionContext)
         {
-            get => this.innerActivityBehavior;
+            if (loopCharacteristics.CompletionCondition == null)
+                return false;
+
+            var condition = loopCharacteristics.CompletionCondition.Text;
+            var result = executionContext.EvaluteExpression(condition);
+            if (result != null)
+                return Convert.ToBoolean(result);
+
+            return false;
         }
 
-        //public Task Completed(ExecutionContext context)
-        //{
-        //    return this.Leave(context);
-        //}
+        /// <summary>
+        /// In order to initialize a valid multi-instance, either the
+        /// loopCardinality Expression or the loopDataInput MUST be specified.
+        /// </summary>
+        protected virtual int ResolveNumberOfInstances(ExecutionContext executionContext)
+        {
+            if (loopCharacteristics.LoopCardinality == null && loopCharacteristics.LoopDataInputRef == null)
+                throw new RuntimeException("The multi-instance either the loopCardinality Expression or the loopDataInput MUST be specified.");
 
-        //public Task CompletingAsync(ExecutionContext context, ExecutionContext subProcessInstanceContext)
-        //{
-        //    return System.Threading.Tasks.Task.CompletedTask;
-        //}
+            var loopDataInputRef = loopCharacteristics.LoopDataInputRef;
+            int count = -1;
 
-        //public override void Signal(ExecutionContext executionContext, string signalEvent, object signalData)
-        //{
-        //    return this.innerActivityBehavior.SignalAsync(executionContext, signalEvent, signalData);
-        //}
+            if (loopCharacteristics.LoopCardinality != null)
+            {
+                var value = executionContext.EvaluteExpression(loopCharacteristics.LoopCardinality.Text);
+                if (value != null)
+                    count = Convert.ToInt32(value);
+            }
+            else if (loopDataInputRef != null)
+            {
+                var loopCollection = executionContext.GetVariable(loopDataInputRef.Id);
+                if (loopCollection != null && loopCollection is ICollection)
+                    count = ((ICollection)loopCollection).Count;
+            }
 
-        //public virtual Task LastActivityEndedAsync(ExecutionContext context)
-        //{
-        //    return this.Leave(context);
-        //}
+            return count;
+        }
 
-        //Task ICompositeActivityBehavior.LastActivityEndedAsync(ExecutionContext context)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public override async System.Threading.Tasks.Task LeaveAsync(ExecutionContext executionContext)
+        {
+            //设置活动实例为结束状态
+            var context = executionContext.Context;
+            var token = executionContext.Token;
 
-        //Task ISubProcessBehavior.CompletingAsync(ExecutionContext executionContext, ExecutionContext subProcessInstanceContext)
-        //{
-        //    throw new NotImplementedException();
-        //}
+            var parentToken = token.Parent;
+            if (parentToken == null || !parentToken.IsMIRoot)
+                throw new RuntimeException("Invalid multiInstance execution.");
 
-        //Task ISubProcessBehavior.CompletedAsync(ExecutionContext executionContext)
-        //{
-        //    throw new NotImplementedException();
-        //}
+            if (!this.loopCharacteristics.IsSequential)
+                token.Inactivate();
+
+            //fire inner activity leave event.
+            //this.Activity.OnInnerActivityEnded(executionContext);
+
+            var parentExecution = ExecutionContext.Create(context, parentToken);
+
+            var numberOfInstances = parentExecution.GetVariableLocal<int>("numberOfInstances");
+            var numberOfCompletedInstances = parentExecution.GetVariableLocal<int>("numberOfCompletedInstances") + 1;
+            var numberOfActiveInstances = parentExecution.GetVariableLocal<int>("numberOfActiveInstances");
+
+            if (!this.loopCharacteristics.IsSequential)
+            {
+                numberOfActiveInstances += 1;
+                parentExecution.SetVariable("numberOfActiveInstances", numberOfActiveInstances);
+            }
+
+            parentExecution.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
+
+            var loopCounter = executionContext.GetVariableLocal<int>("loopCounter");
+
+            var loopDataOutputRef = this.loopCharacteristics.LoopDataOutputRef;
+            var outputDataItem = this.loopCharacteristics.OutputDataItem;
+
+            //Update outputDataItem
+            var loopOutputRef = loopDataOutputRef;
+            if (loopOutputRef != null && outputDataItem != null)
+            {
+                var collection = executionContext.GetVariable(loopOutputRef.Id);
+                if (collection != null && collection is IList)
+                {
+                    var itemVarName = outputDataItem.Id;
+                    var list = collection as IList;
+                    if (list.Count > loopCounter)
+                    {
+                        var itemValue = executionContext.GetVariable(itemVarName);
+                        list[loopCounter] = itemValue;
+                        executionContext.SetVariable(loopOutputRef.Id, itemValue);
+                    }
+                }
+            }
+
+            loopCounter += 1;
+            if (loopCounter >= numberOfInstances || this.IsCompleted(parentExecution))
+            {
+                //Remove token.
+                token.Remove();
+
+                //exit multi-instance loop activity.
+                parentToken.IsMIRoot = false;
+                parentToken.Activate();
+
+                //leave without check loop.
+                //this.Activity.LeaveDefault(parentExecution);
+                await base.LeaveAsync(executionContext);
+            }
+            else
+            {
+                executionContext.SetVariableLocal("loopCounter", loopCounter);
+                //this.ExecuteOriginalBehavior(executionContext, loopCounter);
+            }
+
+            //var node = token.Node;
+            //var inactivateTokens = parentToken.Children.Where(x => !x.IsActive).ToList();
+            //if (inactivateTokens.Count() >= numberOfInstances
+            //    || this.IsCompleted(parentExecution))
+            //{
+            //    //remove all child tokens
+            //    foreach (var item in inactivateTokens)
+            //        item.Remove(context);
+
+            //    base.Leave(parentExecution);
+            //}
+        }
     }
 }

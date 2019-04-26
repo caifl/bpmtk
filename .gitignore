@@ -19,3 +19,7 @@
 /src/Bpmtk.Engine.Tests/obj
 /src/Bpmtk.Engine.WebApi/bin/Debug/netcoreapp2.1
 /src/Bpmtk.Engine.WebApi/obj
+/src/Bpmtk.Engine.EntityFrameworkCore/bin/Debug/netstandard2.0
+/src/Bpmtk.Engine.EntityFrameworkCore/obj
+/src/ConsoleApp/bin/Debug/netcoreapp2.1
+/src/ConsoleApp/obj

@@ -1,6 +1,8 @@
 ﻿using System;
-using Bpmtk.Engine.Bpmn2.DI;
-using Bpmtk.Engine.Bpmn2.DC;
+using Bpmtk.Bpmn2;
+using Bpmtk.Bpmn2.DI;
+using Bpmtk.Bpmn2.DC;
+using Bpmtk.Engine.Bpmn2.Behaviors;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
 {
@@ -46,49 +48,164 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 
         #region FlowElements
 
-        public virtual StartEvent CreateStartEvent() => new StartEvent();
+        public virtual StartEvent CreateStartEvent()
+        {
+            var startEvent = new StartEvent();
+            startEvent.Tag = new StartEventActivityBehavior();
 
-        public virtual EndEvent CreateEndEvent() => new EndEvent();
+            return startEvent;
+        }
+
+        public virtual EndEvent CreateEndEvent()
+        {
+            var endEvent = new EndEvent();
+            endEvent.Tag = new EndEventActivityBehavior();
+
+            return endEvent;
+        }
 
         public virtual DataObject CreateDataObject() => new ValuedDataObject();
 
         public virtual SequenceFlow CreateSequenceFlow() => new SequenceFlow();
 
-        public virtual UserTask CreateUserTask() => new UserTask();
+        public virtual UserTask CreateUserTask()
+        {
+            var task = new UserTask();
+            task.Tag = new UserTaskActivityBehavior();
+            return task;
+        }
 
-        public virtual BusinessRuleTask CreateBusinessRuleTask() => new BusinessRuleTask();
+        public virtual BusinessRuleTask CreateBusinessRuleTask()
+        {
+            var task = new BusinessRuleTask();
+            task.Tag = new BusinessRuleTaskActivityBehavior();
 
-        public virtual ScriptTask CreateScriptTask() => new ScriptTask();
+            return task;
+        }
 
-        public virtual Task CreateTask() => new Task();
+        public virtual ScriptTask CreateScriptTask()
+        {
+            var task = new ScriptTask();
+            task.Tag = new ScriptTaskActivityBehavior();
 
-        public virtual ServiceTask CreateServiceTask() => new ServiceTask();
+            return task;
+        }
 
-        public virtual SendTask CreateSendTask() => new SendTask();
+        public virtual Task CreateTask()
+        {
+            var task = new Task();
+            task.Tag = new TaskActivityBehavior();
 
-        public virtual ReceiveTask CreateReceiveTask() => new ReceiveTask();
+            return task;
+        }
 
-        public virtual ManualTask CreateManualTask() => new ManualTask();
+        public virtual ServiceTask CreateServiceTask()
+        {
+            var task = new ServiceTask();
+            task.Tag = new ServiceTaskActivityBehavior();
 
-        public virtual SubProcess CreateSubProcess() => new SubProcess();
+            return task;
+        }
 
-        public virtual Transaction CreateTransaction() => new Transaction();
+        public virtual SendTask CreateSendTask()
+        {
+            var task = new SendTask();
+            task.Tag = new SendTaskActivityBehavior();
 
-        public virtual AdHocSubProcess CreateAdHocSubProcess() => new AdHocSubProcess();
+            return task;
+        }
 
-        public virtual CallActivity CreateCallActivity() => new CallActivity();
+        public virtual ReceiveTask CreateReceiveTask()
+        {
+            var task = new ReceiveTask();
+            task.Tag = new ReceiveTaskActivityBehavior();
+
+            return task;
+        }
+
+        public virtual ManualTask CreateManualTask()
+        {
+            var task = new ManualTask();
+            task.Tag = new ManualTaskActivityBehavior();
+
+            return task;
+        }
+
+        public virtual SubProcess CreateSubProcess()
+        {
+            var subProcess = new SubProcess();
+            subProcess.Tag = new SubProcessActivityBehavior();
+
+            return subProcess;
+        }
+
+        public virtual Transaction CreateTransaction()
+        {
+            var trans = new Transaction();
+            trans.Tag = new TransactionActivityBehavior();
+
+            return trans;
+        }
+
+        public virtual AdHocSubProcess CreateAdHocSubProcess()
+        {
+            var adHocSubProcess = new AdHocSubProcess();
+            adHocSubProcess.Tag = new AdHocSubProcessActivityBehavior();
+
+            return adHocSubProcess;
+        }
+
+        public virtual CallActivity CreateCallActivity()
+        {
+            var callActivity = new CallActivity();
+            callActivity.Tag = new CallActivityBehavior();
+
+            return callActivity;
+        }
 
         #endregion
 
         #region Gateways
 
-        public virtual ExclusiveGateway CreateExclusiveGateway() => new ExclusiveGateway();
+        public virtual ExclusiveGateway CreateExclusiveGateway()
+        {
+            var gateway = new ExclusiveGateway();
+            gateway.Tag = new ExclusiveGatewayActivityBehavior();
 
-        public virtual InclusiveGateway CreateInclusiveGateway() => new InclusiveGateway();
+            return gateway;
+        }
 
-        public virtual ParallelGateway CreateParallelGateway() => new ParallelGateway();
+        public virtual InclusiveGateway CreateInclusiveGateway()
+        {
+            var gateway = new InclusiveGateway();
+            gateway.Tag = new InclusiveGatewayActivityBehavior();
 
-        public virtual ComplexGateway CreateComplexGateway() => new ComplexGateway();
+            return gateway;
+        }
+
+        public virtual ParallelGateway CreateParallelGateway()
+        {
+            var gateway = new ParallelGateway();
+            gateway.Tag = new ParallelGatewayActivityBehavior();
+
+            return gateway;
+        }
+
+        public virtual ComplexGateway CreateComplexGateway()
+        {
+            var gateway = new ComplexGateway();
+            gateway.Tag = new ComplexGatewayActivityBehavior();
+
+            return gateway;
+        }
+
+        public virtual EventBasedGateway CreateEventBasedGateway()
+        {
+            var gateway = new EventBasedGateway();
+            gateway.Tag = new EventBasedGatewayActivityBehavior();
+
+            return gateway;
+        }
 
         #endregion
 

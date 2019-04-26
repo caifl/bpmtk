@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="ConsoleApp"
+                   namespace="Bpmtk.Engine">
+
+  <class name="Variable" table="bpm_variable" dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+    <property name="Name" column="name"/>
+
+    <!--<many-to-one name="ProcessInstance"
+                 class="ProcessInstance"
+                 column="proc_inst_id"/>-->
+  </class>
+  
+</hibernate-mapping>

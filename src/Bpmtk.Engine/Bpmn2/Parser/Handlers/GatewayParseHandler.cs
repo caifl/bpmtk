@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Bpmtk.Bpmn2;
+using System;
 using System.Xml.Linq;
+using Bpmtk.Engine.Bpmn2.Behaviors;
 
 namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
 {
@@ -73,7 +75,23 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
         public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
         {
             var gateway = context.BpmnFactory.CreateComplexGateway();
-            
+
+            parent.FlowElements.Add(gateway);
+
+            base.Init(gateway, context, element);
+
+            return gateway;
+        }
+    }
+
+    class EventBasedGatewayParseHandler : GatewayParseHandler
+    {
+        public override object Create(IFlowElementsContainer parent, IParseContext context, XElement element)
+        {
+            var gateway = context.BpmnFactory.CreateEventBasedGateway();
+            gateway.Instantiate = element.GetBoolean("instantiate");
+            gateway.EventGatewayType = element.GetEnum<EventBasedGatewayType>("eventGatewayType", EventBasedGatewayType.Exclusive);
+
             parent.FlowElements.Add(gateway);
 
             base.Init(gateway, context, element);

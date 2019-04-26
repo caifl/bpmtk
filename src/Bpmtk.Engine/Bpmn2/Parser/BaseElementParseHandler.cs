@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Xml.Linq;
-using Bpmtk.Engine.Bpmn2.Extensions;
+using Bpmtk.Bpmn2;
+using Bpmtk.Bpmn2.Extensions;
 using Bpmtk.Engine.Bpmn2.Parser.Handlers;
 
 namespace Bpmtk.Engine.Bpmn2.Parser
@@ -91,7 +92,7 @@ namespace Bpmtk.Engine.Bpmn2.Parser
                 {
                     var attrName = item.Attribute("name").Value;
 
-                    p.Attributes.Add(new Extensions.ExtendedAttribute() { Name = attrName, Value = item.Value });
+                    p.Attributes.Add(new ExtendedAttribute() { Name = attrName, Value = item.Value });
                 }
 
                 if (p is IScriptEnabledElement)

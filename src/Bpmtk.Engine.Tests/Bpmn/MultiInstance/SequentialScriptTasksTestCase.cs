@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,21 +15,21 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
         }
 
-        public override void Execute()
+        public override async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialScriptTasks.bpmn20.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialScriptTasks.bpmn20.xml");
 
             var map = new Dictionary<string, object>();
             map.Add("sum", 0);
             map.Add("nrOfLoops", 5);
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("miSequentialScriptTask",
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("miSequentialScriptTask",
                 map);
 
             var myVar = pi.GetVariable("sum");
             Assert.True(10 == Convert.ToInt32(myVar));
 
-            var actInsts = this.runtimeService.CreateActivityQuery()
+            var actInsts = this.context.HistoryManager.CreateActivityQuery()
                 .List();
 
             var list = actInsts.Where(x => x.ActivityType == "ScriptTask")
@@ -37,11 +39,11 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             foreach(var item in list)
             {
                 Assert.True(item.StartTime != null);
-                Assert.True(item.State == Runtime.ExecutionState.Completed);
+                Assert.True(item.State == ExecutionState.Completed);
             }
 
-            var tokenQuery = this.runtimeService.CreateTokenQuery();
-            tokenQuery.SetProcessInstance(pi.Id);
+            var tokenQuery = this.runtimeManager.CreateTokenQuery();
+            tokenQuery.SetProcessInstanceId(pi.Id);
 
             var tokens = tokenQuery.List();
 
@@ -50,7 +52,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             //trigger
             //this.runtimeService.Trigger(tokens[0].Id);
 
-            //var query = this.taskService.CreateQuery().SetState(Tasks.TaskState.Active);
+            //var query = this.taskService.CreateQuery().SetState(TaskState.Active);
 
             //var tasks = query.List();
             //while(tasks.Count > 0)

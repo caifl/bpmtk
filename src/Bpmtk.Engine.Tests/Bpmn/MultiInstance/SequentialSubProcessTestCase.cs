@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,15 +15,15 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
         }
 
-        public override void Execute()
+        public override async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialSubProcessEndEvent.bpmn20.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialSubProcessEndEvent.bpmn20.xml");
 
             var map = new Dictionary<string, object>();
             //map.Add("sum", 0);
             //map.Add("nrOfLoops", 5);
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("miSequentialSubprocess",
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("miSequentialSubprocess",
                 map);
 
             //var myVar = pi.GetVariable("sum");
@@ -46,8 +48,8 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             //    tasks = query.List();
             //}
 
-            var query = this.taskService.CreateQuery()
-                .SetState(Tasks.TaskState.Active)
+            var query = this.taskManager.CreateQuery()
+                .SetState(TaskState.Active)
                 .SetProcessInstanceId(pi.Id);
             for (int i = 0; i < 4; i++)
             {
@@ -56,12 +58,12 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
                 Assert.True("task one" == tasks[0].Name);
 
-                taskService.Complete(tasks[0].Id);
+                await taskManager.CompleteAsync(tasks[0].Id);
 
                 // Last run, the execution no longer exists
                 if (i != 3)
                 {
-                    var activities = this.runtimeService.GetActiveActivityIds(pi.Id);
+                    var activities = await this.runtimeManager.GetActiveActivityIdsAsync(pi.Id);
                     Assert.NotNull(activities);
                     Assert.True(2 == activities.Count());
                 }

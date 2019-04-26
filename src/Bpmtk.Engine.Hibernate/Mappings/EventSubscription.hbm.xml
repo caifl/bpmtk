@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   assembly="Bpmtk.Engine"
+                   namespace="Bpmtk.Engine.Models">
+
+  <class name="EventSubscription" table="bpm_event_subscr"
+         dynamic-update="true">
+    <id name="Id" column="id">
+      <generator class="identity"/>
+    </id>
+    <property name="TenantId" column="tenant_id" length="32"/>
+    
+    <many-to-one name="ProcessDefinition"
+                 class="Bpmtk.Engine.Repository.ProcessDefinition"
+                 column="proc_def_id" />
+
+    <many-to-one name="ProcessInstance"
+                 class="Bpmtk.Engine.Runtime.ProcessInstance"
+                 column="proc_int_id" />
+
+    <many-to-one name="Token"
+                 class="Bpmtk.Engine.Runtime.Token"
+                 column="token_id" />
+    
+    <!--foreign key as property-->
+    <!--<property name="ProcessDefinitionId" column="proc_def_id" insert="false" update="false" not-null="true"/>-->
+    <property name="EventType" column="event_type" length="50" not-null="true"/>
+    <property name="EventName" column="event_name" length="50" not-null="true"/>
+    <property name="ActivityId" column="activity_id" length="64"/>
+    <property name="Created" column="created" not-null="true"/>
+    
+  </class>
+
+</hibernate-mapping>

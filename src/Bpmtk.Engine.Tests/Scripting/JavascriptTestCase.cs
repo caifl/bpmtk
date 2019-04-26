@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Scripting;
 using Esprima;
 using Xunit;
@@ -12,12 +14,11 @@ namespace Bpmtk.Engine.Tests.Scripting
     public class JavascriptTestCase : BpmtkTestCase
     {
         //private IScriptEngine engine;
-        private readonly ITestOutputHelper output;
 
         public JavascriptTestCase(ITestOutputHelper output)
             : base(output)
         {
-            this.output = output;
+            //this.output = output;
             //this.engine = new JavascriptEngine();
         }
 
@@ -52,23 +53,23 @@ namespace Bpmtk.Engine.Tests.Scripting
 
         //            ///output.WriteLine(result.ToString());
         //        }
-        public override void Execute()
+        public override async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.ScriptTask.JavascriptTest.testSetVariableThroughExecutionInScript.bpmn20.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.ScriptTask.JavascriptTest.testSetVariableThroughExecutionInScript.bpmn20.xml");
 
-            var pi = this.runtimeService.StartProcessInstanceByKey("setScriptVariableThroughExecution");
+            var pi = await this.runtimeManager.StartProcessByKeyAsync("setScriptVariableThroughExecution");
 
             var myVar = pi.GetVariable("myVar");
             Assert.True("test123".Equals(myVar));
 
-            var tasks = this.taskService.CreateQuery().SetState(Tasks.TaskState.Active).List();
+            var tasks = this.taskManager.CreateQuery().SetState(TaskState.Active).List();
             Assert.True(tasks.Count == 1);
 
             //get variable from task-instance.
             myVar = tasks[0].GetVariable("myVar");
             Assert.True("test123".Equals(myVar));
 
-            this.taskService.Complete(tasks[0].Id);
+            await taskManager.CompleteAsync(tasks[0].Id);
 
             this.AssertProcessEnded(pi.Id);
 
