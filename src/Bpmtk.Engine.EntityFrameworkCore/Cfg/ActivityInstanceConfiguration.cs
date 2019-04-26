@@ -43,7 +43,8 @@ namespace Bpmtk.Engine.Cfg
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Property(x => x.Name).IsRequired(true).HasMaxLength(100);
-            builder.Property(x => x.IsMIRoot).IsRequired(true).HasConversion(new BoolToZeroOneConverter<Int16>());
+            builder.Property(x => x.IsMIRoot).IsRequired(true);
+                //.HasConversion(new BoolToZeroOneConverter<Int16>());
             builder.Property(x => x.ActivityId).IsRequired(true).HasMaxLength(64);
             builder.Property(x => x.ActivityType).IsRequired(true).HasMaxLength(16);
             builder.Property(x => x.TokenId).IsRequired(true);

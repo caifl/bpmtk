@@ -27,8 +27,8 @@ namespace Bpmtk.Engine.Cfg
             builder.Property(x => x.TenantId).HasMaxLength(32);
             builder.Property(x => x.ValidFrom);
             builder.Property(x => x.ValidTo);
-            builder.Property(x => x.HasDiagram)
-                .HasConversion(new BoolToZeroOneConverter<Int16>());
+            builder.Property(x => x.HasDiagram);
+                //.HasConversion(new BoolToZeroOneConverter<Int16>());
             builder.Property(x => x.State).IsRequired(true);
             builder.Property(x => x.Created).IsRequired(true);
             builder.Property(x => x.Modified).IsRequired(true);

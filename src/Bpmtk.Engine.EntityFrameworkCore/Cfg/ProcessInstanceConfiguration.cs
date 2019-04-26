@@ -63,7 +63,8 @@ namespace Bpmtk.Engine.Cfg
 
             //mark concurrency token.
             builder.Property(x => x.ConcurrencyStamp)
-                .IsConcurrencyToken();
+                .IsConcurrencyToken()
+                .ValueGeneratedOnAddOrUpdate();
 
             builder.Property(x => x.Description)
                 .HasMaxLength(255);

@@ -27,7 +27,6 @@ namespace Bpmtk.Engine.Cfg
 
             //mark concurrency token.
             builder.Property(x => x.ConcurrencyStamp)
-                .HasColumnName("concurrency_stamp")
                 .IsConcurrencyToken()
                 .ValueGeneratedOnAddOrUpdate();
 
@@ -47,7 +46,7 @@ namespace Bpmtk.Engine.Cfg
             //    .HasForeignKey("parent_id")
             //    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.ToTable("bpm_package");
+            builder.ApplyNamingStrategy();
         }
     }
 }

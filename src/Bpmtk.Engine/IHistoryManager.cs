@@ -19,8 +19,6 @@ namespace Bpmtk.Engine
         Task RecordActivityReadyAsync(ExecutionContext executionContext,
             IList<Token> joinedTokens);
 
-        //Task CreateActivityInstanceAsync(ActivityInstance activityInstance);
-
         Task RecordActivityStartAsync(ExecutionContext executionContext);
 
         Task RecordActivityEndAsync(ExecutionContext executionContext);
