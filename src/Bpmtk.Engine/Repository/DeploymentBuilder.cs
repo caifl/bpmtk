@@ -30,6 +30,7 @@ namespace Bpmtk.Engine.Repository
         public DeploymentBuilder(Context context, DeploymentManager deploymentManager)
         {
             this.context = context;
+            this.db = context.DbSession;
             this.deploymentManager = deploymentManager;
         }
 
@@ -96,6 +97,7 @@ namespace Bpmtk.Engine.Repository
             }
 
             await this.db.SaveAsync(deployment);
+            await this.db.FlushAsync();
 
             return deployment;
         }

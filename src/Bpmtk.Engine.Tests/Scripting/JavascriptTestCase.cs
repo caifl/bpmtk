@@ -53,7 +53,7 @@ namespace Bpmtk.Engine.Tests.Scripting
 
         //            ///output.WriteLine(result.ToString());
         //        }
-        public override async Task Execute()
+        [Fact] public async Task Execute()
         {
             await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.ScriptTask.JavascriptTest.testSetVariableThroughExecutionInScript.bpmn20.xml");
 
@@ -66,14 +66,14 @@ namespace Bpmtk.Engine.Tests.Scripting
             Assert.True(tasks.Count == 1);
 
             //get variable from task-instance.
-            myVar = tasks[0].GetVariable("myVar");
-            Assert.True("test123".Equals(myVar));
+            var myVar2 = tasks[0].GetVariable("myVar");
+            Assert.True("test123".Equals(myVar2));
 
             await taskManager.CompleteAsync(tasks[0].Id);
 
             this.AssertProcessEnded(pi.Id);
 
-            this.unitOfWork.Commit();
+            this.Commit();
         }
 
         class Variables : IVariableResolver

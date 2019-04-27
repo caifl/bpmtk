@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Xunit;
 using Bpmtk.Engine.Bpmn2.Parser;
-using Bpmtk.Engine.Bpmn2;
+using Bpmtk.Bpmn2;
 
 namespace Bpmtk.Engine.Tests
 {

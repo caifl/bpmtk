@@ -49,6 +49,11 @@ namespace Bpmtk.Engine.Models
             get;
         }
 
+        IQueryable<IdentityLink> IdentityLinks
+        {
+            get;
+        }
+
         IQueryable<User> Users
         {
             get;

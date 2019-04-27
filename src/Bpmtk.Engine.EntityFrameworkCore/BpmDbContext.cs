@@ -78,6 +78,12 @@ namespace Bpmtk.Engine
             set;
         }
 
+        public virtual DbSet<IdentityLink> IdentityLinks
+        {
+            get;
+            set;
+        }
+
         public virtual DbSet<User> Users
         {
             get;

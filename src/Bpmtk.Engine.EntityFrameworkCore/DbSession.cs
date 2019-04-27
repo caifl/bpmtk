@@ -33,6 +33,8 @@ namespace Bpmtk.Engine
 
         public virtual IQueryable<ScheduledJob> ScheduledJobs => this.context.ScheduledJobs;
 
+        public virtual IQueryable<IdentityLink> IdentityLinks => this.context.IdentityLinks;
+
         public virtual IQueryable<Group> Groups => this.context.Groups;
 
         public virtual IQueryable<ActivityInstance> ActivityInstances => this.context.ActivityInstances;
@@ -71,6 +73,7 @@ namespace Bpmtk.Engine
 
         public virtual Task RemoveRangeAsync(IEnumerable<object> items)
         {
+            //this.context.AttachRange(items);
             this.context.RemoveRange(items);
             return Task.CompletedTask;
         }

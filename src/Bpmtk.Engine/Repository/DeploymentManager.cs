@@ -79,5 +79,45 @@ namespace Bpmtk.Engine.Repository
 
             return modelCache.GetOrAdd(deploymentId, (id) => model);
         }
+
+        public virtual async Task AddIdentityLinksAsync(int processDefinitionId, params IdentityLink[] identityLinks)
+        {
+            if(identityLinks != null && identityLinks.Length > 0)
+            {
+                //Check if identity-link already exists.
+                var procDef = await this.FindProcessDefinitionByIdAsync(processDefinitionId);
+
+                var date = Utils.Clock.Now;
+                foreach (var item in identityLinks)
+                {
+                    item.Created = date;
+                    item.ProcessDefinition = procDef;
+                    //procDef.IdentityLinks.Add(item);
+                }
+
+                await this.db.SaveRangeAsync(identityLinks);
+                await this.db.FlushAsync();
+            }
+        }
+
+        public virtual async Task<IList<IdentityLink>> GetIdentityLinksAsync(int processDefintionId)
+        {
+            var query = this.db.IdentityLinks.Where(x => x.ProcessDefinition.Id == processDefintionId);
+
+            return await this.db.QueryMultipleAsync(query);
+        }
+
+        public virtual async Task RemoveIdentityLinksAsync(params long[] identityLinkIds)
+        {
+            if(identityLinkIds != null && identityLinkIds.Length > 0)
+            {
+                var query = this.db.IdentityLinks.Where(x => identityLinkIds.Contains(x.Id));
+                var items = await this.db.QueryMultipleAsync(query);
+
+                await this.db.RemoveRangeAsync(items);
+
+                await this.db.FlushAsync();
+            }
+        }
     }
 }

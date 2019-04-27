@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Xunit;
-using NHibernate;
-using NHibernate.Cfg;
+//using NHibernate;
+//using NHibernate.Cfg;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
-using NHibernate.Tool.hbm2ddl;
+//using NHibernate.Tool.hbm2ddl;
 using Xunit.Abstractions;
 using Bpmtk.Infrastructure;
 using Bpmtk.Engine;
@@ -28,13 +28,13 @@ namespace Bpmtk.Engine.Tests
 
         
 
-        public override async Task Execute()
+        [Fact] public async Task Execute()
         {
             await this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.sequential_flow.bpmn.xml");
 
             var pi = await this.runtimeManager.StartProcessByKeyAsync("Process_0cyms8o");
 
-            this.unitOfWork.Commit();
+            this.Commit();
 
             //var data = rs.GetBpmnModelData(5);
 
@@ -49,8 +49,6 @@ namespace Bpmtk.Engine.Tests
             //var count = query.Count();
 
             //var processInstance = es.StartProcessByKey("leaveRequest", variables);
-
-            context.Dispose();
 
             //foreach(var name in names)
             //{

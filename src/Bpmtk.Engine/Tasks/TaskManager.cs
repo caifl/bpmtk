@@ -9,7 +9,7 @@ using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Tasks
 {
-    class TaskManager : ITaskManager
+    public class TaskManager : ITaskManager
     {
         private readonly Context context;
         private readonly IDbSession db;
@@ -51,6 +51,9 @@ namespace Bpmtk.Engine.Tasks
             await this.db.FlushAsync();
         }
 
+        public virtual ITaskInstanceBuilder CreateBuilder()
+            => new TaskInstanceBuilder(this.context);
+
         public virtual ITaskQuery CreateQuery()
         {
             throw new NotImplementedException();
@@ -59,6 +62,11 @@ namespace Bpmtk.Engine.Tasks
         public virtual Task<TaskInstance> FindTaskAsync(long taskId)
         {
             return this.db.FindAsync<TaskInstance>(taskId);
+        }
+
+        public virtual ITaskAssignmentStrategy GetTaskAssignmentStrategy(string name)
+        {
+            return new TaskAssignmentStrategy();
         }
 
         public virtual Task RemoveAsync(TaskInstance task)

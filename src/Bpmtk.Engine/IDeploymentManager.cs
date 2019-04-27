@@ -21,6 +21,12 @@ namespace Bpmtk.Engine
 
         Task<Deployment> FindAsync(int deploymentId);
 
+        Task AddIdentityLinksAsync(int processDefinitionId, params IdentityLink[] identityLinks);
+
+        Task<IList<IdentityLink>> GetIdentityLinksAsync(int processDefintionId);
+
+        Task RemoveIdentityLinksAsync(params long[] identityLinkIds);
+
         Task<ProcessDefinition> FindProcessDefinitionByIdAsync(int processDefinitionId);
 
         Task<ProcessDefinition> FindProcessDefinitionByKeyAsync(string processDefinitionKey);

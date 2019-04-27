@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
-using Bpmtk.Engine.Bpmn2;
+using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Bpmn2.Parser;
 
 namespace Bpmtk.Engine.Tests.Parser
 {
-    public class ExtendedAttributeParseTestCase //: BpmtkTestCase
+    public class ExtendedAttributeParseTestCase : BpmtkTestCase
     {
         protected BpmnParser bpmnParser;
 
-        public ExtendedAttributeParseTestCase(ITestOutputHelper output) //: base(output)
+        public ExtendedAttributeParseTestCase(ITestOutputHelper output) : base(output)
         {
             this.bpmnParser = BpmnParser.Create();
         }
 
         [Fact]
-        public virtual async Task Execute()
+        public virtual void Execute()
         {
             var ms = this.GetType().Assembly.GetManifestResourceStream("Bpmtk.Engine.Tests.Parser.ExtendedAttributes.bpmn.xml");
             Assert.NotNull(ms);

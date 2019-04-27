@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -10,12 +11,13 @@ namespace Bpmtk.Engine.Tests.Event
     {
         public BpmnInlineScriptEventTestCase(ITestOutputHelper output) : base(output)
         {
+
         }
 
       
-        public override async Task Execute()
+        [Fact] public async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Event.BpmnInlineScriptEventTestCase.bpmn.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Event.BpmnInlineScriptEventTestCase.bpmn.xml");
 
             var pi = await this.runtimeManager.StartProcessByKeyAsync("BpmnInlineScriptEventTestCase");
 
@@ -28,7 +30,7 @@ namespace Bpmtk.Engine.Tests.Event
 
             this.AssertProcessEnded(pi.Id);
 
-            this.unitOfWork.Commit();
+            this.Commit();
         }
     }
 }

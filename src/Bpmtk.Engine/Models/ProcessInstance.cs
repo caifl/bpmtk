@@ -133,6 +133,23 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        public virtual IList<Token> GetInactiveTokensAt(string activityId)
+        {
+            var rootTokens = this.Tokens.Where(x => x.Parent == null)
+                    .ToList();
+
+            var list = new List<Token>();
+
+            foreach(var token in rootTokens)
+            {
+                var items = token.GetInactiveTokensAt(activityId);
+                if(items.Count > 0)
+                    list.AddRange(items);
+            }
+
+            return list;
+        }
+
         //public virtual void Start(IContext context,
         //    FlowNode initialNode)
         //{

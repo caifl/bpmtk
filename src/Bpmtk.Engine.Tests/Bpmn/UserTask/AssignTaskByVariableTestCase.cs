@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,9 +14,9 @@ namespace Bpmtk.Engine.Tests.Bpmn.UserTask
         }
 
       
-        public override async Task Execute()
+        [Fact] public async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Bpmn.UserTask.AssignTaskByVariableTestCase.bpmn.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Bpmn.UserTask.AssignTaskByVariableTestCase.bpmn.xml");
 
             var pi = await this.runtimeManager.StartProcessByKeyAsync("AssignTaskByVariableTestCase");
 
@@ -29,7 +30,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.UserTask
 
             //this.AssertProcessEnded(pi.Id);
 
-            this.unitOfWork.Commit();
+            this.Commit();
         }
     }
 }

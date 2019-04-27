@@ -33,5 +33,23 @@ namespace Bpmtk.Engine.Models
             get;
             set;
         }
+
+        public virtual ProcessDefinition ProcessDefinition
+        {
+            get;
+            set;
+        }
+
+        public virtual ProcessInstance ProcessInstance
+        {
+            get;
+            set;
+        }
+
+        public virtual TaskInstance Task
+        {
+            get;
+            set;
+        }
     }
 }

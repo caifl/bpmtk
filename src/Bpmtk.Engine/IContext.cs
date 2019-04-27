@@ -1,5 +1,6 @@
 ﻿using System;
 using Bpmtk.Engine.Infrastructure;
+using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine
 {
@@ -36,6 +37,11 @@ namespace Bpmtk.Engine
         }
 
         IScheduledJobManager ScheduledJobManager
+        {
+            get;
+        }
+
+        IDbSession DbSession
         {
             get;
         }

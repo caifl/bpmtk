@@ -15,7 +15,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
         }
 
-        public override async Task Execute()
+        [Fact] public async Task Execute()
         {
             await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialScriptTasks.bpmn20.xml");
 
@@ -70,7 +70,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
             //this.AssertProcessInstanceEnd(pi.Id);
 
-            this.unitOfWork.Commit();
+            this.Commit();
         }
     }
 }

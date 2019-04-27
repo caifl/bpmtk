@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bpmtk.Engine.Models;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Bpmtk.Engine.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Bpmtk.Engine.Cfg
 {
@@ -22,7 +18,7 @@ namespace Bpmtk.Engine.Cfg
 
             //identity-links.
             builder.HasMany(x => x.IdentityLinks)
-                .WithOne()
+                .WithOne(x => x.ProcessInstance)
                 .HasForeignKey("ProcessInstanceId")
                 .OnDelete(DeleteBehavior.Cascade);
 

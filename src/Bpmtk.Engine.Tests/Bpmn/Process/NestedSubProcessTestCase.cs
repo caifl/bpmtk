@@ -14,7 +14,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
         {
         }
 
-        public override async Task Execute()
+        [Fact] public async Task Execute()
         {
             await this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.SubProcess.SubProcessTest.testNestedSimpleSubProcess.bpmn20.xml");
 
@@ -34,12 +34,12 @@ namespace Bpmtk.Engine.Tests.Bpmn
             tasks = query.List();
             Assert.True(1 == tasks.Count); 
             Assert.True(tasks[0].Name == "Task after subprocesses");
-            //this.unitOfWork.Commit();
+            //this.Commit();
 
             await taskManager.CompleteAsync(tasks[0].Id);
             AssertProcessEnded(pi.Id);
 
-            this.unitOfWork.Commit();
+            this.Commit();
         }
     }
 }

@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Bpmtk.Engine.Runtime;
-using Bpmtk.Engine.Models;
-using Bpmtk.Engine.Utils;
+using Bpmtk.Engine.Tasks;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public class UserTaskActivityBehavior : TaskActivityBehavior, ISignallableActivityBehavior
     {
+        const string TaskName = "taskName";
+        const string TaskPriority = "taskPriority";
+        const string AssignmentStrategy = "assignmentStrategy";
+
         public override async Task ExecuteAsync(ExecutionContext executionContext)
         {
             var taskManager = executionContext.Context.TaskManager;
@@ -17,26 +21,46 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             if (taskDef == null)
                 throw new RuntimeException("Invalid task.");
 
-            var taskInstance = new TaskInstance();
+            var taskName = taskDef.Name;
+            if (string.IsNullOrEmpty(taskName))
+                taskName = taskDef.Id;
 
-            var name = taskDef.Name;
-            if (string.IsNullOrEmpty(name))
-                name = taskDef.Id;
+            var builder = taskManager.CreateBuilder()
+                .SetToken(executionContext.Token)
+                .SetActivityId(taskDef.Id)
+                .SetName(taskName);
 
-            var date = Clock.Now;
+            var attrs = taskDef.Attributes;
+            ITaskAssignmentStrategy assignmentStrategry = null;
+            foreach (var attr in attrs)
+            {
+                var value = attr.Value;
+                if (string.IsNullOrEmpty(value))
+                    continue;
 
-            taskInstance.ActivityId = taskDef.Id;
-            taskInstance.Created = date;
-            taskInstance.State = TaskState.Ready;
-            taskInstance.LastStateTime = date;
-            taskInstance.Modified = date;
-            taskInstance.Name = taskDef.Name;
-            taskInstance.ActivityInstance = executionContext.ActivityInstance;
-            taskInstance.ProcessInstance = executionContext.ProcessInstance;
-            taskInstance.Token = executionContext.Token;
+                switch (attr.Name)
+                {
+                    case TaskPriority: //priority
+                        builder.SetPriority(short.Parse(attr.Value));
+                        break;
 
-            await taskManager.CreateAsync(taskInstance);
-            //await executionContext.Context.DbSession.FlushAsync();
+                    case TaskName:
+                        {
+                            taskName = value;
+                            builder.SetName(taskName);
+                            break;
+                        }
+
+                    case AssignmentStrategy:
+                        assignmentStrategry = taskManager.GetTaskAssignmentStrategy(value);
+                        break;
+                }              
+            }
+
+            if (assignmentStrategry != null)
+                await assignmentStrategry.ExecuteAsync(builder);
+
+            await builder.BuildAsync();
         }
 
         public async Task SignalAsync(ExecutionContext executionContext, 

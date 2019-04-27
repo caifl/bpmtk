@@ -14,7 +14,8 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
 
         }
 
-        public override async Task Execute()
+        [Fact]
+        public async Task Execute()
         {
             await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.Gateway.ExclusiveGatewayTest.testDefaultSequenceFlow.bpmn20.xml");
 
@@ -46,7 +47,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
 
             this.AssertProcessEnded(pi.Id);
 
-            this.unitOfWork.Commit();
+            this.Commit();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,9 +14,9 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
         }
 
-        public override async Task Execute()
+        [Fact] public async Task Execute()
         {
-            base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialScriptTasksCompletionCondition.bpmn20.xml");
+            await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.MultiInstance.MultiInstanceTest.testSequentialScriptTasksCompletionCondition.bpmn20.xml");
 
             var map = new Dictionary<string, object>();
             map.Add("sum", 0);
@@ -27,8 +28,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             var myVar = pi.GetVariable("sum");
             Assert.True(5 == Convert.ToInt32(myVar));
 
-            var actInsts = this.runtimeManager.CreateActivityQuery()
-                .List();
+            var actInsts = this.context.HistoryManager.ActivityInstances.ToList();
 
             //var list = actInsts.Where(x => x.ActivityType == "ScriptTask")
             //    .ToList();
@@ -68,7 +68,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
             //this.AssertProcessInstanceEnd(pi.Id);
 
-            this.unitOfWork.Commit();
+            this.Commit();
         }
     }
 }

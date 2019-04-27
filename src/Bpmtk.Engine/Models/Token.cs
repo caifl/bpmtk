@@ -9,8 +9,6 @@ namespace Bpmtk.Engine.Models
     {
         private bool isInitialized;
         private FlowNode node;
-        private ICollection<Token> children;
-        private ICollection<Variable> variables;
         private IDictionary<string, Variable> variableByName;
 
         protected Token()
@@ -30,8 +28,8 @@ namespace Bpmtk.Engine.Models
 
             this.isInitialized = true;
             this.Parent = parent;
-            this.children = new List<Token>();
-            this.variables = new List<Variable>();
+            this.Children = new List<Token>();
+            this.Variables = new List<Variable>();
             this.variableByName = new Dictionary<string, Variable>();
             this.ProcessInstance = parent.ProcessInstance;
             this.IsActive = true;
@@ -40,16 +38,16 @@ namespace Bpmtk.Engine.Models
         public Token(ProcessInstance processInstance)
         {
             this.ProcessInstance = processInstance;
-            this.variables = new List<Variable>();
-            this.children = new List<Token>();
+            this.Variables = new List<Variable>();
+            this.Children = new List<Token>();
             this.IsActive = true;
         }
 
         public Token(ProcessInstance processInstance, FlowNode initialNode)
         {
-            this.variables = new List<Variable>();
+            this.Variables = new List<Variable>();
             this.variableByName = new Dictionary<string, Variable>();
-            this.children = new List<Token>();
+            this.Children = new List<Token>();
             this.ProcessInstance = processInstance ?? throw new ArgumentNullException(nameof(processInstance));
             this.node = initialNode ?? throw new ArgumentNullException(nameof(initialNode));
             this.IsActive = true;
@@ -62,19 +60,19 @@ namespace Bpmtk.Engine.Models
         public virtual long Id
         {
             get;
-            protected set;
+            set;
         }
 
         public virtual string ActivityId
         {
             get;
-            protected set;
+            set;
         }
 
         public virtual Token Parent
         {
             get;
-            protected set;
+            set;
         }
 
         //public virtual DateTime EnterTime
@@ -107,7 +105,7 @@ namespace Bpmtk.Engine.Models
         public virtual void Remove()
         {
             if (this.Parent != null)
-                this.Parent.children.Remove(this);
+                this.Parent.Children.Remove(this);
             else
                 this.ProcessInstance.Tokens.Remove(this);
         }
@@ -130,14 +128,14 @@ namespace Bpmtk.Engine.Models
         public virtual Token GetRoot()
             => this;
 
-        protected void CollectInactiveTokensAt(FlowNode node, IList<Token> tokens)
+        protected void CollectInactiveTokensAt(string activityId, IList<Token> tokens)
         {
-            if (!this.IsActive && node.Id.Equals(this.node.Id))
+            if (!this.IsActive && activityId.Equals(this.ActivityId))
                 tokens.Add(this);
 
-            var children = this.children;
+            var children = this.Children;
             foreach (var child in children)
-                child.CollectInactiveTokensAt(node, tokens);
+                child.CollectInactiveTokensAt(activityId, tokens);
         }
 
         protected void CollectActiveTokens(IList<Token> tokens)
@@ -145,15 +143,15 @@ namespace Bpmtk.Engine.Models
             if (this.IsActive)
                 tokens.Add(this);
 
-            var children = this.children;
+            var children = this.Children;
             foreach (var child in children)
                 child.CollectActiveTokens(tokens);
         }
 
-        public virtual IList<Token> GetInactiveTokensAt(FlowNode node)
+        public virtual IList<Token> GetInactiveTokensAt(string activityId)
         {
             var list = new List<Token>();
-            this.CollectInactiveTokensAt(node, list);
+            this.CollectInactiveTokensAt(activityId, list);
 
             return list;
         }
@@ -247,10 +245,7 @@ namespace Bpmtk.Engine.Models
         public virtual Token CreateToken()
         {
             var token = new Token(this);
-            this.children.Add(token);
-
-            //var store = context.GetService<IInstanceStore>();
-            //store.Add(token);
+            this.Children.Add(token);
 
             return token;
         }
@@ -258,7 +253,7 @@ namespace Bpmtk.Engine.Models
         protected virtual void EnsureVariablesInitialized()
         {
             if (this.variableByName == null)
-                this.variableByName = this.variables.ToDictionary(x => x.Name);
+                this.variableByName = this.Variables.ToDictionary(x => x.Name);
         }
 
         public virtual object GetVariableLocal(string name)
@@ -275,7 +270,7 @@ namespace Bpmtk.Engine.Models
         public virtual IVariable GetVariable(string name)
         {
             if(this.variableByName == null)
-                this.variableByName = this.variables.ToDictionary(x => x.Name);
+                this.variableByName = this.Variables.ToDictionary(x => x.Name);
 
             Variable variable = null;
             if (this.variableByName.TryGetValue(name, out variable))
@@ -290,7 +285,7 @@ namespace Bpmtk.Engine.Models
         public virtual void SetVariable(string name, object value)
         {
             if (this.variableByName == null)
-                this.variableByName = this.variables.ToDictionary(x => x.Name);
+                this.variableByName = this.Variables.ToDictionary(x => x.Name);
 
             Variable variable = null;
             if (this.variableByName.TryGetValue(name, out variable))
@@ -324,18 +319,17 @@ namespace Bpmtk.Engine.Models
 
         public virtual Token ResolveScope()
         {
-            //if (this.Scope == null)
-            //    return this;
+            var parent = this.Parent;
 
-            //var activityInstanceId = this.Scope.Id;
-            //var p = this.Parent;
-            //while(p != null && p.ActivityInstance != null)
-            //{
-            //    if(activityInstanceId == p.ActivityInstance.Id)
-            //        return p;
+            while (parent != null)
+            {
+                if (parent.IsScope && !parent.IsMIRoot)
+                {
+                    return parent;
+                }
 
-            //    p = p.Parent;
-            //}
+                parent = parent.Parent;
+            }
 
             return null;
         }
@@ -381,7 +375,7 @@ namespace Bpmtk.Engine.Models
         public virtual bool IsSuspended
         {
             get;
-            protected set;
+            set;
         }
 
         public virtual bool IsMIRoot

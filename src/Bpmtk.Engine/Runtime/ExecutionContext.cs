@@ -137,7 +137,12 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual IList<Token> GetJoinedTokens()
         {
-            return null;
+            var node = this.Node;
+            var scope = this.token.ResolveScope();
+            if (scope != null)
+                return scope.GetInactiveTokensAt(node.Id);
+
+            return this.ProcessInstance.GetInactiveTokensAt(node.Id);
         }
 
         public virtual ProcessInstance ProcessInstance => this.token.ProcessInstance;
@@ -263,10 +268,11 @@ namespace Bpmtk.Engine.Runtime
                 throw new ArgumentNullException(nameof(joinedTokens));
 
             var list = joinedTokens.ToList();
-            this.Join(list);
+            if(list.Count > 0)
+                this.Join(list);
 
-            var runtimeManager = this.Context.RuntimeManager;
-            await runtimeManager.SaveAsync(this.ProcessInstance);
+            var db = this.Context.DbSession;
+            await db.FlushAsync();
 
             //fire activityEndEvent.
             var historyManager = this.Context.HistoryManager;
@@ -285,7 +291,7 @@ namespace Bpmtk.Engine.Runtime
                 childExecutions.Add(childExecutionContext);
             }
 
-            await runtimeManager.SaveAsync(this.ProcessInstance);
+            await db.FlushAsync();
 
             foreach (var execution in childExecutions)
             {

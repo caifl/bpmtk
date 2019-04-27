@@ -44,8 +44,8 @@ namespace Bpmtk.Engine.Cfg
                 .ValueGeneratedOnAddOrUpdate();
 
             builder.HasMany(x => x.IdentityLinks)
-                .WithOne()
-                .HasForeignKey("TaskInstanceId")
+                .WithOne(x => x.Task)
+                .HasForeignKey("TaskId")
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(x => x.Variables)

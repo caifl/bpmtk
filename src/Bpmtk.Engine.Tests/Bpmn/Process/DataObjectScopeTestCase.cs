@@ -14,7 +14,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
         {
         }
 
-        public override async Task Execute()
+        [Fact] public async Task Execute()
         {
             await this.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.SubProcess.SubProcessTest.testDataObjectScope.bpmn20.xml");
 
@@ -49,7 +49,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
             await taskManager.CompleteAsync(tasks[0].Id);
             AssertProcessEnded(pi.Id);
 
-            this.unitOfWork.Commit();
+            this.Commit();
         }
     }
 }

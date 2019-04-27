@@ -17,8 +17,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             var token = executionContext.Token;
             token.Inactivate();
 
-            //find scope execution.
-            //var scopeExecution = execution.ResolveScope();
+            //find inactive-tokens in closest scope.
             var tokens = executionContext.GetJoinedTokens();
             if(joinedTokens != null)
             {
@@ -34,18 +33,18 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         public override async System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
         {
             var node = executionContext.Node;
-            if (node.Incomings.Count <= 1)
+            if (node.Outgoings.Count <= 1)
             {
                 await base.ExecuteAsync(executionContext);
                 return;
             }
 
-            //find scope execution.
+            //find joined-tokens.
             var current = executionContext.Token;
             var tokens = executionContext.GetJoinedTokens();
             tokens.Remove(current);
 
-            await base.LeaveAsync(executionContext, false, tokens);
+            await base.LeaveAsync(executionContext, true, tokens);
         }
     }
 }

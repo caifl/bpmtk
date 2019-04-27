@@ -48,9 +48,11 @@ namespace Bpmtk.Engine.Identity
         public virtual Task<Group> FindGroupByIdAsync(int groupId)
             => this.db.FindAsync<Group>(groupId);
 
-        public virtual Task<Group> FindGroupByNameAsync(string name)
+        public virtual async Task<Group> FindGroupByNameAsync(string name)
         {
-            throw new NotImplementedException();
+            var q = this.Groups.Where(x => x.Name == name);
+
+            return await this.db.QuerySingleAsync(q);
         }
 
         public virtual Task<User> FindUserByIdAsync(int userId)

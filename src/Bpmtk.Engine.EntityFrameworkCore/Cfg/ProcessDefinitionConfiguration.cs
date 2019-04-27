@@ -15,7 +15,7 @@ namespace Bpmtk.Engine.Cfg
             builder.HasKey(x => x.Id);
 
             builder.HasMany(x => x.IdentityLinks)
-                .WithOne()
+                .WithOne(x => x.ProcessDefinition)
                 .HasForeignKey("ProcessDefinitionId")
                 .OnDelete(DeleteBehavior.Cascade);
 

@@ -9,6 +9,8 @@ namespace Bpmtk.Engine
 {
     public interface ITaskManager
     {
+        ITaskInstanceBuilder CreateBuilder();
+
         IQueryable<TaskInstance> Tasks
         {
             get;
@@ -26,5 +28,7 @@ namespace Bpmtk.Engine
         Task UpdateAsync(TaskInstance task);
 
         Task RemoveAsync(TaskInstance task);
+
+        ITaskAssignmentStrategy GetTaskAssignmentStrategy(string name);
     }
 }

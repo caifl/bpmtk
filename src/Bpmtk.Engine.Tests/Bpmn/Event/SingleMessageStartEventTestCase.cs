@@ -13,7 +13,8 @@ namespace Bpmtk.Engine.Tests.Bpmn
         {
         }
 
-        public override async Task Execute()
+        [Fact]
+        public async Task Execute()
         {
             await base.DeployBpmnModel("Bpmtk.Engine.Tests.Resources.Event.MessageStartEventTest.testSingleMessageStartEvent.bpmn20.xml");
 
@@ -29,8 +30,6 @@ namespace Bpmtk.Engine.Tests.Bpmn
             await taskManager.CompleteAsync(tasks[0].Id);
 
             this.AssertProcessEnded(pi.Id);
-
-            this.unitOfWork.Commit();
         }
     }
 }
