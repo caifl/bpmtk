@@ -45,9 +45,10 @@ namespace Bpmtk.Engine.Tasks
             }
         }
 
-        public virtual Task CreateAsync(TaskInstance task)
+        public virtual async Task CreateAsync(TaskInstance task)
         {
-            return this.db.SaveAsync(task);
+            await this.db.SaveAsync(task);
+            await this.db.FlushAsync();
         }
 
         public virtual ITaskQuery CreateQuery()

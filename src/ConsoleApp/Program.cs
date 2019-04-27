@@ -141,8 +141,9 @@ namespace ConsoleApp
             {
                 var tx = context.BeginTransaction();
 
+                var result = context.RuntimeManager.StartProcessByKeyAsync("AssignTaskByVariableTestCase").Result;
                 //var task = context.TaskManager.FindTaskAsync(1);
-                context.TaskManager.CompleteAsync(1).GetAwaiter().GetResult();
+                //context.TaskManager.CompleteAsync(1).GetAwaiter().GetResult();
 
                 tx.Commit();
             }

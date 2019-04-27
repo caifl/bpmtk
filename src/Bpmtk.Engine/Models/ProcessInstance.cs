@@ -61,19 +61,11 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        //public virtual Token Token
+        //public ProcessInstance()
         //{
-        //    get;
-        //    set;
+        //    this.IdentityLinks = new List<IdentityLink>();
+        //    this.Variables = new List<Variable>();
         //}
-
-        public ProcessInstance()
-        {
-
-
-            this.IdentityLinks = new List<IdentityLink>();
-            this.Variables = new List<Variable>();
-        }
 
         public virtual bool GetVariable(string name, out object value)
         {

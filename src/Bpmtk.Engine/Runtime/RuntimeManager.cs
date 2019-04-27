@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Events;
+using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Runtime
 {
@@ -21,6 +22,7 @@ namespace Bpmtk.Engine.Runtime
         {
             this.context = context;
             this.db = context.DbSession;
+            this.deploymentManager = context.DeploymentManager;
         }
 
         public virtual Context Context
@@ -50,29 +52,33 @@ namespace Bpmtk.Engine.Runtime
             if (processDefinition == null)
                 throw new KeyNotFoundException("The specified process-definition was not found.");
 
-            var model = await this.deploymentManager.GetBpmnModelAsync(processDefinition.DeploymentId);
-            var process = model.GetProcess(processDefinition.Key);
-            if (process == null)
-                throw new RuntimeException($"The BPMN model not contains process '{processDefinition.Key}'");
+            var builder = this.CreateProcessInstanceBuilder()
+                .SetProcessDefinition(processDefinition)
+                .SetVariables(variables);
 
-            var initialNode = process.InitialNode;
-            if (initialNode == null)
-                throw new RuntimeException($"No start element found for process definition " + processDefinition.Key) ;
+            return await this.StartProcessAsync(builder);
 
-            var pi = new ProcessInstance();
-            pi.ProcessDefinition = processDefinition;
-            
-            var context = Context.Current;
+            //var model = await this.deploymentManager.GetBpmnModelAsync(processDefinition.DeploymentId);
+            //var process = model.GetProcess(processDefinition.Key);
+            //if (process == null)
+            //    throw new RuntimeException($"The BPMN model not contains process '{processDefinition.Key}'");
 
-            pi.Initiator = new User() { Id = context.UserId };
+            //var initialNode = process.InitialNode;
+            //if (initialNode == null)
+            //    throw new RuntimeException($"No start element found for process definition " + processDefinition.Key) ;
 
-            //pi.InitializeContext(context, variables);
+            //var pi = new ProcessInstance();
+            //pi.ProcessDefinition = processDefinition;
 
-            await this.db.SaveAsync(pi);
+            //var context = Context.Current;
+
+            //pi.Initiator = new User() { Id = context.UserId };
+
+            ////pi.InitializeContext(context, variables);
+
+            //await this.db.SaveAsync(pi);
 
             //pi.Start(context, initialNode);
-
-            return pi;
         }
 
         public virtual Task<IEnumerable<IdentityLink>> GetIdentityLinksAsync(long id)
@@ -154,13 +160,43 @@ namespace Bpmtk.Engine.Runtime
         //}
 
         public virtual IProcessInstanceBuilder CreateProcessInstanceBuilder()
-        {
-            throw new NotImplementedException();
-        }
+            => new ProcessInstanceBuilder(this);
 
-        public virtual Task<ProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder)
+        public virtual async Task<ProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder)
         {
-            throw new NotImplementedException();
+            var pi = await builder.BuildAsync();
+
+            var initialNodes = builder.InitialNodes;
+            var tokens = new List<Token>();
+            foreach (var initialNode in initialNodes)
+            {
+                var token = new Token(pi);
+                token.Node = initialNode;
+                pi.Tokens.Add(token);
+                tokens.Add(token);
+            }
+
+            //Update process-instance status.
+            pi.StartTime = Clock.Now;
+            pi.State = ExecutionState.Active;
+            pi.LastStateTime = pi.StartTime.Value;
+
+            //Save tokens.
+            await this.context.DbSession.FlushAsync();
+
+            //fire processInstanceStartEvent.
+
+            foreach (var token in tokens)
+            {
+                //Check if process-instance isEnded.
+                if (pi.IsEnded)
+                    break;
+
+                var executionContext = ExecutionContext.Create(this.context, token);
+                await executionContext.StartAsync();
+            }
+
+            return pi;
         }
 
         public virtual Task<int> GetActiveTaskCountAsync(long tokenId)

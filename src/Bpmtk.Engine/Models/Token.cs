@@ -39,7 +39,10 @@ namespace Bpmtk.Engine.Models
 
         public Token(ProcessInstance processInstance)
         {
-
+            this.ProcessInstance = processInstance;
+            this.variables = new List<Variable>();
+            this.children = new List<Token>();
+            this.IsActive = true;
         }
 
         public Token(ProcessInstance processInstance, FlowNode initialNode)

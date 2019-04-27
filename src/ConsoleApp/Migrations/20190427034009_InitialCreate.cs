@@ -1,9 +1,10 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ConsoleApp.Migrations
 {
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -12,7 +13,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     value = table.Column<byte[]>(nullable: true)
                 },
                 constraints: table =>
@@ -25,7 +26,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     name = table.Column<string>(maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -38,7 +39,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     name = table.Column<string>(maxLength: 50, nullable: true),
                     user_name = table.Column<string>(maxLength: 100, nullable: true)
                 },
@@ -51,31 +52,31 @@ namespace ConsoleApp.Migrations
                 name: "bpm_package",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
-                    TenantId = table.Column<string>(nullable: true),
-                    Category = table.Column<string>(nullable: true),
-                    OwnerId = table.Column<int>(nullable: true),
-                    Name = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true),
-                    Version = table.Column<int>(nullable: false),
+                    id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    tenant_id = table.Column<string>(nullable: true),
+                    category = table.Column<string>(nullable: true),
+                    owner_id = table.Column<int>(nullable: true),
+                    name = table.Column<string>(nullable: true),
+                    description = table.Column<string>(nullable: true),
+                    version = table.Column<int>(nullable: false),
                     concurrency_stamp = table.Column<string>(nullable: true),
-                    Created = table.Column<DateTime>(nullable: false),
-                    Modified = table.Column<DateTime>(nullable: false),
-                    SourceId = table.Column<long>(nullable: true)
+                    created = table.Column<DateTime>(nullable: false),
+                    modified = table.Column<DateTime>(nullable: false),
+                    source_id = table.Column<long>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_bpm_package", x => x.Id);
+                    table.PrimaryKey("PK_bpm_package", x => x.id);
                     table.ForeignKey(
-                        name: "FK_bpm_package_bpm_user_OwnerId",
-                        column: x => x.OwnerId,
+                        name: "FK_bpm_package_bpm_user_owner_id",
+                        column: x => x.owner_id,
                         principalTable: "bpm_user",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_bpm_package_bpm_byte_array_SourceId",
-                        column: x => x.SourceId,
+                        name: "FK_bpm_package_bpm_byte_array_source_id",
+                        column: x => x.source_id,
                         principalTable: "bpm_byte_array",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
@@ -110,7 +111,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     name = table.Column<string>(maxLength: 50, nullable: true),
                     tenant_id = table.Column<string>(nullable: true),
                     category = table.Column<string>(maxLength: 64, nullable: true),
@@ -133,7 +134,7 @@ namespace ConsoleApp.Migrations
                         name: "FK_bpm_deployment_bpm_package_package_id",
                         column: x => x.package_id,
                         principalTable: "bpm_package",
-                        principalColumn: "Id",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_bpm_deployment_bpm_user_user_id",
@@ -148,7 +149,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     tenant_id = table.Column<string>(maxLength: 32, nullable: true),
                     category = table.Column<string>(maxLength: 50, nullable: true),
                     deployment_id = table.Column<int>(nullable: false),
@@ -157,7 +158,7 @@ namespace ConsoleApp.Migrations
                     version = table.Column<int>(nullable: false),
                     created = table.Column<DateTime>(nullable: false),
                     modified = table.Column<DateTime>(nullable: false),
-                    has_diagram = table.Column<short>(nullable: false),
+                    has_diagram = table.Column<bool>(nullable: false),
                     valid_from = table.Column<DateTime>(nullable: true),
                     valid_to = table.Column<DateTime>(nullable: true),
                     concurrency_stamp = table.Column<string>(nullable: true),
@@ -181,7 +182,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     name = table.Column<string>(maxLength: 64, nullable: false),
                     type = table.Column<string>(maxLength: 128, nullable: false),
                     byte_array_id = table.Column<long>(nullable: true),
@@ -207,7 +208,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     user_id = table.Column<int>(nullable: true),
                     group_id = table.Column<int>(nullable: true),
                     type = table.Column<string>(maxLength: 50, nullable: true),
@@ -245,7 +246,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     state = table.Column<int>(nullable: false),
                     name = table.Column<string>(maxLength: 100, nullable: false),
                     created = table.Column<DateTime>(nullable: false),
@@ -258,7 +259,7 @@ namespace ConsoleApp.Migrations
                     initiator_id = table.Column<int>(nullable: true),
                     end_reason = table.Column<string>(maxLength: 255, nullable: true),
                     super_id = table.Column<long>(nullable: true),
-                    proc_def_id = table.Column<int>(nullable: true),
+                    proc_def_id = table.Column<int>(nullable: false),
                     caller_id = table.Column<long>(nullable: true)
                 },
                 constraints: table =>
@@ -283,7 +284,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     state = table.Column<int>(nullable: false),
                     name = table.Column<string>(maxLength: 100, nullable: false),
                     created = table.Column<DateTime>(nullable: false),
@@ -296,7 +297,7 @@ namespace ConsoleApp.Migrations
                     sub_proc_inst_id = table.Column<long>(nullable: true),
                     activity_id = table.Column<string>(maxLength: 64, nullable: false),
                     activity_type = table.Column<string>(maxLength: 16, nullable: false),
-                    is_mi_root = table.Column<short>(nullable: false),
+                    is_mi_root = table.Column<bool>(nullable: false),
                     token_id = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
@@ -327,17 +328,17 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     activity_id = table.Column<string>(maxLength: 64, nullable: false),
                     parent_id = table.Column<long>(nullable: true),
-                    is_scope = table.Column<short>(nullable: false),
-                    is_active = table.Column<short>(nullable: false),
+                    is_scope = table.Column<bool>(nullable: false),
+                    is_active = table.Column<bool>(nullable: false),
                     act_inst_id = table.Column<long>(nullable: true),
-                    proc_inst_id = table.Column<long>(nullable: true),
+                    proc_inst_id = table.Column<long>(nullable: false),
                     sub_proc_inst_id = table.Column<long>(nullable: true),
                     transition_id = table.Column<string>(maxLength: 64, nullable: true),
-                    is_suspended = table.Column<short>(nullable: false),
-                    is_mi_root = table.Column<short>(nullable: false)
+                    is_suspended = table.Column<bool>(nullable: false),
+                    is_mi_root = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -373,7 +374,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     event_type = table.Column<string>(maxLength: 50, nullable: false),
                     event_name = table.Column<string>(maxLength: 50, nullable: false),
                     activity_id = table.Column<string>(nullable: true),
@@ -411,7 +412,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     key = table.Column<string>(nullable: true),
                     retries = table.Column<int>(nullable: false),
                     type = table.Column<string>(maxLength: 50, nullable: false),
@@ -456,7 +457,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     proc_inst_id = table.Column<long>(nullable: true),
                     act_inst_id = table.Column<long>(nullable: true),
                     state = table.Column<int>(nullable: false),
@@ -507,7 +508,7 @@ namespace ConsoleApp.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(nullable: false)
-                        .Annotation("MySQL:AutoIncrement", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     name = table.Column<string>(maxLength: 64, nullable: false),
                     type = table.Column<string>(maxLength: 128, nullable: false),
                     byte_array_id = table.Column<long>(nullable: true),
@@ -634,14 +635,14 @@ namespace ConsoleApp.Migrations
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_bpm_package_OwnerId",
+                name: "IX_bpm_package_owner_id",
                 table: "bpm_package",
-                column: "OwnerId");
+                column: "owner_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_bpm_package_SourceId",
+                name: "IX_bpm_package_source_id",
                 table: "bpm_package",
-                column: "SourceId");
+                column: "source_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_bpm_proc_data_byte_array_id",
@@ -818,7 +819,7 @@ namespace ConsoleApp.Migrations
                 table: "bpm_deployment");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_bpm_package_bpm_byte_array_SourceId",
+                name: "FK_bpm_package_bpm_byte_array_source_id",
                 table: "bpm_package");
 
             migrationBuilder.DropForeignKey(

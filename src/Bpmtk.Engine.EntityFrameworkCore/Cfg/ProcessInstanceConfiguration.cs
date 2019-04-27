@@ -17,7 +17,8 @@ namespace Bpmtk.Engine.Cfg
             builder.HasOne(x => x.ProcessDefinition)
                 .WithMany()
                 .HasForeignKey("ProcessDefinitionId")
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(true);
 
             //identity-links.
             builder.HasMany(x => x.IdentityLinks)
@@ -34,7 +35,8 @@ namespace Bpmtk.Engine.Cfg
             builder.HasOne(x => x.Initiator)
                 .WithMany()
                 .HasForeignKey("InitiatorId")
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
 
             //builder.Property(x => x.De).HasColumnName("department_id");
             builder.Property(x => x.TenantId);
@@ -48,12 +50,14 @@ namespace Bpmtk.Engine.Cfg
             builder.HasMany(x => x.Tokens)
                 .WithOne(x => x.ProcessInstance)
                 .HasForeignKey("ProcessInstanceId")
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
 
             builder.HasOne(x => x.Caller)
                 .WithMany()
                 .HasForeignKey("CallerId")
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
 
             builder.HasOne(x => x.Super)
                 .WithMany()
@@ -64,6 +68,7 @@ namespace Bpmtk.Engine.Cfg
             //mark concurrency token.
             builder.Property(x => x.ConcurrencyStamp)
                 .IsConcurrencyToken()
+                .HasValueGenerator<GuidValueGenerator>()
                 .ValueGeneratedOnAddOrUpdate();
 
             builder.Property(x => x.Description)

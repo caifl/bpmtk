@@ -40,6 +40,7 @@ namespace Bpmtk.Engine.Cfg
             //mark concurrency token.
             builder.Property(x => x.ConcurrencyStamp)
                 .IsConcurrencyToken()
+                .HasValueGenerator<GuidValueGenerator>()
                 .ValueGeneratedOnAddOrUpdate();
 
             builder.HasMany(x => x.IdentityLinks)

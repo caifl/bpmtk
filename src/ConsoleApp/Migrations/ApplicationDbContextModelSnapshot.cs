@@ -14,7 +14,8 @@ namespace ConsoleApp.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085");
+                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Bpmtk.Engine.Models.ActivityInstance", b =>
                 {
@@ -43,7 +44,7 @@ namespace ConsoleApp.Migrations
                     b.Property<string>("Description")
                         .HasColumnName("description");
 
-                    b.Property<short>("IsMIRoot")
+                    b.Property<bool>("IsMIRoot")
                         .HasColumnName("is_mi_root");
 
                     b.Property<DateTime>("LastStateTime")
@@ -297,30 +298,40 @@ namespace ConsoleApp.Migrations
             modelBuilder.Entity("Bpmtk.Engine.Models.Package", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("id");
 
-                    b.Property<string>("Category");
+                    b.Property<string>("Category")
+                        .HasColumnName("category");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnName("concurrency_stamp");
 
-                    b.Property<DateTime>("Created");
+                    b.Property<DateTime>("Created")
+                        .HasColumnName("created");
 
-                    b.Property<string>("Description");
+                    b.Property<string>("Description")
+                        .HasColumnName("description");
 
-                    b.Property<DateTime>("Modified");
+                    b.Property<DateTime>("Modified")
+                        .HasColumnName("modified");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasColumnName("name");
 
-                    b.Property<int?>("OwnerId");
+                    b.Property<int?>("OwnerId")
+                        .HasColumnName("owner_id");
 
-                    b.Property<long?>("SourceId");
+                    b.Property<long?>("SourceId")
+                        .HasColumnName("source_id");
 
-                    b.Property<string>("TenantId");
+                    b.Property<string>("TenantId")
+                        .HasColumnName("tenant_id");
 
-                    b.Property<int>("Version");
+                    b.Property<int>("Version")
+                        .HasColumnName("version");
 
                     b.HasKey("Id");
 
@@ -356,7 +367,7 @@ namespace ConsoleApp.Migrations
                         .HasColumnName("description")
                         .HasMaxLength(255);
 
-                    b.Property<short>("HasDiagram")
+                    b.Property<bool>("HasDiagram")
                         .HasColumnName("has_diagram");
 
                     b.Property<string>("Key")
@@ -413,6 +424,7 @@ namespace ConsoleApp.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnName("concurrency_stamp");
 
                     b.Property<DateTime>("Created")
@@ -442,6 +454,7 @@ namespace ConsoleApp.Migrations
                         .HasMaxLength(100);
 
                     b.Property<int?>("ProcessDefinitionId")
+                        .IsRequired()
                         .HasColumnName("proc_def_id");
 
                     b.Property<DateTime?>("StartTime")
@@ -554,6 +567,7 @@ namespace ConsoleApp.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnName("concurrency_stamp");
 
                     b.Property<DateTime>("Created")
@@ -615,22 +629,23 @@ namespace ConsoleApp.Migrations
                     b.Property<long?>("ActivityInstanceId")
                         .HasColumnName("act_inst_id");
 
-                    b.Property<short>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnName("is_active");
 
-                    b.Property<short>("IsMIRoot")
+                    b.Property<bool>("IsMIRoot")
                         .HasColumnName("is_mi_root");
 
-                    b.Property<short>("IsScope")
+                    b.Property<bool>("IsScope")
                         .HasColumnName("is_scope");
 
-                    b.Property<short>("IsSuspended")
+                    b.Property<bool>("IsSuspended")
                         .HasColumnName("is_suspended");
 
                     b.Property<long?>("ParentId")
                         .HasColumnName("parent_id");
 
                     b.Property<long?>("ProcessInstanceId")
+                        .IsRequired()
                         .HasColumnName("proc_inst_id");
 
                     b.Property<long?>("SubProcessInstanceId")

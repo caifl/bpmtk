@@ -32,6 +32,11 @@ namespace Bpmtk.Engine.Runtime
             return new ExecutionContext(context, token);
         }
 
+        public virtual async SysTasks.Task StartAsync()
+        {
+            await this.EnterNodeAsync(this.Node);
+        }
+
         public virtual async SysTasks.Task StartAsync(Bpmtk.Bpmn2.FlowNode initialNode)
         {
             if (initialNode == null)

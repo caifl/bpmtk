@@ -20,6 +20,11 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        public virtual bool IsEnded
+        {
+            get => this.State == ExecutionState.Completed || this.State == ExecutionState.Terminated || this.State == ExecutionState.Aborted;
+        }
+
         //public abstract IEnumerable<IVariable> Variables
         //{
         //    get;

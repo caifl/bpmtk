@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Utils;
 using Bpmtk.Engine.Variables;
@@ -10,11 +11,19 @@ namespace Bpmtk.Engine.Runtime
 {
     class ProcessInstanceBuilder : IProcessInstanceBuilder
     {
+        protected string key;
+        protected string name;
+        protected string description;
+        protected int? initiatorId;
         protected Token super;
         protected ProcessDefinition processDefinition;
         protected IDictionary<string, object> variables;
         private readonly RuntimeManager runtimeManager;
         private readonly Context context;
+
+        protected List<Bpmtk.Bpmn2.FlowNode> initialNodes = new List<Bpmtk.Bpmn2.FlowNode>();
+
+        public virtual IList<Bpmtk.Bpmn2.FlowNode> InitialNodes => this.initialNodes;
 
         public ProcessInstanceBuilder(RuntimeManager runtimeManager)
         {
@@ -27,12 +36,26 @@ namespace Bpmtk.Engine.Runtime
             if (this.processDefinition == null)
                 throw new ArgumentNullException(nameof(processDefinition));
 
+            //Load bpmn-model.
+            var deploymentId = this.processDefinition.DeploymentId;
+            var processDefinitionKey = this.processDefinition.Key;
+
+            var dm = context.DeploymentManager;
+            var model = await dm.GetBpmnModelAsync(deploymentId);
+            var process = model.GetProcess(processDefinitionKey);
+            var initialNode = process.InitialNode;
+            if (initialNode == null)
+                throw new RuntimeException($"The process '{processDefinitionKey}' does not contains any start nodes.");
+
+            this.initialNodes.Clear();
+            this.initialNodes.Add(initialNode);
+
+            //init process-instance.
             var pi = new ProcessInstance();
+            pi.Tokens = new List<Token>();
+            
             pi.ProcessDefinition = this.processDefinition;
             pi.Super = this.super;
-            //pi.variableInstances = new List<ProcessVariable>();
-            //pi.variables = new Dictionary<string, ProcessVariable>();
-            //pi.identityLinks = new List<InstanceIdentityLink>();
 
             if (pi.Super != null)
                 pi.Caller = super.ActivityInstance;
@@ -43,29 +66,38 @@ namespace Bpmtk.Engine.Runtime
             if (string.IsNullOrEmpty(pi.Name))
                 pi.Name = processDefinition.Key;
 
+            pi.Key = this.key;
             pi.Created = Clock.Now;
             pi.LastStateTime = pi.Created;
             pi.Initiator = null;
             pi.Description = processDefinition.Description;
 
+            if (!string.IsNullOrEmpty(this.name))
+                pi.Name = this.name;
+
+            if (!string.IsNullOrEmpty(this.description))
+                pi.Description = this.description;
+
+            pi.Variables = new List<Variable>();
+            pi.IdentityLinks = new List<IdentityLink>();
+
+            var dataObjects = model.GetProcessDataObjects(processDefinitionKey);
+
             //initialize context.
-            await this.InitializeContextAsync(pi);
+            this.InitializeProcessContext(pi, dataObjects);
 
             //save.
             await this.context.DbSession.SaveAsync(pi);
 
+            //commit changes.
+            await this.context.DbSession.FlushAsync();
+
             return pi;
         }
 
-        protected virtual async Task InitializeContextAsync(ProcessInstance processInstance)
+        protected virtual void InitializeProcessContext(ProcessInstance processInstance,
+            IList<ValuedDataObject> dataObjects)
         {
-            var deploymentId = this.processDefinition.Deployment.Id;
-            var processDefinitionKey = this.processDefinition.Key;
-
-            var dm = context.DeploymentManager;
-            var model = await dm.GetBpmnModelAsync(deploymentId);
-            var dataObjects = model.GetProcessDataObjects(processDefinitionKey);
-
             var dataObjectsMap = dataObjects.ToDictionary(x => x.Id);
 
             IVariableType type = null;
@@ -74,22 +106,70 @@ namespace Bpmtk.Engine.Runtime
                 var value = dataObject.Value;
                 type = Variables.VariableType.Resolve(value);
 
-                //this.CreateVariableInstance(dataObject.Id, type, value);
+                var variable = new Variable();
+                variable.Name = dataObject.Id;
+                variable.Type = type.Name;
+
+                type.SetValue(variable, value);
+
+                processInstance.Variables.Add(variable);
             }
 
             if (variables != null && variables.Count > 0)
             {
                 var em = variables.GetEnumerator();
-                //while (em.MoveNext())
-                //{
-                //    this.SetVariable(em.Current.Key, em.Current.Value);
-                //}
+                while (em.MoveNext())
+                {
+                    processInstance.SetVariable(em.Current.Key, em.Current.Value);
+                }
             }
         }
 
         public virtual IProcessInstanceBuilder SetProcessDefinition(ProcessDefinition processDefinition)
         {
             this.processDefinition = processDefinition;
+
+            return this;
+        }
+
+        public IProcessInstanceBuilder SetVariables(IDictionary<string, object> variables)
+        {
+            this.variables = variables;
+
+            return this;
+        }
+
+        public virtual IProcessInstanceBuilder SetName(string name)
+        {
+            this.name = name;
+
+            return this;
+        }
+
+        public virtual IProcessInstanceBuilder SetKey(string key)
+        {
+            this.key = key;
+
+            return this;
+        }
+
+        public virtual IProcessInstanceBuilder SetInitiator(int initiatorId)
+        {
+            this.initiatorId = initiatorId;
+
+            return this;
+        }
+
+        public virtual IProcessInstanceBuilder SetDescription(string description)
+        {
+            this.description = description;
+
+            return this;
+        }
+
+        public virtual IProcessInstanceBuilder SetSuper(Token super)
+        {
+            this.super = super;
 
             return this;
         }

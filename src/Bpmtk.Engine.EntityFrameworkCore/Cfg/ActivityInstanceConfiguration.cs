@@ -53,7 +53,9 @@ namespace Bpmtk.Engine.Cfg
 
             builder.Property(x => x.ConcurrencyStamp)
                 .HasMaxLength(50)
-                .IsConcurrencyToken();
+                .IsConcurrencyToken()
+                .HasValueGenerator<GuidValueGenerator>()
+                .ValueGeneratedOnAddOrUpdate();
 
             builder.ApplyNamingStrategy();
         }
