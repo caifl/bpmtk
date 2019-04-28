@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Bpmtk.Engine.Models;
-using Bpmtk.Engine.Infrastructure;
+using Bpmtk.Engine.Storage;
 
 namespace Bpmtk.Engine.Tests
 {

@@ -1,8 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Storage;
-using Bpmtk.Engine.Infrastructure;
 
-namespace Bpmtk.Engine
+namespace Bpmtk.Engine.Storage
 {
     public class ContextTransaction : ITransaction, IDisposable
     {

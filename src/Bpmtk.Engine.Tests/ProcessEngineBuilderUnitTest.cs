@@ -9,7 +9,6 @@ using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
 //using NHibernate.Tool.hbm2ddl;
 using Xunit.Abstractions;
-using Bpmtk.Infrastructure;
 using Bpmtk.Engine;
 using Bpmtk.Engine.Repository;
 using Microsoft.Extensions.DependencyInjection;

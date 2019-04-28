@@ -4,9 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Bpmtk.Engine.Models;
-using Bpmtk.Engine.Infrastructure;
 
-namespace Bpmtk.Engine
+namespace Bpmtk.Engine.Storage
 {
     public class DbSession : IDbSession
     {

@@ -4,9 +4,9 @@ using System.Text;
 using Bpmtk.Engine.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Bpmtk.Engine
+namespace Bpmtk.Engine.Storage
 {
-    public class DbSessionFactory : Models.IDbSessionFactory
+    public class DbSessionFactory : IDbSessionFactory
     {
         protected Action<DbContextOptionsBuilder> optionsBuilderAction;
 
