@@ -32,17 +32,20 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
         public override async System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
         {
+            //find joined-tokens.
+            var current = executionContext.Token;
+            var tokens = executionContext.GetJoinedTokens();
+            tokens.Remove(current);
+
+            if (tokens.Count > 0)
+                executionContext.Join(tokens);
+
             var node = executionContext.Node;
             if (node.Outgoings.Count <= 1)
             {
                 await base.ExecuteAsync(executionContext);
                 return;
             }
-
-            //find joined-tokens.
-            var current = executionContext.Token;
-            var tokens = executionContext.GetJoinedTokens();
-            tokens.Remove(current);
 
             await base.LeaveAsync(executionContext, true, tokens);
         }

@@ -213,21 +213,37 @@ namespace Bpmtk.Engine.Runtime
                     if(joinedTokens.Count == 1)
                     {
                         await historyManager.RecordActivityReadyAsync(this, joinedTokens);
+                        return;
                     }
-                    else
+
+                    //find created activity-instance.
+                    var act = joinedTokens.Where(x => x.ActivityInstance != null)
+                        .Select(x => x.ActivityInstance)
+                        .FirstOrDefault();
+                    if (act != null)
                     {
-
+                        this.token.ActivityInstance = act;
+                        await this.Context.DbSession.FlushAsync();
                     }
-
-                    //
-                    //await Context.DbSession.FlushAsync();
 
                     return;
                 }
                 else
                 {
-                    //fire activityStartEvent.
-                    await historyManager.RecordActivityReadyAsync(this, joinedTokens);
+                    if (joinedTokens.Count > 0)
+                    {
+                        //find created activity-instance.
+                        var act = joinedTokens.Where(x => x.ActivityInstance != null)
+                            .Select(x => x.ActivityInstance)
+                            .FirstOrDefault();
+                        if (act != null)
+                            this.token.ActivityInstance = act;
+                    }
+                    else
+                    {
+                        //fire activityStartEvent.
+                        await historyManager.RecordActivityReadyAsync(this, joinedTokens);
+                    }
                 }
 
                 //Clear
@@ -303,7 +319,7 @@ namespace Bpmtk.Engine.Runtime
             }
         }
 
-        protected virtual void Join(IList<Token> joinedTokens)
+        public virtual void Join(IList<Token> joinedTokens)
         {
             var scopeToken = this.token.ResolveScope();
 
@@ -311,7 +327,8 @@ namespace Bpmtk.Engine.Runtime
             joinedTokens.Remove(token);
 
             //保留rootToken.
-            joinedTokens.Remove(scopeToken);
+            if(scopeToken != null)
+                joinedTokens.Remove(scopeToken);
 
             //删除其他完成的分支
             Token current = null;
