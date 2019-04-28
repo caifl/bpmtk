@@ -13,7 +13,7 @@ namespace Bpmtk.Engine.WebApi
                 var services = context.RequestServices;
 
                 var engine = services.GetRequiredService<IProcessEngine>();
-                var engineContext = engine.CreateContext(services);
+                var engineContext = engine.CreateContext();
                 Context.SetCurrent(engineContext);
 
                 engineContext.SetAuthenticatedUser(100);

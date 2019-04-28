@@ -16,6 +16,8 @@ namespace Bpmtk.Engine
 
         IActivityInstanceQuery CreateActivityQuery();
 
+        Task<IList<ActivityInstance>> GetActivityInstancesAsync(long processInstanceId);
+
         Task RecordActivityReadyAsync(ExecutionContext executionContext,
             IList<Token> joinedTokens);
 

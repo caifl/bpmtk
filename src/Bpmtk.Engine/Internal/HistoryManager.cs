@@ -88,5 +88,11 @@ namespace Bpmtk.Engine.Internal
                 await this.db.FlushAsync();
             }
         }
+
+        public Task<IList<ActivityInstance>> GetActivityInstancesAsync(long processInstanceId)
+        {
+            var q = this.ActivityInstances.Where(x => x.ProcessInstance.Id == processInstanceId);
+            return this.db.QueryMultipleAsync(q);
+        }
     }
 }
