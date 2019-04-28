@@ -127,13 +127,28 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        private IVariableType typeHandler = null;
+
+        protected virtual void EnsureInitialized()
+        {
+            if (this.typeHandler != null)
+                return;
+
+            this.typeHandler = VariableType.Get(this.Type);
+        }
+
         public virtual object GetValue()
         {
-            return null;
+            this.EnsureInitialized();
+
+            return this.typeHandler.GetValue(this);
         }
 
         public virtual void SetValue(object value)
         {
+            this.EnsureInitialized();
+
+            this.typeHandler.SetValue(this, value);
         }
     }
 }

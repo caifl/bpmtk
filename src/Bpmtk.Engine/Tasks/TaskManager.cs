@@ -55,9 +55,7 @@ namespace Bpmtk.Engine.Tasks
             => new TaskInstanceBuilder(this.context);
 
         public virtual ITaskQuery CreateQuery()
-        {
-            throw new NotImplementedException();
-        }
+            => new TaskQuery(this.db);
 
         public virtual Task<TaskInstance> FindTaskAsync(long taskId)
         {

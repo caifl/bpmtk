@@ -7,8 +7,7 @@ namespace Bpmtk.Engine.Models
 {
     public class ProcessInstance : ExecutionObject
     {
-        //private ICollection<Variable> variableInstances;
-        private IDictionary<string, Variable> variables;
+        private IDictionary<string, Variable> variableByName;
 
         public virtual string TenantId
         {
@@ -69,10 +68,12 @@ namespace Bpmtk.Engine.Models
 
         public virtual bool GetVariable(string name, out object value)
         {
+            this.EnsureVariablesInitialized();
+
             value = null;
             Variable variable = null;
 
-            if (this.variables.TryGetValue(name, out variable))
+            if (this.variableByName.TryGetValue(name, out variable))
             {
                 value = variable.GetValue();
                 return true;
@@ -81,44 +82,75 @@ namespace Bpmtk.Engine.Models
             return false;
         }
 
+        protected virtual void EnsureVariablesInitialized()
+        {
+            if (this.variableByName == null)
+                this.variableByName = this.Variables.ToDictionary(x => x.Name);
+        }
+
         public override void SetVariable(string name, object value)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            this.EnsureVariablesInitialized();
+
             Variable variable = null;
-            if (this.variables.TryGetValue(name, out variable))
-            {
+            if (this.variableByName.TryGetValue(name, out variable))
+            { 
                 variable.SetValue(value);
+                return;
             }
-            else
-            {
-                this.CreateVariableInstance(name, VariableType.Resolve(value), value);
-            }
+
+            this.AddVariable(name,  value);
         }
 
         public override Variable GetVariable(string name)
         {
+            this.EnsureVariablesInitialized();
+
             Variable value = null;
-            if (this.variables.TryGetValue(name, out value))
+            if (this.variableByName.TryGetValue(name, out value))
                 return value;
 
             return null;
         }
 
-        protected virtual Variable CreateVariableInstance(string name, 
-            IVariableType type, 
-            object initialValue = null)
-        {
-            var item = new Variable();
-            item.Name = name;
-            //ProcessVariable(this, name, type, initialValue);
-            //this.variableInstances.Add(item);
-            this.variables.Add(item.Name, item);
+        //protected virtual Variable AddVariable(string name, 
+        //    IVariableType type, 
+        //    object initialValue = null)
+        //{
+        //    var item = new Variable();
+        //    item.Name = name;
+        //    //ProcessVariable(this, name, type, initialValue);
+        //    //this.variableInstances.Add(item);
+        //    this.variableByName.Add(item.Name, item);
 
-            return item;
-        }
+        //    return item;
+        //}
 
-        public virtual Variable AddVariable(string name, object value)
+        protected virtual Variable AddVariable(string name, object value,
+            IVariableType type = null)
         {
-            return null;
+            if (value == null)
+                return null;
+
+            if (type == null)
+                type = VariableType.Resolve(value);
+
+            var variable = new Variable();
+            variable.Name = name;
+            variable.Type = type.Name;
+
+            type.SetValue(variable, value);
+
+            this.Variables.Add(variable);
+
+            this.EnsureVariablesInitialized();
+
+            this.variableByName.Add(name, variable);
+
+            return variable;
         }
 
         public virtual ProcessDefinition ProcessDefinition

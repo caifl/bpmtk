@@ -1,9 +1,9 @@
-﻿using Bpmtk.Engine.WebApi.Models;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Bpmtk.Engine.WebApi.Models;
 
 namespace Bpmtk.Engine.WebApi.Controllers
 {
@@ -22,7 +22,10 @@ namespace Bpmtk.Engine.WebApi.Controllers
         {
             var q = this.context.RuntimeManager.ProcessInstances;
 
-            var data = q.Select(x => ProcessInstanceModel.Create(x)).ToArray();
+            var data = q.Select(x => ProcessInstanceModel.Create(x, 
+                x.Initiator.Id,
+                x.Initiator.UserName))
+                .ToArray();
 
             return data;
         }

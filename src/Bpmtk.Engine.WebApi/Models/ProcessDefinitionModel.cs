@@ -29,6 +29,42 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
+        public virtual string State
+        {
+            get;
+            set;
+        }
+
+        public virtual string StateName
+        {
+            get;
+            set;
+        }
+
+        public virtual DateTime? ValidFrom
+        {
+            get;
+            set;
+        }
+
+        public virtual DateTime? ValidTo
+        {
+            get;
+            set;
+        }
+
+        public virtual int Version
+        {
+            get;
+            set;
+        }
+
+        public virtual string VersionTag
+        {
+            get;
+            set;
+        }
+
         public static ProcessDefinitionModel Create(ProcessDefinition definition)
         {
             var model = new ProcessDefinitionModel();
@@ -36,6 +72,12 @@ namespace Bpmtk.Engine.WebApi.Models
             model.Id = definition.Id;
             model.Key = definition.Key;
             model.Name = definition.Name;
+            model.State = definition.State.ToString();
+            model.StateName = definition.State.ToString();
+            model.ValidFrom = definition.ValidFrom;
+            model.ValidTo = definition.ValidTo;
+            model.Version = definition.Version;
+            model.VersionTag = definition.VersionTag;
 
             return model;
         }

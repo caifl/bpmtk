@@ -15,7 +15,14 @@ namespace ConsoleApp
     {
         static void Main(string[] args)
         {
+            var JuelSearchPattern = "(?:\\${)(.*?)(?:})";
 
+            var regex = System.Text.RegularExpressions.Regex.Replace("abc ${zh_cn}---${ haha } ???",
+                JuelSearchPattern,
+                new MatchEvaluator((m) =>
+                {
+                    return string.Empty;
+                }));
 
             //var cfg = new Configuration();
 

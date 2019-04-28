@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +33,17 @@ namespace Bpmtk.Engine.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //允许跨域
+            var cors = new CorsPolicyBuilder().AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowAnyOrigin()
+                .AllowCredentials()
+                .Build();
+
+            services.AddCors(options => options.AddPolicy("AllowAll", cors));
+
+            services.AddCors();
+
             services.AddDbContext<BpmDbContext>(builder =>
             {
                 builder.UseLoggerFactory(LoggerFactory);
@@ -47,7 +60,6 @@ namespace Bpmtk.Engine.WebApi
             });
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddSwaggerGen(c =>
@@ -67,6 +79,12 @@ namespace Bpmtk.Engine.WebApi
             {
                 app.UseHsts();
             }
+
+            app.UseCors("AllowAll");
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
             app.UseHttpsRedirection();
             app.UseProcessEngine();

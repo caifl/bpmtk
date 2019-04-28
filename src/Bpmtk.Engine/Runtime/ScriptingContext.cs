@@ -17,7 +17,8 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual bool Resolve(string name, out object value)
         {
-            if (name == "execution")
+            if (name == "context" 
+                || name == "execution")
             {
                 value = this;
                 return true;

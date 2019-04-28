@@ -71,7 +71,7 @@ namespace Bpmtk.Engine.Runtime
 
             await this.Context.HistoryManager.RecordActivityEndAsync(this);
 
-            
+            this.FireEvent("completed");
             //var store = context.GetService<IInstanceStore>();
             //store.Add(new HistoricToken(ExecutionContext.Create(context, this), "end"));
 
@@ -213,6 +213,9 @@ namespace Bpmtk.Engine.Runtime
                     if(joinedTokens.Count == 1)
                     {
                         await historyManager.RecordActivityReadyAsync(this, joinedTokens);
+
+                        this.FireEvent("ready");
+
                         return;
                     }
 
@@ -243,6 +246,8 @@ namespace Bpmtk.Engine.Runtime
                     {
                         //fire activityStartEvent.
                         await historyManager.RecordActivityReadyAsync(this, joinedTokens);
+
+                        this.FireEvent("ready");
                     }
                 }
 
@@ -253,11 +258,32 @@ namespace Bpmtk.Engine.Runtime
                 //fire activityStartEvent.
                 await historyManager.RecordActivityStartAsync(this);
 
+                //executeScript
+                this.FireEvent("activated");
+
                 await behavior.ExecuteAsync(this);
                 return;
             }
 
             throw new NotSupportedException();
+        }
+
+        protected virtual void FireEvent(string eventName)
+        {
+            IList<Bpmtk.Bpmn2.Extensions.Script> scripts = null;
+
+            var node = this.Node;
+            if (node != null)
+                scripts = node.Scripts;
+            else
+                scripts = this.transition?.Scripts;
+
+            if (scripts != null && scripts.Count > 0)
+            {
+                var list = scripts.Where(x => x.On.Equals(eventName)).ToList();
+                foreach (var item in list)
+                    this.ExecutScript(item.Text, item.ScriptFormat);
+            }
         }
 
         public virtual async SysTasks.Task LeaveNodeAsync(Bpmtk.Bpmn2.SequenceFlow transition)
@@ -369,35 +395,39 @@ namespace Bpmtk.Engine.Runtime
             //fire transitionTakenEvent.
             this.token.Node = null;
 
+            this.FireEvent("taken");
+
             await this.EnterNodeAsync(targetNode);
         }
 
         public virtual object GetVariable(string name)
         {
-            IVariable variable = null;
-            if (variables.TryGetValue(name, out variable))
-            {
-                return null;
-            }
+            return this.token.GetVariable(name)?.GetValue();
 
-            var current = this.token;
+            //IVariable variable = null;
+            //if (variables.TryGetValue(name, out variable))
+            //{
+            //    return null;
+            //}
 
-            do
-            {
-                variable = current.GetVariable(name);
-                if (variable != null)
-                {
-                    this.variables.Add(name, variable);
-                    return null;
-                }
+            //var current = this.token;
 
-                current = current.Parent;
-            }
-            while (current.Parent != null);
+            //do
+            //{
+            //    variable = current.GetVariable(name);
+            //    if (variable != null)
+            //    {
+            //        this.variables.Add(name, variable);
+            //        return null;
+            //    }
 
-            variable = this.token.ProcessInstance.GetVariable(name);
+            //    current = current.Parent;
+            //}
+            //while (current.Parent != null);
 
-            return variable?.GetValue();
+            //variable = this.token.ProcessInstance.GetVariable(name);
+
+            //return variable?.GetValue();
             //ExecutionObject execution = this.ActivityInstance;
             //if (execution != null)
             //    return execution.GetVariable(name);
@@ -487,6 +517,42 @@ namespace Bpmtk.Engine.Runtime
             var scope = engine.CreateScope(new ScriptingContext(this));
 
             return engine.Execute(expression, scope);
+        }
+
+        public virtual IEvaluator GetEvalutor(string scriptFormat = null)
+            => new JavascriptEvalutor(this);
+
+        class JavascriptEvalutor : IEvaluator
+        {
+            private JavascriptEngine engine;
+            private IScriptingScope scope;
+
+            public JavascriptEvalutor(ExecutionContext executionContext)
+            {
+                engine = new JavascriptEngine();
+                scope = engine.CreateScope(new ScriptingContext(executionContext));
+            }
+
+            public virtual object Evalute(string script)
+            {
+                script = StringHelper.ExtractExpression(script);
+                return engine.Execute(script, scope);
+            }
+
+            public virtual string EvaluteToString(string text)
+            {
+                return System.Text.RegularExpressions.Regex.Replace(text,
+                    StringHelper.JuelSearchPattern,
+                new System.Text.RegularExpressions.MatchEvaluator((m) =>
+                {
+                    var expr = m.Value;
+                    object value = engine.Execute(expr, scope);
+                    if (value != null)
+                        return value.ToString();
+
+                    return string.Empty;
+                }));
+            }
         }
 
         public virtual object ExecutScript(string script, string scriptFormat)

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bpmtk.Engine.Utils
 {
     static class StringHelper
     {
-        private const string JuelSearchPattern = "(?:\\${)(.*?)(?:})";
+        public const string JuelSearchPattern = "(?:\\${)(.*?)(?:})";
 
         private readonly static Regex juelRegex = new Regex(JuelSearchPattern, RegexOptions.IgnoreCase);
 
@@ -22,21 +19,21 @@ namespace Bpmtk.Engine.Utils
             return value.Substring(0, maxLength);
         }
 
-        public static string Replace(string text)
-        {
-            return juelRegex.Replace(text, new MatchEvaluator((m) =>
-            {
-                var len = m.Length;
-                var a = m.Value;
-                var expression = a.Substring(2).TrimEnd('}').Trim();
+        //public static string Replace(string text, ScriptingContext context)
+        //{
+        //    return juelRegex.Replace(text, new MatchEvaluator((m) =>
+        //    {
+        //        var len = m.Length;
+        //        var a = m.Value;
+        //        var expression = a.Substring(2).TrimEnd('}').Trim();
 
-                //var value = this.engine.Execute(expression, scope);
-                //if (value != null)
-                //    return value.ToString();
+        //        //var value = this.engine.Execute(expression, scope);
+        //        //if (value != null)
+        //        //    return value.ToString();
 
-                return string.Empty;
-            }));
-        }
+        //        return string.Empty;
+        //    }));
+        //}
 
         public static string ExtractExpression(string text)
         {
@@ -44,7 +41,6 @@ namespace Bpmtk.Engine.Utils
             if(match.Success)
             {
                 return match.Value.Substring(2).TrimEnd('}').Trim();
-
             }
 
             return text;

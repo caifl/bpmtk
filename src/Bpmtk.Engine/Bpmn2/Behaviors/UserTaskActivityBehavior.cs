@@ -9,8 +9,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public class UserTaskActivityBehavior : TaskActivityBehavior, ISignallableActivityBehavior
     {
-        const string TaskName = "taskName";
-        const string TaskPriority = "taskPriority";
+        const string TaskName = "name";
+        const string TaskPriority = "priority";
+        const string ActualOwner = "assignee";
         const string AssignmentStrategy = "assignmentStrategy";
 
         public override async Task ExecuteAsync(ExecutionContext executionContext)
@@ -32,6 +33,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
             var attrs = taskDef.Attributes;
             ITaskAssignmentStrategy assignmentStrategry = null;
+
+            var evaluator = executionContext.GetEvalutor();
+
             foreach (var attr in attrs)
             {
                 var value = attr.Value;
@@ -46,10 +50,19 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
                     case TaskName:
                         {
-                            taskName = value;
-                            builder.SetName(taskName);
+                            taskName = evaluator.EvaluteToString(value);
+                            if(taskName != null)
+                                builder.SetName(taskName);
                             break;
                         }
+
+                    case ActualOwner:
+                        string userName = executionContext.EvaluteExpression<string>(value);
+                        var assignee = await executionContext.Context.IdentityManager.FindUserByNameAsync(userName);
+                        if(assignee != null)
+                            builder.SetAssignee(assignee);
+
+                        break;
 
                     case AssignmentStrategy:
                         assignmentStrategry = taskManager.GetTaskAssignmentStrategy(value);
