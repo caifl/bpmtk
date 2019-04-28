@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Storage;
 using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Tasks
@@ -12,15 +13,15 @@ namespace Bpmtk.Engine.Tasks
     public class TaskManager : ITaskManager
     {
         private readonly Context context;
-        private readonly IDbSession db;
+        private readonly IDbSession session;
 
         public TaskManager(Context context)
         {
             this.context = context;
-            this.db = context.DbSession;
+            this.session = context.DbSession;
         }
 
-        public virtual IQueryable<TaskInstance> Tasks => this.db.Tasks;
+        public virtual IQueryable<TaskInstance> Tasks => this.session.Tasks;
 
         public virtual async Task CompleteAsync(long taskId, 
             IDictionary<string, object> variables = null)
@@ -36,7 +37,7 @@ namespace Bpmtk.Engine.Tasks
             task.Token = null; //Clear token
 
             //await this.db.UpdateAsync(task);
-            await this.db.FlushAsync();
+            await this.session.FlushAsync();
 
             if (theToken != null)
             {
@@ -47,19 +48,19 @@ namespace Bpmtk.Engine.Tasks
 
         public virtual async Task CreateAsync(TaskInstance task)
         {
-            await this.db.SaveAsync(task);
-            await this.db.FlushAsync();
+            await this.session.SaveAsync(task);
+            await this.session.FlushAsync();
         }
 
         public virtual ITaskInstanceBuilder CreateBuilder()
             => new TaskInstanceBuilder(this.context);
 
         public virtual ITaskQuery CreateQuery()
-            => new TaskQuery(this.db);
+            => new TaskQuery(this.session);
 
         public virtual Task<TaskInstance> FindTaskAsync(long taskId)
         {
-            return this.db.FindAsync<TaskInstance>(taskId);
+            return this.session.FindAsync<TaskInstance>(taskId);
         }
 
         public virtual ITaskAssignmentStrategy GetTaskAssignmentStrategy(string name)
@@ -69,12 +70,12 @@ namespace Bpmtk.Engine.Tasks
 
         public virtual Task RemoveAsync(TaskInstance task)
         {
-            return this.db.RemoveAsync(task);
+            return this.session.RemoveAsync(task);
         }
 
         public virtual Task UpdateAsync(TaskInstance task)
         {
-            return this.db.UpdateAsync(task);
+            return this.session.UpdateAsync(task);
         }
     }
 }

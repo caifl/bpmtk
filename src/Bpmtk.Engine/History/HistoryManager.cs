@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Storage;
 
-namespace Bpmtk.Engine.Internal
+namespace Bpmtk.Engine.History
 {
     public class HistoryManager : IHistoryManager
     {

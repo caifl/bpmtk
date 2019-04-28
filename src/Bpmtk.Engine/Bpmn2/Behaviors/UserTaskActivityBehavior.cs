@@ -9,9 +9,10 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public class UserTaskActivityBehavior : TaskActivityBehavior, ISignallableActivityBehavior
     {
+        //userTask extended-attributes.
         const string TaskName = "name";
         const string TaskPriority = "priority";
-        const string ActualOwner = "assignee";
+        const string Assignee = "assignee";
         const string AssignmentStrategy = "assignmentStrategy";
 
         public override async Task ExecuteAsync(ExecutionContext executionContext)
@@ -56,8 +57,8 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                             break;
                         }
 
-                    case ActualOwner:
-                        string userName = executionContext.EvaluteExpression<string>(value);
+                    case Assignee:
+                        string userName = evaluator.Evalute<string>(value);
                         var assignee = await executionContext.Context.IdentityManager.FindUserByNameAsync(userName);
                         if(assignee != null)
                             builder.SetAssignee(assignee);

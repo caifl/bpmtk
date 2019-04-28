@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Bpmtk.Engine.Scheduler;
 using Bpmtk.Engine.Identity;
-using Bpmtk.Engine.Infrastructure;
+using Bpmtk.Engine.Storage;
+using Bpmtk.Engine.History;
 
 namespace Bpmtk.Engine
 {
@@ -110,23 +111,6 @@ namespace Bpmtk.Engine
             this.UserId = userId;
 
             return this;
-        }
-
-        public virtual async Task<ProcessInstance> StartProcessByKeyAsync(string processDefintionKey,
-            IDictionary<string, object> variables = null)
-        {
-            var processDefinition = await this.DeploymentManager.FindProcessDefinitionByKeyAsync(processDefintionKey);
-            var builder = this.RuntimeManager.CreateProcessInstanceBuilder();
-            builder.SetProcessDefinition(processDefinition);
-            var procInst = await builder.BuildAsync();
-
-            //var initialNode = null;
-
-            var token = new Token(procInst);
-            var executionContext = Runtime.ExecutionContext.Create(this, token);
-            await executionContext.StartAsync(null);
-
-            return procInst;
         }
 
         public virtual Task<ProcessInstance> StartProcessByMessageAsync(string messageName,

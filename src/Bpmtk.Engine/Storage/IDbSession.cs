@@ -1,11 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Bpmtk.Engine.Infrastructure;
+using Bpmtk.Engine.Models;
 
-namespace Bpmtk.Engine.Models
+namespace Bpmtk.Engine.Storage
 {
     public interface IDbSession
     {

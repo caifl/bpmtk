@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 
-namespace Bpmtk.Engine
+namespace Bpmtk.Engine.Repository
 {
     public interface IDeploymentBuilder
     {

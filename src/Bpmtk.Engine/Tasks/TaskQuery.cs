@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
+using Bpmtk.Engine.Storage;
 
 namespace Bpmtk.Engine.Tasks
 {
@@ -81,9 +83,20 @@ namespace Bpmtk.Engine.Tasks
             return query.ToList();
         }
 
-        public virtual IList<TaskInstance> List(int pageIndex, int pageSize)
+        public virtual IList<TaskInstance> List(int page, int pageSize)
         {
-            throw new NotImplementedException();
+            if (page < 1)
+                page = 1;
+
+            var count = pageSize;
+            var skips = (page - 1) * pageSize;
+
+            var query = this.CreateNativeQuery()
+                .OrderByDescending(x => x.Created)
+                .Skip(skips)
+                .Take(count);
+
+            return query.ToList();
         }
 
         public virtual ITaskQuery SetActivityId(string activityId)
@@ -177,11 +190,48 @@ namespace Bpmtk.Engine.Tasks
             return this;
         }
 
-        public virtual TaskInstance SingleResult()
+        public virtual TaskInstance Single()
         {
             var query = this.CreateNativeQuery();
 
             return query.SingleOrDefault();
+        }
+
+        public virtual Task<TaskInstance> SingleAsync()
+        {
+            var query = this.CreateNativeQuery();
+
+            return this.session.QuerySingleAsync(query);
+        }
+
+        public virtual Task<IList<TaskInstance>> ListAsync()
+        {
+            var query = this.CreateNativeQuery();
+
+            return this.session.QueryMultipleAsync(query);
+        }
+
+        public virtual Task<IList<TaskInstance>> ListAsync(int count)
+        {
+            var query = this.CreateNativeQuery().Take(count);
+
+            return this.session.QueryMultipleAsync(query);
+        }
+
+        public virtual Task<IList<TaskInstance>> ListAsync(int page, int pageSize)
+        {
+            if (page < 1)
+                page = 1;
+
+            var count = pageSize;
+            var skips = (page - 1) * pageSize;
+
+            var query = this.CreateNativeQuery()
+                .OrderByDescending(x => x.Created)
+                .Skip(skips)
+                .Take(count);
+
+            return this.session.QueryMultipleAsync(query);
         }
     }
 }

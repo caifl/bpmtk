@@ -15,7 +15,8 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             var script = scriptTask.Script;
             if (!string.IsNullOrEmpty(script))
             {
-                executionContext.ExecutScript(script, scriptTask.ScriptFormat);
+                var evaluator = executionContext.GetEvalutor(scriptTask.ScriptFormat);
+                evaluator.Evalute(script);
                 return;
             }
 

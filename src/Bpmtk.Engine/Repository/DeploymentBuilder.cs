@@ -8,13 +8,14 @@ using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Events;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Scheduler;
+using Bpmtk.Engine.Storage;
 using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Repository
 {
     public class DeploymentBuilder : IDeploymentBuilder
     {
-        private readonly IDbSession db;
+        private readonly IDbSession session;
         private readonly Context context;
         private readonly DeploymentManager deploymentManager;
         private byte[] modelData;
@@ -30,14 +31,14 @@ namespace Bpmtk.Engine.Repository
         public DeploymentBuilder(Context context, DeploymentManager deploymentManager)
         {
             this.context = context;
-            this.db = context.DbSession;
+            this.session = context.DbSession;
             this.deploymentManager = deploymentManager;
         }
 
         protected virtual async Task<IDictionary<string, ProcessDefinition>> GetLatestVersionsAsync(params string[] processDefinitionKeys)
         {
             var keys = processDefinitionKeys;
-            var query = this.db.ProcessDefinitions
+            var query = this.session.ProcessDefinitions
                 .Where(x => keys.Contains(x.Key))
                 .GroupBy(x => x.Key)
                 .Select(x => new
@@ -46,7 +47,7 @@ namespace Bpmtk.Engine.Repository
                     Version = x.OrderByDescending(y => y.Version).FirstOrDefault()
                 });
 
-            var results = await this.db.QueryMultipleAsync(query);
+            var results = await this.session.QueryMultipleAsync(query);
 
             Dictionary<string, ProcessDefinition> map = new Dictionary<string, ProcessDefinition>();
             foreach (var item in results)
@@ -96,8 +97,8 @@ namespace Bpmtk.Engine.Repository
                 await this.InitializeEventsAndScheduledJobs(procDef, bpmnProcess, prevProcessDefinition);
             }
 
-            await this.db.SaveAsync(deployment);
-            await this.db.FlushAsync();
+            await this.session.SaveAsync(deployment);
+            await this.session.FlushAsync();
 
             return deployment;
         }
@@ -163,19 +164,19 @@ namespace Bpmtk.Engine.Repository
                 //remove event subs.
                 var items = await this.deploymentManager.GetEventSubscriptionsAsync(procDefId);
                 if (items.Count > 0)
-                    await this.db.RemoveRangeAsync(items);
+                    await this.session.RemoveRangeAsync(items);
 
                 //remove timer jobs.
                 var jobs = await this.deploymentManager.GetScheduledJobsAsync(procDefId);
                 if (jobs.Count > 0)
-                    await this.db.RemoveRangeAsync(jobs.ToArray());
+                    await this.session.RemoveRangeAsync(jobs.ToArray());
             }
 
             if (eventSubs.Count > 0)
-                await this.db.SaveAsync(eventSubs.ToArray());
+                await this.session.SaveAsync(eventSubs.ToArray());
 
             if (timerJobs.Count > 0)
-                await this.db.SaveAsync(timerJobs.ToArray());
+                await this.session.SaveAsync(timerJobs.ToArray());
         }
 
         #region Create signal/message/timer event handler.

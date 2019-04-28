@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SysTasks = System.Threading.Tasks;
-using Bpmn2 = Bpmtk.Bpmn2;
 using Bpmtk.Engine.Models;
-using Bpmtk.Engine.Expressions;
 using Bpmtk.Engine.Scripting;
 using Bpmtk.Engine.Tasks;
 using Bpmtk.Engine.Utils;
@@ -15,11 +13,9 @@ namespace Bpmtk.Engine.Runtime
 {
     public class ExecutionContext
     {
-        private Dictionary<string, IVariable> variables = new Dictionary<string, IVariable>();
         private Token token;
         private Bpmtk.Bpmn2.FlowNode transitionSource;
         private Bpmtk.Bpmn2.SequenceFlow transition;
-
 
         protected ExecutionContext(Context context, Token token)
         {
@@ -71,9 +67,8 @@ namespace Bpmtk.Engine.Runtime
 
             await this.Context.HistoryManager.RecordActivityEndAsync(this);
 
+            //fire activityCompletedEvent.
             this.FireEvent("completed");
-            //var store = context.GetService<IInstanceStore>();
-            //store.Add(new HistoricToken(ExecutionContext.Create(context, this), "end"));
 
             var parentToken = this.token.Parent;
             if (parentToken != null)
@@ -255,10 +250,9 @@ namespace Bpmtk.Engine.Runtime
                 this.Transition = null;
                 this.TransitionSource = null;
 
-                //fire activityStartEvent.
                 await historyManager.RecordActivityStartAsync(this);
 
-                //executeScript
+                //fire activityActivatedEvent.
                 this.FireEvent("activated");
 
                 await behavior.ExecuteAsync(this);
@@ -281,8 +275,12 @@ namespace Bpmtk.Engine.Runtime
             if (scripts != null && scripts.Count > 0)
             {
                 var list = scripts.Where(x => x.On.Equals(eventName)).ToList();
-                foreach (var item in list)
-                    this.ExecutScript(item.Text, item.ScriptFormat);
+                if (list.Count > 0)
+                {
+                    var evaluator = this.GetEvalutor();
+                    foreach (var item in list)
+                        evaluator.Evalute(item.Text);
+                }
             }
         }
 
@@ -401,67 +399,10 @@ namespace Bpmtk.Engine.Runtime
         }
 
         public virtual object GetVariable(string name)
-        {
-            return this.token.GetVariable(name)?.GetValue();
-
-            //IVariable variable = null;
-            //if (variables.TryGetValue(name, out variable))
-            //{
-            //    return null;
-            //}
-
-            //var current = this.token;
-
-            //do
-            //{
-            //    variable = current.GetVariable(name);
-            //    if (variable != null)
-            //    {
-            //        this.variables.Add(name, variable);
-            //        return null;
-            //    }
-
-            //    current = current.Parent;
-            //}
-            //while (current.Parent != null);
-
-            //variable = this.token.ProcessInstance.GetVariable(name);
-
-            //return variable?.GetValue();
-            //ExecutionObject execution = this.ActivityInstance;
-            //if (execution != null)
-            //    return execution.GetVariable(name);
-
-            //execution = this.Scope;
-            //if (execution != null)
-            //    return execution.GetVariable(name);
-
-            //return this.ProcessInstance.GetVariable(name);
-
-            //VariableInstance varInst = null;
-
-            //var t = this.token;
-            //while (true)
-            //{
-            //    varInst = t.ActivityInstance.GetVariableInstance(name);
-            //    if (varInst != null)
-            //        break;
-
-            //    t = t.Parent;
-            //    if (t == null)
-            //        break;
-            //}
-
-            //var p = token.ProcessInstance;
-            //varInst = p.GetVariableInstance(name);
-
-            //return varInst?.GetValue();
-        }
+            => this.token.GetVariable(name)?.GetValue();
 
         public virtual object GetVariableLocal(string name)
-        {
-            return this.token.GetVariableLocal(name);
-        }
+            => this.token.GetVariableLocal(name);
 
         public virtual TValue GetVariableLocal<TValue>(string name)
         {
@@ -482,101 +423,15 @@ namespace Bpmtk.Engine.Runtime
         }
 
         public virtual void SetVariable(string name, object value)
-        {
-            this.token.SetVariable(name, value);
-            //ExecutionObject execution = this.ActivityInstance;
-            //if (execution != null)
-            //{
-            //    execution.SetVariable(name, value);
-            //    return;
-            //}
-
-            //execution = this.Scope;
-            //if (execution != null)
-            //{
-            //    execution.SetVariable(name, value);
-            //    return;
-            //}
-
-            //this.ProcessInstance.SetVariable(name, value);
-        }
+            => this.token.SetVariable(name, value);
 
         public virtual void SetVariableLocal(string name, object value)
         {
             this.token.SetVariableLocal(name, value);
         }
 
-        //protected IScriptEngine scriptEngine;
-        //protected IScriptingScope scriptingScope;
-
-        public virtual object EvaluteExpression(string expression)
-        {
-            //extract expression.
-            expression = StringHelper.ExtractExpression(expression);
-            var engine = new JavascriptEngine();
-            var scope = engine.CreateScope(new ScriptingContext(this));
-
-            return engine.Execute(expression, scope);
-        }
-
         public virtual IEvaluator GetEvalutor(string scriptFormat = null)
-            => new JavascriptEvalutor(this);
-
-        class JavascriptEvalutor : IEvaluator
-        {
-            private JavascriptEngine engine;
-            private IScriptingScope scope;
-
-            public JavascriptEvalutor(ExecutionContext executionContext)
-            {
-                engine = new JavascriptEngine();
-                scope = engine.CreateScope(new ScriptingContext(executionContext));
-            }
-
-            public virtual object Evalute(string script)
-            {
-                script = StringHelper.ExtractExpression(script);
-                return engine.Execute(script, scope);
-            }
-
-            public virtual string EvaluteToString(string text)
-            {
-                return System.Text.RegularExpressions.Regex.Replace(text,
-                    StringHelper.JuelSearchPattern,
-                new System.Text.RegularExpressions.MatchEvaluator((m) =>
-                {
-                    var expr = m.Value;
-                    object value = engine.Execute(expr, scope);
-                    if (value != null)
-                        return value.ToString();
-
-                    return string.Empty;
-                }));
-            }
-        }
-
-        public virtual object ExecutScript(string script, string scriptFormat)
-        {
-            var engine = new JavascriptEngine();
-            var scope = engine.CreateScope(new ScriptingContext(this));
-
-            return engine.Execute(script, scope);
-        }
-
-        public virtual TValue EvaluteExpression<TValue>(string expression)
-        {
-            var result = this.EvaluteExpression(expression);
-            if (result != null)
-                return (TValue)result;
-
-            return default(TValue);
-        }
-
-        //public virtual ActivityInstance Scope
-        //{
-        //    get => this.token.Scope;
-        //    set => this.token.Scope = value;
-        //}
+            => new Internal.JavascriptEvalutor(this);
 
         /// <summary>
         /// Gets or sets sub-process-instance.

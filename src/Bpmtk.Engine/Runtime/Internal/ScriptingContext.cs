@@ -1,12 +1,10 @@
-﻿using Bpmtk.Engine.Models;
+﻿using System;
+using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Scripting;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Bpmtk.Engine.Runtime
+namespace Bpmtk.Engine.Runtime.Internal
 {
-    class ScriptingContext : IVariableResolver
+    public class ScriptingContext : IVariableResolver
     {
         private readonly ExecutionContext executionContext;
 

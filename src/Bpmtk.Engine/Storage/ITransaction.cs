@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bpmtk.Engine.Infrastructure
+namespace Bpmtk.Engine.Storage
 {
     public interface ITransaction : IDisposable
     {

@@ -116,19 +116,6 @@ namespace Bpmtk.Engine.Models
             return null;
         }
 
-        //protected virtual Variable AddVariable(string name, 
-        //    IVariableType type, 
-        //    object initialValue = null)
-        //{
-        //    var item = new Variable();
-        //    item.Name = name;
-        //    //ProcessVariable(this, name, type, initialValue);
-        //    //this.variableInstances.Add(item);
-        //    this.variableByName.Add(item.Name, item);
-
-        //    return item;
-        //}
-
         protected virtual Variable AddVariable(string name, object value,
             IVariableType type = null)
         {

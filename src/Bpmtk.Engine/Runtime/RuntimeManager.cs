@@ -5,23 +5,24 @@ using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Events;
 using Bpmtk.Engine.Utils;
+using Bpmtk.Engine.Storage;
 
 namespace Bpmtk.Engine.Runtime
 {
     public class RuntimeManager : IRuntimeManager
     {
         private readonly Context context;
-        private readonly IDbSession db;
+        private readonly IDbSession session;
         protected readonly IDeploymentManager deploymentManager;
 
-        public virtual IQueryable<ProcessInstance> ProcessInstances => this.db.ProcessInstances;
+        public virtual IQueryable<ProcessInstance> ProcessInstances => this.session.ProcessInstances;
 
-        public virtual IQueryable<Token> Tokens => this.db.Tokens;
+        public virtual IQueryable<Token> Tokens => this.session.Tokens;
 
         public RuntimeManager(Context context)
         {
             this.context = context;
-            this.db = context.DbSession;
+            this.session = context.DbSession;
             this.deploymentManager = context.DeploymentManager;
         }
 
@@ -37,12 +38,12 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual async Task<IList<string>> GetActiveActivityIdsAsync(long processInstanceId)
         {
-            var query = this.db.Tokens
+            var query = this.session.Tokens
                 .Where(x => x.ProcessInstance.Id == processInstanceId && x.IsActive && x.ActivityId != null)
                 .Select(x => x.ActivityId)
                 .Distinct();
 
-            return await this.db.QueryMultipleAsync(query);
+            return await this.session.QueryMultipleAsync(query);
         }
 
         public virtual async Task<ProcessInstance> StartProcessByKeyAsync(string processDefinitionKey,
@@ -108,7 +109,7 @@ namespace Bpmtk.Engine.Runtime
             var inst = await this.FindAsync(processInstanceId);
             inst.Key = key;
 
-            await this.db.UpdateAsync(inst);
+            await this.session.UpdateAsync(inst);
         }
 
         public virtual async Task SetProcessInstanceNameAsync(long processInstanceId, 
@@ -117,18 +118,18 @@ namespace Bpmtk.Engine.Runtime
             var inst = await this.FindAsync(processInstanceId);
             inst.Name = name;
 
-            await this.db.UpdateAsync(inst);
+            await this.session.UpdateAsync(inst);
         }
 
         public virtual async Task<ProcessInstance> StartProcessByMessageAsync(string messageName, 
             IDictionary<string, object> messageData = null)
         {
-            var query = this.db.EventSubscriptions
+            var query = this.session.EventSubscriptions
                 .Where(x => x.EventType == "message"
                     && x.EventName == messageName
                   );
 
-            var eventSubscr = await this.db.QuerySingleAsync(query);
+            var eventSubscr = await this.session.QuerySingleAsync(query);
             if (eventSubscr == null)
                 throw new RuntimeException($"The message '{messageName}' event handler does not exists.");
 
@@ -201,8 +202,8 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual Task<int> GetActiveTaskCountAsync(long tokenId)
         {
-            var query = this.db.Tasks.Where(x => x.Token.Id == tokenId);
-            return this.db.CountAsync(query);
+            var query = this.session.Tasks.Where(x => x.Token.Id == tokenId);
+            return this.session.CountAsync(query);
         }
 
         public ITokenQuery CreateTokenQuery()
@@ -212,11 +213,11 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual Task SaveAsync(ProcessInstance processInstance)
         {
-            return this.db.UpdateAsync(processInstance);
+            return this.session.UpdateAsync(processInstance);
         }
 
         public virtual Task<ProcessInstance> FindAsync(long processInstanceId)
-            => this.db.FindAsync<ProcessInstance>(processInstanceId);
+            => this.session.FindAsync<ProcessInstance>(processInstanceId);
 
         public virtual async Task<IDictionary<string, object>> GetVariablesAsync(long processInstanceId, string[] variableNames = null)
         {
@@ -231,12 +232,12 @@ namespace Bpmtk.Engine.Runtime
         public virtual async Task<IList<Variable>> GetVariableInstancesAsync(long processInstanceId, 
             string[] variableNames = null)
         {
-            var query = this.db.ProcessInstances
+            var query = this.session.ProcessInstances
                 .Where(x => x.Id == processInstanceId
                     && x.Variables.Any(y => variableNames.Contains(y.Name)))
                     .Select(x => x.Variables);
 
-            var items = await this.db.QuerySingleAsync(query);
+            var items = await this.session.QuerySingleAsync(query);
             return items.ToList();
         }
 
@@ -261,7 +262,7 @@ namespace Bpmtk.Engine.Runtime
             var pi = await this.FindAsync(processInstanceId);
             pi.Name = name;
 
-            await this.db.UpdateAsync(pi);
+            await this.session.UpdateAsync(pi);
         }
 
         public Task SuspendAsync(long processInstanceId, string comment = null)

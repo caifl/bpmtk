@@ -18,18 +18,18 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             return null;
         }
 
-        protected virtual void ExecuteEventHandlers(string eventName, ExecutionContext executionContext)
-        {
-            var node = executionContext.Node;
-            var scripts = node.Scripts;
+        //protected virtual void ExecuteEventHandlers(string eventName, ExecutionContext executionContext)
+        //{
+        //    var node = executionContext.Node;
+        //    var scripts = node.Scripts;
 
-            if (scripts.Count > 0)
-            {
-                var list = scripts.Where(x => x.On.Equals(eventName)).ToList();
-                foreach (var item in list)
-                    executionContext.ExecutScript(item.Text, item.ScriptFormat);
-            }
-        }
+        //    if (scripts.Count > 0)
+        //    {
+        //        var list = scripts.Where(x => x.On.Equals(eventName)).ToList();
+        //        foreach (var item in list)
+        //            executionContext.ExecutScript(item.Text, item.ScriptFormat);
+        //    }
+        //}
 
         public virtual System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
         {
@@ -58,11 +58,13 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             {
                 transitions = new List<SequenceFlow>();
 
+                var evaluator = executionContext.GetEvalutor();
+
                 foreach (var outgoing in outgoings)
                 {
                     var condition = outgoing.ConditionExpression;
                     if (condition == null || string.IsNullOrEmpty(condition.Text)
-                        || !executionContext.EvaluteExpression<bool>(condition.Text))
+                        || !evaluator.Evalute<bool>(condition.Text))
                         continue;
 
                     transitions.Add(outgoing);
@@ -100,11 +102,12 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 transition = outgoings[0];
             else
             {
+                var evaluator = executionContext.GetEvalutor();
                 foreach (var outgoing in outgoings)
                 {
                     var condition = outgoing.ConditionExpression;
                     if (condition == null || string.IsNullOrEmpty(condition.Text)
-                        || !executionContext.EvaluteExpression<bool>(condition.Text))
+                        || !evaluator.Evalute<bool>(condition.Text))
                         continue;
 
                     transition = outgoing;
