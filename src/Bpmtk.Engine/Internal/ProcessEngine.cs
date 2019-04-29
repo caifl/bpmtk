@@ -1,19 +1,40 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Bpmtk.Engine.Events;
+using Bpmtk.Engine.Tasks;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 
 namespace Bpmtk.Engine.Internal
 {
     public class ProcessEngine : IProcessEngine, IDisposable
     {
+        protected readonly static object syncRoot = new object();
+
         private readonly ProcessEngineBuilder builder;
+
         private static ProcessEngine instance = null;
 
-        public static ProcessEngine GetInstance() => instance;
+        public static ProcessEngine GetInstance()
+        {
+            if (instance == null)
+                throw new EngineException("The process engine was not initialized.");
+
+            lock (syncRoot)
+            {
+                return instance;
+            }
+        }
 
         public ProcessEngine(ProcessEngineBuilder builder)
         {
-            instance = this;
+            lock(syncRoot)
+                instance = this;
+
             this.builder = builder;
+
+            //init
+            this.ProcessEventListener = new CompositeProcessEventListener(builder.ProcessEventListeners);
+            this.TaskEventListener = new CompositeTaskEventListener(builder.TaskEventListeners);
         }
 
         public virtual IContext CreateContext()
@@ -23,6 +44,16 @@ namespace Bpmtk.Engine.Internal
         }
 
         public virtual ILoggerFactory LoggerFactory => this.builder.LoggerFactory;
+
+        public virtual IProcessEventListener ProcessEventListener
+        {
+            get;
+        }
+
+        public virtual ITaskEventListener TaskEventListener
+        {
+            get;
+        }
 
         #region IDisposable Support
         private bool isDisposed = false; // To detect redundant calls
@@ -58,6 +89,23 @@ namespace Bpmtk.Engine.Internal
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
+
+        public virtual IAssignmentStrategy GetTaskAssignmentStrategy(string key)
+        {
+            AssignmentStrategyEntry item = null;
+
+            if (this.builder.AssignmentStrategyEntries.TryGetValue(key, out item))
+                return item.AssignmentStrategy;
+
+            return null;
+        }
+
+        public virtual IReadOnlyList<AssignmentStrategyEntry> GetTaskAssignmentStrategyEntries()
+        {
+            var list = new List<AssignmentStrategyEntry>(this.builder.AssignmentStrategyEntries.Values);
+            return list.AsReadOnly();
+        }
+
         #endregion
     }
 }

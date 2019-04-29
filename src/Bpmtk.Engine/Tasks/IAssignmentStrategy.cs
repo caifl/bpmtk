@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace Bpmtk.Engine.Tasks
 {
-    public interface ITaskAssignmentStrategy
+    public interface IAssignmentStrategy
     {
         Task ExecuteAsync(ITaskInstanceBuilder builder);
     }
 
-    public class TaskAssignmentStrategy : ITaskAssignmentStrategy
+    public class DefaultAssignmentStrategy : IAssignmentStrategy
     {
         public virtual async Task ExecuteAsync(ITaskInstanceBuilder builder)
         {

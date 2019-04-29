@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 
-namespace Bpmtk.Engine
+namespace Bpmtk.Engine.Runtime
 {
     public interface IProcessInstanceBuilder
     {

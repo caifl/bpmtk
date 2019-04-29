@@ -18,17 +18,30 @@ namespace Bpmtk.Engine
 
         ITaskQuery CreateQuery();
 
-        Task CreateAsync(TaskInstance task);
+        Task<TaskInstance> FindAsync(long taskId);
 
-        Task<TaskInstance> FindTaskAsync(long taskId);
+        Task<TaskInstance> ClaimAsync(long taskId, string comment = null);
+
+        Task<TaskInstance> AssignAsync(long taskId, 
+            int assigneeId,
+            string comment = null);
+
+        Task<TaskInstance> SuspendAsync(long taskId, string comment = null);
+
+        Task<TaskInstance> ResumeAsync(long taskId, string comment = null);
 
         Task CompleteAsync(long taskId, 
-            IDictionary<string, object> variables = null);
+            IDictionary<string, object> variables = null,
+            string comment = null);
 
-        Task UpdateAsync(TaskInstance task);
+        Task SetNameAsync(long taskId, string name);
 
-        Task RemoveAsync(TaskInstance task);
+        Task SetPriorityAsync(long taskId, short priority);
 
-        ITaskAssignmentStrategy GetTaskAssignmentStrategy(string name);
+        //Task RemoveAsync(long taskId);
+
+        //IReadOnlyList<AssignmentStrategyEntry> GetAssignmentStrategyEntries();
+
+        //IAssignmentStrategy GetAssignmentStrategy(string key);
     }
 }

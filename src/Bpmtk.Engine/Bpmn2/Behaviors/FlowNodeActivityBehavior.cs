@@ -58,7 +58,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             {
                 transitions = new List<SequenceFlow>();
 
-                var evaluator = executionContext.GetEvalutor();
+                var evaluator = executionContext.GetEvaluator();
 
                 foreach (var outgoing in outgoings)
                 {
@@ -102,7 +102,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 transition = outgoings[0];
             else
             {
-                var evaluator = executionContext.GetEvalutor();
+                var evaluator = executionContext.GetEvaluator();
                 foreach (var outgoing in outgoings)
                 {
                     var condition = outgoing.ConditionExpression;

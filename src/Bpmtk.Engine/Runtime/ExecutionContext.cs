@@ -11,7 +11,7 @@ using Bpmtk.Engine.Bpmn2.Behaviors;
 
 namespace Bpmtk.Engine.Runtime
 {
-    public class ExecutionContext
+    public class ExecutionContext : IExecutionContext
     {
         private Token token;
         private Bpmtk.Bpmn2.FlowNode transitionSource;
@@ -255,6 +255,9 @@ namespace Bpmtk.Engine.Runtime
                 //fire activityActivatedEvent.
                 this.FireEvent("activated");
 
+                var eventListener = this.Context.Engine.ProcessEventListener;
+                await eventListener.ActivatedAsync(this);
+
                 await behavior.ExecuteAsync(this);
                 return;
             }
@@ -277,7 +280,7 @@ namespace Bpmtk.Engine.Runtime
                 var list = scripts.Where(x => x.On.Equals(eventName)).ToList();
                 if (list.Count > 0)
                 {
-                    var evaluator = this.GetEvalutor();
+                    var evaluator = this.GetEvaluator();
                     foreach (var item in list)
                         evaluator.Evalute(item.Text);
                 }
@@ -430,7 +433,7 @@ namespace Bpmtk.Engine.Runtime
             this.token.SetVariableLocal(name, value);
         }
 
-        public virtual IEvaluator GetEvalutor(string scriptFormat = null)
+        public virtual IEvaluator GetEvaluator(string scriptFormat = null)
             => new Internal.JavascriptEvalutor(this);
 
         /// <summary>
@@ -446,5 +449,7 @@ namespace Bpmtk.Engine.Runtime
         {
             get;
         }
+
+        IContext IExecutionContext.Context => this.Context;
     }
 }

@@ -17,7 +17,8 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
         public override async Task ExecuteAsync(ExecutionContext executionContext)
         {
-            var taskManager = executionContext.Context.TaskManager;
+            var context = executionContext.Context;
+            var taskManager = context.TaskManager;
 
             var taskDef = executionContext.Node as Bpmtk.Bpmn2.UserTask;
             if (taskDef == null)
@@ -33,9 +34,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 .SetName(taskName);
 
             var attrs = taskDef.Attributes;
-            ITaskAssignmentStrategy assignmentStrategry = null;
-
-            var evaluator = executionContext.GetEvalutor();
+            IAssignmentStrategy assignmentStrategry = null;
+            var identityManager = context.IdentityManager;
+            var evaluator = executionContext.GetEvaluator();
 
             foreach (var attr in attrs)
             {
@@ -59,14 +60,14 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
                     case Assignee:
                         string userName = evaluator.Evalute<string>(value);
-                        var assignee = await executionContext.Context.IdentityManager.FindUserByNameAsync(userName);
+                        var assignee = await identityManager.FindUserByNameAsync(userName);
                         if(assignee != null)
                             builder.SetAssignee(assignee);
 
                         break;
 
                     case AssignmentStrategy:
-                        assignmentStrategry = taskManager.GetTaskAssignmentStrategy(value);
+                        assignmentStrategry = context.Engine.GetTaskAssignmentStrategy(value);
                         break;
                 }              
             }

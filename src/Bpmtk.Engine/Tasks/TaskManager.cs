@@ -23,10 +23,66 @@ namespace Bpmtk.Engine.Tasks
 
         public virtual IQueryable<TaskInstance> Tasks => this.session.Tasks;
 
-        public virtual async Task CompleteAsync(long taskId, 
-            IDictionary<string, object> variables = null)
+        public virtual async Task<TaskInstance> ClaimAsync(long taskId, string comment = null)
         {
-            var task = await this.FindTaskAsync(taskId);
+            var task = await this.FindAsync(taskId);
+            if (task == null)
+                throw new ObjectNotFoundException(nameof(TaskInstance));
+
+            var date = Clock.Now;
+
+            task.AssigneeId = context.UserId;
+            task.ClaimedTime = date;
+            task.Modified = date;
+
+            if (comment != null)
+                await this.CreateCommentAsync(task, comment);
+
+            await this.session.FlushAsync();
+
+            return task;
+        }
+
+        async Task<Comment> CreateCommentAsync(TaskInstance task, string comment)
+        {
+            var item = new Comment();
+            item.Task = task;
+            item.UserId = this.context.UserId;
+            item.Created = Clock.Now;
+            item.Body = comment;
+
+            await this.session.SaveAsync(item);
+
+            return item;
+        }
+
+        public virtual async Task<TaskInstance> AssignAsync(long taskId, 
+            int assigneeId,
+            string comment = null)
+        {
+            var task = await this.FindAsync(taskId);
+            if (task == null)
+                throw new ObjectNotFoundException(nameof(TaskInstance));
+
+            var date = Clock.Now;
+
+            task.AssigneeId = assigneeId;
+            task.ClaimedTime = date;
+            task.Modified = date;
+
+            if (comment != null)
+                await this.CreateCommentAsync(task, comment);
+
+            await this.session.FlushAsync();
+
+            return task;
+        }
+
+        public virtual async Task CompleteAsync(long taskId, 
+            IDictionary<string, object> variables = null,
+            string comment = null)
+        {
+            var task = await this.FindAsync(taskId);
             if (task.State != TaskState.Active)
                 throw new InvalidOperationException("Invalid state transition.");
 
@@ -36,7 +92,9 @@ namespace Bpmtk.Engine.Tasks
             task.LastStateTime = Clock.Now;
             task.Token = null; //Clear token
 
-            //await this.db.UpdateAsync(task);
+            if (comment != null)
+                await this.CreateCommentAsync(task, comment);
+
             await this.session.FlushAsync();
 
             if (theToken != null)
@@ -58,24 +116,57 @@ namespace Bpmtk.Engine.Tasks
         public virtual ITaskQuery CreateQuery()
             => new TaskQuery(this.session);
 
-        public virtual Task<TaskInstance> FindTaskAsync(long taskId)
+        public virtual Task<TaskInstance> FindAsync(long taskId)
         {
             return this.session.FindAsync<TaskInstance>(taskId);
         }
 
-        public virtual ITaskAssignmentStrategy GetTaskAssignmentStrategy(string name)
+        public virtual Task<IList<AssignmentStrategyEntry>> GetAssignmentStrategyEntries()
         {
-            return new TaskAssignmentStrategy();
+            throw new NotImplementedException();
         }
 
-        public virtual Task RemoveAsync(TaskInstance task)
+        //public virtual IAssignmentStrategy GetAssignmentStrategy(string key)
+        //{
+        //    if (key == null)
+        //        throw new ArgumentNullException(nameof(key));
+
+        //    var item = this.context.Engine.GetTaskAssignmentStrategy(key);
+        //    if (item != null)
+        //        return item;
+
+        //    return new DefaultAssignmentStrategy();
+        //}
+
+        //public virtual Task RemoveAsync(TaskInstance task)
+        //{
+        //    return this.session.RemoveAsync(task);
+        //}
+
+        public Task<TaskInstance> ResumeAsync(long taskId, string comment = null)
         {
-            return this.session.RemoveAsync(task);
+            throw new NotImplementedException();
         }
 
-        public virtual Task UpdateAsync(TaskInstance task)
+        public virtual async Task SetNameAsync(long taskId, string name)
         {
-            return this.session.UpdateAsync(task);
+            var task = await this.FindAsync(taskId);
+            task.Name = name;
+
+            await this.session.FlushAsync();
+        }
+
+        public virtual async Task SetPriorityAsync(long taskId, short priority)
+        {
+            var task = await this.FindAsync(taskId);
+            task.Priority = priority;
+
+            await this.session.FlushAsync();
+        }
+
+        public Task<TaskInstance> SuspendAsync(long taskId, string comment = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

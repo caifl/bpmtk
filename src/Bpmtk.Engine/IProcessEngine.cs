@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Bpmtk.Engine.Tasks;
+using Bpmtk.Engine.Events;
 
 namespace Bpmtk.Engine
 {
@@ -8,6 +11,20 @@ namespace Bpmtk.Engine
         {
             get;
         }
+
+        IProcessEventListener ProcessEventListener
+        {
+            get;
+        }
+
+        ITaskEventListener TaskEventListener
+        {
+            get;
+        }
+
+        IAssignmentStrategy GetTaskAssignmentStrategy(string key);
+
+        IReadOnlyList<AssignmentStrategyEntry> GetTaskAssignmentStrategyEntries();
 
         IContext CreateContext();
     }

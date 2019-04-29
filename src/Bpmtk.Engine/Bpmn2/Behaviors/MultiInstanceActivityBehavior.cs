@@ -23,7 +23,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 return false;
 
             var condition = loopCharacteristics.CompletionCondition.Text;
-            var result = executionContext.GetEvalutor().Evalute(condition);
+            var result = executionContext.GetEvaluator().Evalute(condition);
             if (result != null)
                 return Convert.ToBoolean(result);
 
@@ -44,7 +44,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
             if (loopCharacteristics.LoopCardinality != null)
             {
-                var value = executionContext.GetEvalutor().Evalute(loopCharacteristics.LoopCardinality.Text);
+                var value = executionContext.GetEvaluator().Evalute(loopCharacteristics.LoopCardinality.Text);
                 if (value != null)
                     count = Convert.ToInt32(value);
             }

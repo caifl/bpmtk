@@ -1,78 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using Bpmtk.Engine.Events;
 using Bpmtk.Engine.Identity;
 using Bpmtk.Engine.Internal;
 using Bpmtk.Engine.Storage;
+using Bpmtk.Engine.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Bpmtk.Engine
 {
     public class ProcessEngineBuilder : IProcessEngineBuilder
     {
-        //private readonly IServiceCollection services;
-        //private readonly bool useExternalServices;
-        //private readonly List<Action<IServiceCollection>> configureActions = new List<Action<IServiceCollection>>();
+        protected readonly Dictionary<string, AssignmentStrategyEntry> assignmentStrategyEntries 
+            = new Dictionary<string, AssignmentStrategyEntry>();
 
-        public ProcessEngineBuilder()
+        protected readonly List<IProcessEventListener> processEventListeners = new List<IProcessEventListener>();
+        protected readonly List<ITaskEventListener> taskEventListeners = new List<ITaskEventListener>();
+
+        public virtual IReadOnlyList<ITaskEventListener> TaskEventListeners
         {
-            //this.services = new ServiceCollection();
+            get => this.taskEventListeners.AsReadOnly();
         }
 
-        //public ProcessEngineBuilder(IServiceCollection services)
-        //{
-        //    this.services = services;
-        //    this.useExternalServices = true;
+        public virtual IReadOnlyList<IProcessEventListener> ProcessEventListeners
+        {
+            get => this.processEventListeners.AsReadOnly();
+        }
 
-        //    this.AddCoreServices();
-        //}
-
-        //protected virtual void AddStores()
-        //{
-        //    this.services.AddTransient<ITaskStore, TaskStore>();
-        //    this.services.AddTransient<IDeploymentStore, DeploymentStore>();
-        //    this.services.AddTransient<IProcessInstanceStore, ProcessInstanceStore>();
-        //}
-
-        //protected virtual void AddCoreServices()
-        //{
-        //    //add core services.
-        //    this.services.AddTransient<ITaskManager, TaskManager>();
-        //    this.services.AddTransient<IDeploymentManager, DeploymentManager>();
-        //    this.services.AddTransient<IRuntimeManager, RuntimeManager>();
-        //    this.services.AddTransient<IIdentityManager, IdentityManager>();
-        //}
-
-        //protected virtual void AddInternalServices()
-        //{
-        //    //add core services.
-        //    this.services.AddTransient<IDeploymentManager, DeploymentManager>();
-        //    this.services.AddTransient<IHumanTaskHandler, HumanTaskHandler>();
-        //    //this.services.AddTransient<IRuntimeService, ExecutionService>();
-        //}
-
-        //public IProcessEngineBuilder AddUnitOfWork<TUnitOfWork>() where TUnitOfWork : IUnitOfWork
-        //{
-        //    this.services.AddScoped(typeof(IUnitOfWork), typeof(TUnitOfWork));
-
-        //    return this;
-        //}
-
-        //public IProcessEngineBuilder AddUnitOfWork(Func<IServiceProvider, IUnitOfWork> factory)
-        //{
-        //    this.services.AddScoped<IUnitOfWork>((sp) => factory(sp));
-
-        //    return this;
-        //}
+        public virtual IReadOnlyDictionary<string, AssignmentStrategyEntry> AssignmentStrategyEntries
+        {
+            get => this.assignmentStrategyEntries;
+        }
 
         public virtual IProcessEngine Build()
         {
-            //foreach (var action in this.configureActions)
-            //    action(this.services);
-
-            //this.AddInternalServices();
-            //this.AddCoreServices();
-
-            //var engineServices = this.useExternalServices ? this.serviceProvider : this.services.BuildServiceProvider();
             return new ProcessEngine(this);
         }
 
@@ -103,26 +65,41 @@ namespace Bpmtk.Engine
             return this;
         }
 
-        //public virtual IProcessEngineBuilder ConfigureServices(Action<IServiceCollection> configureAction)
-        //{
-        //    this.configureActions.Add(configureAction);
+        public virtual IProcessEngineBuilder AddProcessEventListener(IProcessEventListener processEventListener)
+        {
+            if (processEventListener == null)
+                throw new ArgumentNullException(nameof(processEventListener));
 
-        //    return this;
-        //}
+            if (!this.processEventListeners.Contains(processEventListener))
+                this.processEventListeners.Add(processEventListener);
 
-        //    public virtual IServiceCollection Services
-        //    {
-        //        get => this.services;
-        //    }
+            return this;
+        }
 
-        //    private IServiceProvider serviceProvider;
+        public virtual IProcessEngineBuilder AddTaskEventListener(ITaskEventListener taskEventListener)
+        {
+            if (taskEventListener == null)
+                throw new ArgumentNullException(nameof(taskEventListener));
 
-        //    public IProcessEngineBuilder UseApplicationServices(IServiceProvider serviceProvider)
-        //    {
-        //        this.serviceProvider = serviceProvider;
+            if (!this.taskEventListeners.Contains(taskEventListener))
+                this.taskEventListeners.Add(taskEventListener);
 
-        //        return this;
-        //    }
-        //}
+            return this;
+        }
+
+        public virtual IProcessEngineBuilder AddTaskAssignmentStrategy(string key, string name, 
+            IAssignmentStrategy assignmentStrategy)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            if (assignmentStrategy == null)
+                throw new ArgumentNullException(nameof(assignmentStrategy));
+
+            var entry = new AssignmentStrategyEntry(key, name, assignmentStrategy);
+            this.assignmentStrategyEntries.Add(key, entry);
+
+            return this;
+        }
     }
 }
