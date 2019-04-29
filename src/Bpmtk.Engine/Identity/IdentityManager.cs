@@ -66,6 +66,24 @@ namespace Bpmtk.Engine.Identity
             return this.session.QuerySingleAsync(query);
         }
 
+        public virtual Task<IList<User>> GetUsersAsync(params int[] userIds)
+        {
+            var query = this.session.Users
+                .Where(x => userIds.Contains(x.Id))
+                .Distinct();
+
+            return this.session.QueryMultipleAsync(query);
+        }
+
+        public virtual Task<IList<Group>> GetGroupsAsync(params int[] groupIds)
+        {
+            var query = this.session.Groups
+                .Where(x => groupIds.Contains(x.Id))
+                .Distinct();
+
+            return this.session.QueryMultipleAsync(query);
+        }
+
         public Task UpdateGroupAsync(Group group)
         {
             throw new NotImplementedException();

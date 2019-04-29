@@ -51,7 +51,7 @@ namespace Bpmtk.Engine.Runtime
         {
             var processDefinition = await this.deploymentManager.FindProcessDefinitionByKeyAsync(processDefinitionKey);
             if (processDefinition == null)
-                throw new KeyNotFoundException("The specified process-definition was not found.");
+                throw new ObjectNotFoundException(nameof(ProcessDefinition));
 
             var builder = this.CreateInstanceBuilder()
                 .SetInitiator(context.UserId)
@@ -59,110 +59,115 @@ namespace Bpmtk.Engine.Runtime
                 .SetVariables(variables);
 
             return await this.StartProcessAsync(builder);
-
-            //var model = await this.deploymentManager.GetBpmnModelAsync(processDefinition.DeploymentId);
-            //var process = model.GetProcess(processDefinition.Key);
-            //if (process == null)
-            //    throw new RuntimeException($"The BPMN model not contains process '{processDefinition.Key}'");
-
-            //var initialNode = process.InitialNode;
-            //if (initialNode == null)
-            //    throw new RuntimeException($"No start element found for process definition " + processDefinition.Key) ;
-
-            //var pi = new ProcessInstance();
-            //pi.ProcessDefinition = processDefinition;
-
-            //var context = Context.Current;
-
-            //pi.Initiator = new User() { Id = context.UserId };
-
-            ////pi.InitializeContext(context, variables);
-
-            //await this.db.SaveAsync(pi);
-
-            //pi.Start(context, initialNode);
         }
 
-        public virtual Task<IEnumerable<IdentityLink>> GetIdentityLinksAsync(long id)
+        #region IdentityLinks Management
+
+        public virtual Task<IList<IdentityLink>> GetIdentityLinksAsync(long processInstanceId)
         {
-            return null;
+            var query = this.session.IdentityLinks;
+
+            query = this.session.Fetch(query, x => x.User);
+            query = this.session.Fetch(query, x => x.Group);
+            query = query.Where(x => x.ProcessInstance.Id == processInstanceId)
+                .OrderByDescending(x => x.Created);
+
+            return this.session.QueryMultipleAsync(query);
         }
 
-        public virtual Task<IdentityLink> AddIdentityLink(long id, User user, 
-            string linkType = null)
+        public virtual async Task<IList<IdentityLink>> AddUserLinksAsync(long processInstanceId, IEnumerable<int> userIds, string type)
         {
-            return null;
-        }
+            if (userIds == null)
+                throw new ArgumentNullException(nameof(userIds));
 
-        public virtual Task<IdentityLink> AddIdentityLink(long id, Group group,
-            string linkType = null)
-        {
-            return null;
-        }
+            if (!userIds.Any())
+                throw new ArgumentException(nameof(userIds));
 
-        public virtual Task RemoveIdentityLinksAsync(long id, params long[] identityLinks)
-        {
-            return null;
-        }
+            var processInstance = await this.FindAsync(processInstanceId);
+            if (processInstance == null)
+                throw new ObjectNotFoundException(nameof(ProcessInstance));
 
-        public virtual async Task SetProcessInstanceKeyAsync(long processInstanceId, string key)
-        {
-            var inst = await this.FindAsync(processInstanceId);
-            inst.Key = key;
+            var users = await this.context.IdentityManager
+                .GetUsersAsync(userIds.ToArray());
 
-            await this.session.FlushAsync();
-        }
+            var list = new List<IdentityLink>();
 
-        public virtual async Task SetProcessInstanceNameAsync(long processInstanceId, 
-            string name)
-        {
-            var inst = await this.FindAsync(processInstanceId);
-            inst.Name = name;
-
-            await this.session.FlushAsync();
-        }
-
-        public virtual async Task<ProcessInstance> StartProcessByMessageAsync(string messageName, 
-            IDictionary<string, object> messageData = null)
-        {
-            var query = this.session.EventSubscriptions
-                .Where(x => x.EventType == "message"
-                    && x.EventName == messageName
-                  );
-
-            var eventSubscr = await this.session.QuerySingleAsync(query);
-            if (eventSubscr == null)
-                throw new RuntimeException($"The message '{messageName}' event handler does not exists.");
-
-            if(eventSubscr.ProcessDefinition != null
-                && eventSubscr.ActivityId != null)
+            if (users.Count > 0)
             {
-                IMessageStartEventHandler handler = new MessageStartEventHandler();
+                foreach (var user in users)
+                {
+                    var item = new IdentityLink();
+                    item.ProcessInstance = processInstance;
+                    item.User = user;
+                    item.Type = type;
+                    item.Created = Clock.Now;
 
-                var procInst = await handler.ExecuteAsync(this.context, 
-                    eventSubscr, 
-                    messageData);
+                    list.Add(item);
+                }
 
-                return procInst;
+                await this.session.SaveRangeAsync(list);
+                await this.session.FlushAsync();
             }
 
-            return null;
+            return list;
         }
 
-        //public IActivityInstanceQuery CreateActivityQuery()
-        //    => this.instanceStore.CreateActivityQuery();
+        public virtual async Task<IList<IdentityLink>> AddGroupLinksAsync(long processInstanceId,
+            IEnumerable<int> groupIds, string type)
+        {
+            if (groupIds == null)
+                throw new ArgumentNullException(nameof(groupIds));
 
-        //public virtual ITokenQuery CreateTokenQuery()
-        //    => this.instanceStore.CreateTokenQuery();
+            if (!groupIds.Any())
+                throw new ArgumentException(nameof(groupIds));
 
-        //public virtual void Trigger(long tokenId)
-        //{
-        //    var token = this.instanceStore.FindToken(tokenId);
-        //    token.Signal(Context.Current);
-        //}
+            var processInstance = await this.FindAsync(processInstanceId);
+            if (processInstance == null)
+                throw new ObjectNotFoundException(nameof(ProcessInstance));
 
-        public virtual IProcessInstanceBuilder CreateInstanceBuilder()
-            => new ProcessInstanceBuilder(this);
+            var groups = await this.context.IdentityManager
+                .GetGroupsAsync(groupIds.ToArray());
+
+            var list = new List<IdentityLink>();
+            if (groups.Count > 0)
+            {
+                foreach (var group in groups)
+                {
+                    var item = new IdentityLink();
+                    item.ProcessInstance = processInstance;
+                    item.Group = group;
+                    item.Created = Clock.Now;
+
+                    list.Add(item);
+                }
+
+                await this.session.SaveRangeAsync(list);
+                await this.session.FlushAsync();
+            }
+
+            return list;
+        }
+
+        public virtual async Task RemoveIdentityLinksAsync(long processInstanceId, params long[] identityLinkIds)
+        {
+            //check process-instance state.
+
+            //fetch items to be deleted.
+            var query = this.session.IdentityLinks
+                .Where(x => x.ProcessInstance.Id == processInstanceId
+                && identityLinkIds.Contains(x.Id));
+
+            var items = await this.session.QueryMultipleAsync(query);
+            if (items.Count > 0)
+            {
+                await this.session.RemoveRangeAsync(items);
+                await this.session.FlushAsync();
+            }
+        }
+
+        #endregion
+
+        #region Start new ProcessInstance APIs
 
         public virtual async Task<ProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder)
         {
@@ -201,19 +206,60 @@ namespace Bpmtk.Engine.Runtime
             return pi;
         }
 
+        public virtual async Task<ProcessInstance> StartProcessByMessageAsync(string messageName, 
+            IDictionary<string, object> messageData = null)
+        {
+            var query = this.session.EventSubscriptions
+                .Where(x => x.EventType == "message"
+                    && x.EventName == messageName
+                  );
+
+            var eventSubscr = await this.session.QuerySingleAsync(query);
+            if (eventSubscr == null)
+                throw new RuntimeException($"The message '{messageName}' event handler does not exists.");
+
+            if(eventSubscr.ProcessDefinition != null
+                && eventSubscr.ActivityId != null)
+            {
+                IMessageStartEventHandler handler = new MessageStartEventHandler();
+
+                var procInst = await handler.ExecuteAsync(this.context, 
+                    eventSubscr, 
+                    messageData);
+
+                return procInst;
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        //public IActivityInstanceQuery CreateActivityQuery()
+        //    => this.instanceStore.CreateActivityQuery();
+
+        //public virtual ITokenQuery CreateTokenQuery()
+        //    => this.instanceStore.CreateTokenQuery();
+
+        //public virtual void Trigger(long tokenId)
+        //{
+        //    var token = this.instanceStore.FindToken(tokenId);
+        //    token.Signal(Context.Current);
+        //}
+
+        public virtual IProcessInstanceBuilder CreateInstanceBuilder()
+            => new ProcessInstanceBuilder(this);
+
         public virtual Task<int> GetActiveTaskCountAsync(long tokenId)
         {
             var query = this.session.Tasks.Where(x => x.Token.Id == tokenId);
             return this.session.CountAsync(query);
         }
 
-        public virtual ITokenQuery CreateTokenQuery()
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual Task<ProcessInstance> FindAsync(long processInstanceId)
             => this.session.FindAsync<ProcessInstance>(processInstanceId);
+
+        #region Variables Management
 
         public virtual async Task<IDictionary<string, object>> GetVariablesAsync(long processInstanceId, string[] variableNames = null)
         {
@@ -233,23 +279,55 @@ namespace Bpmtk.Engine.Runtime
                     && (variableNames == null || variableNames.Contains(x.Name)));
 
             var items = await this.session.QueryMultipleAsync(query);
-            return items; //.ToList();
+            return items;
         }
 
-        public virtual async Task SetVariablesAsync(long processInstanceId, IDictionary<string, object> variables)
+        public virtual async Task SetVariablesAsync(long processInstanceId, 
+            IDictionary<string, object> variables)
         {
-            var names = variables.Keys.ToArray();
-            var variableInstances = await this.GetVariableInstancesAsync(processInstanceId, names);
+            if (variables == null)
+                throw new ArgumentNullException(nameof(variables));
 
+            if (variables.Count == 0)
+                return;
+
+            var processInstance = await this.CreateInstanceQuery()
+                .FetchVariables()
+                .SetId(processInstanceId)
+                .SingleAsync();
+
+            if (processInstance == null)
+                throw new RuntimeException("The specified process instance does not exists.");
+
+            if(processInstance.IsEnded)
+                throw new RuntimeException("The specified process instance is already ended.");
+
+            var em = variables.GetEnumerator();
             object value = null;
-            foreach (var item in variableInstances)
+            string name = null;
+
+            while (em.MoveNext())
             {
-                value = null;
-                if (variables.TryGetValue(item.Name, out value))
-                    item.SetValue(value);
+                name = em.Current.Key;
+                value = em.Current.Value;
+
+                if(value != null) //ignore null variables.
+                    processInstance.SetVariable(name, value);
             }
 
-            //async this.instanceStore.UpdateAsync()
+            await this.session.FlushAsync();
+        }
+
+        #endregion
+
+        #region Instance Attributes
+
+        public virtual async Task SetKeyAsync(long processInstanceId, string key)
+        {
+            var inst = await this.FindAsync(processInstanceId);
+            inst.Key = key;
+
+            await this.session.FlushAsync();
         }
 
         public virtual async Task SetNameAsync(long processInstanceId, string name)
@@ -259,6 +337,8 @@ namespace Bpmtk.Engine.Runtime
 
             await this.session.FlushAsync();
         }
+
+        #endregion
 
         public Task SuspendAsync(long processInstanceId, string comment = null)
         {
@@ -279,5 +359,49 @@ namespace Bpmtk.Engine.Runtime
         {
             throw new NotImplementedException();
         }
+
+        #region Comments Management
+
+        public virtual Task<IList<Comment>> GetCommentsAsync(long processInstanceId)
+        {
+            var query = this.session.Query<Comment>()
+                .Where(x => x.ProcessInstance.Id == processInstanceId)
+                .OrderByDescending(x => x.Created);
+
+            return this.session.QueryMultipleAsync(query);
+        }
+
+        public virtual async Task<Comment> AddCommentAsync(long processInstanceId, string comment)
+        {
+            var procInst = await this.FindAsync(processInstanceId);
+            if (procInst == null)
+                throw new ObjectNotFoundException(nameof(ProcessInstance));
+
+            var item = new Comment();
+            item.ProcessInstance = procInst;
+            item.User = await this.context.IdentityManager.FindUserByIdAsync(context.UserId);
+            item.Body = comment;
+            item.Created = Clock.Now;
+
+            await this.session.SaveAsync(item);
+            await this.session.FlushAsync();
+
+            return item;
+        }
+
+        public virtual async Task RemoveCommentAsync(long commentId)
+        {
+            var query = this.session.Query<Comment>()
+                .Where(x => x.Id == commentId);
+
+            var item = await this.session.QuerySingleAsync(query);
+            if (item == null)
+                throw new ObjectNotFoundException(nameof(Comment));
+
+            await this.session.RemoveAsync(item);
+            await this.session.FlushAsync();
+        }
+
+        #endregion
     }
 }

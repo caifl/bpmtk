@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
@@ -16,6 +17,10 @@ namespace Bpmtk.Engine
         {
             get;
         }
+
+        Task<IList<User>> GetUsersAsync(params int[] userIds);
+
+        Task<IList<Group>> GetGroupsAsync(params int[] groupIds);
 
         Task CreateUserAsync(User user);
 
