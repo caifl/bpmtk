@@ -29,13 +29,13 @@ namespace Bpmtk.Engine.Tests.Bpmn.Gateway
             //Assert.True("test123".Equals(myVar));
             var query = this.taskManager.CreateQuery().SetState(TaskState.Active);
 
-            var tasks = query.List();
+            var tasks = await query.ListAsync();
             while(tasks.Count > 0)
             {
                 //this.taskManager.AddUserPotentialOwner(tasks[0].Id, 1, "owner");
                 await taskManager.CompleteAsync(tasks[0].Id);
                 
-                tasks = query.List();
+                tasks = await query.ListAsync();
             }
             //Assert.True(tasks.Count == 1);
 

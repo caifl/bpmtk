@@ -11,23 +11,52 @@ namespace Bpmtk.Engine.WebApi.Controllers
     public class ProcessInstanceController : ControllerBase
     {
         private readonly IContext context;
+        private readonly IRuntimeManager runtimeManager;
 
         public ProcessInstanceController(IContext context)
         {
             this.context = context;
+            this.runtimeManager = context.RuntimeManager;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ProcessInstanceModel>> Get()
+        public async Task<ActionResult<PagedResult<ProcessInstanceModel>>> Get(ProcessInstanceFilter filter)
         {
-            var q = this.context.RuntimeManager.ProcessInstances;
+            var result = new PagedResult<ProcessInstanceModel>();
 
-            var data = q.Select(x => ProcessInstanceModel.Create(x, 
-                x.Initiator.Id,
-                x.Initiator.UserName))
-                .ToArray();
+            var query = this.runtimeManager.CreateInstanceQuery()
+                .FetchInitiator();
 
-            return data;
+            if (filter.AnyStates != null
+                && filter.AnyStates.Length > 0)
+                query.SetStateAny(filter.AnyStates);
+
+            if (filter.State != null)
+                query.SetState(filter.State.Value);
+
+            var list = await query.ListAsync(filter.Page, filter.PageSize);
+            result.Count = await query.CountAsync();
+
+            result.Page = filter.Page;
+            result.PageSize = filter.PageSize;
+            result.Items = list.Select(x => ProcessInstanceModel.Create(x))
+                .ToList();
+
+            return result;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ProcessInstanceModel>> Get(long id)
+        {
+            var item = await this.runtimeManager.CreateInstanceQuery()
+                .SetId(id)
+                .FetchInitiator()
+                .SingleAsync();
+
+            if(item != null)
+                return ProcessInstanceModel.Create(item);
+
+            return this.NotFound();
         }
 
         [HttpGet("{id}/activity-instances")]
@@ -38,9 +67,9 @@ namespace Bpmtk.Engine.WebApi.Controllers
         }
 
         [HttpGet("{id}/active-activity-ids")]
-        public ActionResult<IEnumerable<string>> GetActiveActivityIds(long id)
+        public async Task<ActionResult<IEnumerable<string>>> GetActiveActivityIds(long id)
         {
-            var q = this.context.RuntimeManager.GetActiveActivityIdsAsync(id).Result;
+            var q = await this.context.RuntimeManager.GetActiveActivityIdsAsync(id);
             return q.ToArray();
         }
 

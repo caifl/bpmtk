@@ -1,26 +1,52 @@
-﻿using Bpmtk.Engine.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.Runtime
 {
     public interface IProcessInstanceQuery
     {
-        //IProcessInstanceQuery SetPageIndex(int pageIndex);
+        IProcessInstanceQuery SetId(long id);
 
-        //IProcessInstanceQuery SetPagedSize(int pageSize);
+        IProcessInstanceQuery SetKey(string key);
 
-        ProcessInstance Single();
+        IProcessInstanceQuery SetName(string name);
+
+        IProcessInstanceQuery SetState(ExecutionState state);
+
+        IProcessInstanceQuery SetStateAny(params ExecutionState[] stateArray);
+
+        IProcessInstanceQuery SetDeploymentId(int deploymentId);
+
+        IProcessInstanceQuery SetCategory(string category);
+
+        IProcessInstanceQuery SetProcessDefinitionId(int processDefinitionId);
+
+        IProcessInstanceQuery SetProcessDefinitionKey(string processDefinitionKey);
+
+        IProcessInstanceQuery SetInitiator(int initiatorId);
+
+        IProcessInstanceQuery SetStartTimeFrom(DateTime fromDate);
+
+        IProcessInstanceQuery SetStartTimeTo(DateTime toDate);
+
+        IProcessInstanceQuery FetchInitiator();
+
+        IProcessInstanceQuery FetchProcessDefinition();
+
+        IProcessInstanceQuery FetchVariables();
+
+        IProcessInstanceQuery FetchIdentityLinks();
+
+        //IProcessInstanceQuery SetReadOnly();
 
         Task<ProcessInstance> SingleAsync();
 
-        int Count();
+        Task<int> CountAsync();
 
-        int CountAsync();
+        Task<IList<ProcessInstance>> ListAsync(int page = 1, int pageSize = 20);
 
-        IEnumerable<ProcessInstance> List(int pageIndex = 0, int pageSize = 10);
-
-        Task<IEnumerable<ProcessInstance>> ListAsync();
+        Task<IList<ProcessInstance>> ListAsync();
     }
 }

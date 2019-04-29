@@ -7,6 +7,10 @@ namespace Bpmtk.Engine.Tasks
 {
     public interface ITaskQuery
     {
+        ITaskQuery FetchAssignee();
+
+        ITaskQuery SetId(long id);
+
         ITaskQuery SetPriority(short priority);
 
         ITaskQuery SetMinPriority(short priority);
@@ -39,17 +43,17 @@ namespace Bpmtk.Engine.Tasks
 
         ITaskQuery SetCreatedTo(DateTime created);
 
-        //ITaskQuery WithProcessInstance();
+        //TaskInstance Single();
 
-        TaskInstance Single();
+        //IList<TaskInstance> List();
 
-        IList<TaskInstance> List();
+        //IList<TaskInstance> List(int count);
 
-        IList<TaskInstance> List(int count);
-
-        IList<TaskInstance> List(int pageIndex, int pageSize);
+        //IList<TaskInstance> List(int pageIndex, int pageSize);
 
         Task<TaskInstance> SingleAsync();
+
+        Task<int> CountAsync();
 
         Task<IList<TaskInstance>> ListAsync();
 

@@ -31,9 +31,9 @@ namespace Bpmtk.Engine.Runtime
             get => this.context;
         }
 
-        public virtual IProcessInstanceQuery CreateProcessQuery()
+        public virtual IProcessInstanceQuery CreateInstanceQuery()
         {
-            return null;
+            return new ProcessInstanceQuery(this.session);
         }
 
         public virtual async Task<IList<string>> GetActiveActivityIdsAsync(long processInstanceId)
@@ -53,7 +53,7 @@ namespace Bpmtk.Engine.Runtime
             if (processDefinition == null)
                 throw new KeyNotFoundException("The specified process-definition was not found.");
 
-            var builder = this.CreateProcessInstanceBuilder()
+            var builder = this.CreateInstanceBuilder()
                 .SetProcessDefinition(processDefinition)
                 .SetVariables(variables);
 
@@ -109,7 +109,7 @@ namespace Bpmtk.Engine.Runtime
             var inst = await this.FindAsync(processInstanceId);
             inst.Key = key;
 
-            await this.session.UpdateAsync(inst);
+            await this.session.FlushAsync();
         }
 
         public virtual async Task SetProcessInstanceNameAsync(long processInstanceId, 
@@ -118,7 +118,7 @@ namespace Bpmtk.Engine.Runtime
             var inst = await this.FindAsync(processInstanceId);
             inst.Name = name;
 
-            await this.session.UpdateAsync(inst);
+            await this.session.FlushAsync();
         }
 
         public virtual async Task<ProcessInstance> StartProcessByMessageAsync(string messageName, 
@@ -160,7 +160,7 @@ namespace Bpmtk.Engine.Runtime
         //    token.Signal(Context.Current);
         //}
 
-        public virtual IProcessInstanceBuilder CreateProcessInstanceBuilder()
+        public virtual IProcessInstanceBuilder CreateInstanceBuilder()
             => new ProcessInstanceBuilder(this);
 
         public virtual async Task<ProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder)
@@ -206,14 +206,9 @@ namespace Bpmtk.Engine.Runtime
             return this.session.CountAsync(query);
         }
 
-        public ITokenQuery CreateTokenQuery()
+        public virtual ITokenQuery CreateTokenQuery()
         {
             throw new NotImplementedException();
-        }
-
-        public virtual Task SaveAsync(ProcessInstance processInstance)
-        {
-            return this.session.UpdateAsync(processInstance);
         }
 
         public virtual Task<ProcessInstance> FindAsync(long processInstanceId)
@@ -262,7 +257,7 @@ namespace Bpmtk.Engine.Runtime
             var pi = await this.FindAsync(processInstanceId);
             pi.Name = name;
 
-            await this.session.UpdateAsync(pi);
+            await this.session.FlushAsync();
         }
 
         public Task SuspendAsync(long processInstanceId, string comment = null)

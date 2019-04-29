@@ -62,7 +62,11 @@ namespace Bpmtk.Engine.Tests.Scripting
             var myVar = pi.GetVariable("myVar");
             Assert.True("test123".Equals(myVar));
 
-            var tasks = this.taskManager.CreateQuery().SetState(TaskState.Active).List();
+            var tasks = await this.taskManager.CreateQuery()
+                .SetProcessInstanceId(pi.Id)
+                .SetState(TaskState.Active)
+                .ListAsync();
+
             Assert.True(tasks.Count == 1);
 
             //get variable from task-instance.

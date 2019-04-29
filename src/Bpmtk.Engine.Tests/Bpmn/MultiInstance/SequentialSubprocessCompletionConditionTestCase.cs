@@ -45,7 +45,9 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
             for (int i = 0; i < 3; i++)
             {
-                var tasks = query.List().OrderBy(x => x.Name).ToList();
+                var tasks = await query.ListAsync();
+                tasks = tasks.OrderBy(x => x.Name).ToList();
+
                 Assert.True(2 == tasks.Count);
 
                 Assert.True("task one" == tasks[0].Name);

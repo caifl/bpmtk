@@ -23,7 +23,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.UserTask
             var query = this.taskManager.CreateQuery()
                 .SetProcessInstanceId(pi.Id);
 
-            var tasks = query.List();
+            var tasks = await query.ListAsync();
             Assert.True(tasks.Count == 1);
 
             Assert.True(tasks[0].AssigneeId == 1);

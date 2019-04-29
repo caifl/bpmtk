@@ -11,6 +11,9 @@ namespace Bpmtk.Engine.Tasks
     {
         protected readonly IDbSession session;
 
+        protected bool fetchAssignee;
+
+        protected long? id;
         protected TaskState? state;
         protected string name;
         protected string activityId;
@@ -34,6 +37,12 @@ namespace Bpmtk.Engine.Tasks
         protected virtual IQueryable<TaskInstance> CreateNativeQuery()
         {
             var query = this.session.Tasks;
+
+            if (this.fetchAssignee)
+                query = this.session.Fetch(query, x => x.Assignee);
+
+            if (this.id != null)
+                return query = query.Where(x => x.Id == this.id);
 
             if (this.assigneeId != null)
                 query = query.Where(x => x.Assignee.Id == this.assigneeId);
@@ -70,34 +79,48 @@ namespace Bpmtk.Engine.Tasks
             return query;
         }
 
-        public virtual IList<TaskInstance> List()
+        public virtual ITaskQuery FetchAssignee()
         {
-            return this.CreateNativeQuery().ToList();
+            this.fetchAssignee = true;
+
+            return this;
         }
 
-        public virtual IList<TaskInstance> List(int count)
+        public virtual ITaskQuery SetId(long id)
         {
-            var query = this.CreateNativeQuery()
-                .Take(count);
+            this.id = id;
 
-            return query.ToList();
+            return this;
         }
 
-        public virtual IList<TaskInstance> List(int page, int pageSize)
-        {
-            if (page < 1)
-                page = 1;
+        //public virtual IList<TaskInstance> List()
+        //{
+        //    return this.CreateNativeQuery().ToList();
+        //}
 
-            var count = pageSize;
-            var skips = (page - 1) * pageSize;
+        //public virtual IList<TaskInstance> List(int count)
+        //{
+        //    var query = this.CreateNativeQuery()
+        //        .Take(count);
 
-            var query = this.CreateNativeQuery()
-                .OrderByDescending(x => x.Created)
-                .Skip(skips)
-                .Take(count);
+        //    return query.ToList();
+        //}
 
-            return query.ToList();
-        }
+        //public virtual IList<TaskInstance> List(int page, int pageSize)
+        //{
+        //    if (page < 1)
+        //        page = 1;
+
+        //    var count = pageSize;
+        //    var skips = (page - 1) * pageSize;
+
+        //    var query = this.CreateNativeQuery()
+        //        .OrderByDescending(x => x.Created)
+        //        .Skip(skips)
+        //        .Take(count);
+
+        //    return query.ToList();
+        //}
 
         public virtual ITaskQuery SetActivityId(string activityId)
         {
@@ -190,11 +213,18 @@ namespace Bpmtk.Engine.Tasks
             return this;
         }
 
-        public virtual TaskInstance Single()
+        //public virtual TaskInstance Single()
+        //{
+        //    var query = this.CreateNativeQuery();
+
+        //    return query.SingleOrDefault();
+        //}
+
+        public virtual Task<int> CountAsync()
         {
             var query = this.CreateNativeQuery();
 
-            return query.SingleOrDefault();
+            return this.session.CountAsync(query);
         }
 
         public virtual Task<TaskInstance> SingleAsync()

@@ -30,7 +30,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
                 .SetState(TaskState.Active)
                 .SetProcessInstanceId(pi.Id);
 
-            var tasks = query.List();
+            var tasks = await query.ListAsync();
             Assert.True(tasks.Count == 0);
 
             while(tasks.Count > 0)
@@ -40,7 +40,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
                 //Assert.True("task one" == tasks[0].Name);
 
                 await taskManager.CompleteAsync(tasks[0].Id);
-                tasks = query.List();
+                tasks = await query.ListAsync();
             }
 
             this.AssertProcessEnded(pi.Id);

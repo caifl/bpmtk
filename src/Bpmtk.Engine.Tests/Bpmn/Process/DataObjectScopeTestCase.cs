@@ -27,7 +27,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
                 .SetProcessInstanceId(pi.Id);
 
             // After process start, only task 0 should be active
-            var tasks = query.List();
+            var tasks = await query.ListAsync();
             Assert.True(tasks.Count == 1);
             Assert.True(tasks[0].Name == "Complete Task A");
 
@@ -35,7 +35,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
 
             // Completing Task in subprocess will finish the process.
             await taskManager.CompleteAsync(tasks[0].Id);
-            tasks = query.List();
+            tasks = await query.ListAsync();
             Assert.True(1 == tasks.Count);
 
             var var1 = tasks[0].GetVariable("dObj456");
@@ -45,7 +45,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
             await taskManager.CompleteAsync(tasks[0].Id);
             //Assert.True("Testing456".Equals(var1));
             //taskService.Complete(tasks[0].Id);
-            tasks = query.List();
+            tasks = await query.ListAsync();
             await taskManager.CompleteAsync(tasks[0].Id);
             AssertProcessEnded(pi.Id);
 

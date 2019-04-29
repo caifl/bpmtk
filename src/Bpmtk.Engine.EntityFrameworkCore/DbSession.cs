@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Bpmtk.Engine.Models;
+using System.Linq.Expressions;
 
 namespace Bpmtk.Engine.Storage
 {
@@ -42,6 +43,13 @@ namespace Bpmtk.Engine.Storage
         {
             var tx = this.context.Database.BeginTransaction();
             return new ContextTransaction(tx);
+        }
+
+        public virtual IQueryable<TEntity> Fetch<TEntity, TProperty>(IQueryable<TEntity> query,
+            Expression<Func<TEntity, TProperty>> navigationPropertyPath)
+            where TEntity : class
+        {
+            return query.Include(navigationPropertyPath);
         }
 
         public virtual async Task<ITransaction> BeginTransactionAsync()

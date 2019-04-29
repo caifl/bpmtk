@@ -25,13 +25,13 @@ namespace Bpmtk.Engine.Tests.Bpmn
                 .SetProcessInstanceId(pi.Id);
 
             // After process start, only task 0 should be active
-            var tasks = query.List();
+            var tasks = await query.ListAsync();
             Assert.True(tasks.Count == 1);
             Assert.True(tasks[0].Name == "Task in subprocess");
 
             // Completing Task in subprocess will finish the process.
             await taskManager.CompleteAsync(tasks[0].Id);
-            tasks = query.List();
+            tasks = await query.ListAsync();
             Assert.True(1 == tasks.Count); 
             Assert.True(tasks[0].Name == "Task after subprocesses");
             //this.Commit();

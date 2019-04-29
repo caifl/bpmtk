@@ -17,7 +17,7 @@ namespace Bpmtk.Engine.Events
             var flowNode = model.GetFlowElement(eventSubscription.ActivityId) 
                 as FlowNode;
 
-            var builder = context.RuntimeManager.CreateProcessInstanceBuilder();
+            var builder = context.RuntimeManager.CreateInstanceBuilder();
             builder.SetProcessDefinition(processDefinition);
 
             var pi = await context.RuntimeManager.StartProcessAsync(builder);

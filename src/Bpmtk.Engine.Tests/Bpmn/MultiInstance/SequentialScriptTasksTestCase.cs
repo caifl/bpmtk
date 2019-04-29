@@ -42,12 +42,12 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
                 Assert.True(item.State == ExecutionState.Completed);
             }
 
-            var tokenQuery = this.runtimeManager.CreateTokenQuery();
-            tokenQuery.SetProcessInstanceId(pi.Id);
+            //var tokenQuery = this.runtimeManager.CreateTokenQuery();
+            //tokenQuery.SetProcessInstanceId(pi.Id);
 
-            var tokens = tokenQuery.List();
+            //var tokens = tokenQuery.List();
 
-            Assert.True(tokens.Count == 1);
+            //Assert.True(tokens.Count == 1);
 
             //trigger
             //this.runtimeService.Trigger(tokens[0].Id);

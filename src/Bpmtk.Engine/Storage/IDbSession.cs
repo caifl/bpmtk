@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 
@@ -62,6 +63,10 @@ namespace Bpmtk.Engine.Storage
         {
             get;
         }
+
+        IQueryable<TEntity> Fetch<TEntity, TProperty>(IQueryable<TEntity> query,
+            Expression<Func<TEntity, TProperty>> navigationPropertyPath)
+            where TEntity : class;
 
         Task<TEntity> QuerySingleAsync<TEntity>(IQueryable<TEntity> query);
 

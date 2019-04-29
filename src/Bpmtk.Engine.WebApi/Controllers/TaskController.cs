@@ -15,10 +15,12 @@ namespace Bpmtk.Engine.WebApi.Controllers
     public class TaskController : ControllerBase
     {
         private readonly IContext context;
+        private readonly ITaskManager taskManager;
 
         public TaskController(IContext context)
         {
             this.context = context;
+            this.taskManager = context.TaskManager;
         }
 
         /// <summary>
@@ -26,28 +28,24 @@ namespace Bpmtk.Engine.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public ActionResult<IEnumerable<TaskModel>> Get()
+        public virtual async Task<ActionResult<PagedResult<TaskModel>>> Get(TaskFilter filter)
         {
-            var query = this.context.TaskManager.Tasks;
+            var result = new PagedResult<TaskModel>();
 
-            //var q = query.GroupBy(x => x.Key)
-            //    .Select(x => new
-            //    {
-            //        key = x.Key,
-            //        version = x.Max(y => y.Version)
-            //    });
+            var query = this.taskManager.CreateQuery()
+                .FetchAssignee();
 
-            //var q2 = from item in query
-            //         join b in q on new
-            //         {
-            //             key = item.Key,
-            //             version = item.Version
-            //         } equals b
-            //         select item;
+            if (filter.AssigneeId != null)
+                query.SetAssignee(filter.AssigneeId.Value);
 
-            var data = query.Select(x => TaskModel.Create(x)).ToArray();
+            var list = await query.ListAsync(filter.Page, filter.PageSize);
 
-            return data;
+            result.Count = await query.CountAsync();
+            result.Items = list.Select(x => TaskModel.Create(x)).ToList();
+            result.Page = filter.Page;
+            result.PageSize = filter.PageSize;
+
+            return result;
         }
 
         /// <summary>
@@ -58,7 +56,10 @@ namespace Bpmtk.Engine.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskModel>> Get(int id)
         {
-            var item = await this.context.TaskManager.FindTaskAsync(id);
+            var item = await this.taskManager.CreateQuery()
+                .FetchAssignee()
+                .SetId(id)
+                .SingleAsync();
             if (item != null)
                 return TaskModel.Create(item);
 
@@ -87,16 +88,25 @@ namespace Bpmtk.Engine.WebApi.Controllers
             return q;
         }
 
-        [HttpPut("{id}/rendered-form")]
+        [HttpGet("{id}/rendered-form")]
         public ActionResult<string> Render(long id)
         {
             return "<div>test</div>";
         }
 
         [HttpPut("{id}/completed")]
-        public ActionResult Complete(long id, [FromBody] CompleteTaskModel model)
+        public async Task<ActionResult> Complete(long id, CompleteTaskModel model)
         {
-            return this.Ok();
+            try
+            {
+                await this.context.TaskManager.CompleteAsync(id, model.Variables);
+
+                return this.Ok();
+            }
+            catch(Exception ex)
+            {
+                return this.StatusCode(500, ex.Message);
+            }            
         }
 
         //// POST api/values

@@ -19,9 +19,11 @@ namespace Bpmtk.Engine
             get;
         }
 
-        ITokenQuery CreateTokenQuery();
+        IProcessInstanceQuery CreateInstanceQuery();
 
-        IProcessInstanceBuilder CreateProcessInstanceBuilder();
+        //ITokenQuery CreateTokenQuery();
+
+        IProcessInstanceBuilder CreateInstanceBuilder();
 
         Task<ProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder);
 
@@ -61,6 +63,6 @@ namespace Bpmtk.Engine
         Task DeleteAsync(long processInstanceId,
             string comment = null);
 
-        Task SaveAsync(ProcessInstance processInstance);
+        //Task SaveAsync(ProcessInstance processInstance);
     }
 }

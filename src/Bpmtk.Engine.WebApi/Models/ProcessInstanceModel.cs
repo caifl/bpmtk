@@ -29,7 +29,7 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public virtual string State
+        public virtual int State
         {
             get;
             set;
@@ -71,19 +71,17 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
        
-        public static ProcessInstanceModel Create(ProcessInstance instance,
-            int? initiatorId,
-            string initiator)
+        public static ProcessInstanceModel Create(ProcessInstance instance)
         {
             var model = new ProcessInstanceModel();
 
             model.Id = instance.Id;
             model.Key = instance.Key;
             model.Name = instance.Name;
-            model.State = instance.State.ToString();
+            model.State = (int)instance.State;
             model.StateName = instance.State.ToString();
-            model.InitiatorId = initiatorId;
-            model.Initiator = initiator;
+            model.InitiatorId = instance.Initiator?.Id;
+            model.Initiator = instance.Initiator?.UserName;
             model.StartTime = instance.StartTime;
             model.LastStateTime = instance.LastStateTime;
             model.Description = instance.Description;

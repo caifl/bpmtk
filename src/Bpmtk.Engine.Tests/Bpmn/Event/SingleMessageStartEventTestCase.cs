@@ -24,7 +24,10 @@ namespace Bpmtk.Engine.Tests.Bpmn
             var pi = this.runtimeManager.StartProcessByMessageAsync("newInvoiceMessage", 
                 map);
 
-            var tasks = this.taskManager.CreateQuery().SetState(TaskState.Active).List();
+            var tasks = await this.taskManager.CreateQuery()
+                .SetState(TaskState.Active)
+                .ListAsync();
+
             Assert.True(tasks.Count == 1);
 
             await taskManager.CompleteAsync(tasks[0].Id);
