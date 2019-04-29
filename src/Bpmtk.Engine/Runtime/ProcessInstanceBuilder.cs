@@ -18,7 +18,6 @@ namespace Bpmtk.Engine.Runtime
         protected Token super;
         protected ProcessDefinition processDefinition;
         protected IDictionary<string, object> variables;
-        private readonly RuntimeManager runtimeManager;
         private readonly Context context;
 
         protected List<Bpmtk.Bpmn2.FlowNode> initialNodes = new List<Bpmtk.Bpmn2.FlowNode>();
@@ -27,7 +26,6 @@ namespace Bpmtk.Engine.Runtime
 
         public ProcessInstanceBuilder(RuntimeManager runtimeManager)
         {
-            this.runtimeManager = runtimeManager;
             this.context = runtimeManager.Context;
         }
 
@@ -69,7 +67,11 @@ namespace Bpmtk.Engine.Runtime
             pi.Key = this.key;
             pi.Created = Clock.Now;
             pi.LastStateTime = pi.Created;
-            pi.Initiator = null;
+
+            if(this.initiatorId != null)
+                pi.Initiator = await this.context.IdentityManager
+                    .FindUserByIdAsync(this.initiatorId.Value);
+
             pi.Description = processDefinition.Description;
 
             if (!string.IsNullOrEmpty(this.name))
