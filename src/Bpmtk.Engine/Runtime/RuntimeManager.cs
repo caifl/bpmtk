@@ -54,6 +54,7 @@ namespace Bpmtk.Engine.Runtime
                 throw new KeyNotFoundException("The specified process-definition was not found.");
 
             var builder = this.CreateInstanceBuilder()
+                .SetInitiator(context.UserId)
                 .SetProcessDefinition(processDefinition)
                 .SetVariables(variables);
 

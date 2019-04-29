@@ -47,6 +47,9 @@ namespace Bpmtk.Engine.Tasks
             if (this.assigneeId != null)
                 query = query.Where(x => x.Assignee.Id == this.assigneeId);
 
+            if (this.state != null)
+                query = query.Where(x => x.State == this.state);
+
             if (this.processInstanceId != null)
                 query = query.Where(x => x.ProcessInstance.Id == this.processInstanceId);
 
@@ -75,6 +78,9 @@ namespace Bpmtk.Engine.Tasks
 
             if (this.createdTo != null)
                 query = query.Where(x => x.Created <= this.createdTo);
+
+            if (this.name != null)
+                query = query.Where(x => x.Name.Contains(this.name));
              
             return query;
         }

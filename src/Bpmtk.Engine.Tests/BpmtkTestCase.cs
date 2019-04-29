@@ -64,8 +64,8 @@ namespace Bpmtk.Engine.Tests
 
         protected virtual IProcessEngine BuildProcessEngine()
         {
-            var sessionFactory = new DbSessionFactory();
-            sessionFactory.Configure(builder =>
+            var contextFactory = new ContextFactory();
+            contextFactory.Configure(builder =>
             {
                 builder.UseLoggerFactory(loggerFactory);
                 builder.UseLazyLoadingProxies(true);
@@ -73,7 +73,7 @@ namespace Bpmtk.Engine.Tests
             });
 
             var engine = new ProcessEngineBuilder()
-                .SetDbSessionFactory(sessionFactory)
+                .SetContextFactory(contextFactory)
                 .SetLoggerFactory(loggerFactory)
                 .Build();
 

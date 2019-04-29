@@ -149,7 +149,7 @@ namespace Bpmtk.Engine.Runtime
             get
             {
                 var node = this.token.Node;
-                if(node == null)
+                if(node == null && this.token.ActivityId != null)
                 {
                     var processDefinition = this.ProcessInstance.ProcessDefinition;
                     var deploymentId = processDefinition.DeploymentId;
