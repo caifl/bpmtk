@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Storage;
+using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Repository
 {
@@ -119,6 +120,57 @@ namespace Bpmtk.Engine.Repository
 
                 await this.session.FlushAsync();
             }
+        }
+
+        public virtual IDeploymentQuery CreateQuery() => new DeploymentQuery(this.session);
+
+        public virtual async Task InactivateProcessDefinitionAsync(int processDefinitionId, 
+            string comment = null)
+        {
+            var procDef = await this.FindProcessDefinitionByIdAsync(processDefinitionId);
+            if (procDef != null)
+            {
+                procDef.State = ProcessDefinitionState.Inactive;
+
+                var item = new Comment();
+                item.ProcessDefinition = procDef;
+                item.Body = comment;
+                item.Created = Clock.Now;
+                item.UserId = this.context.UserId;
+
+                await this.session.SaveAsync(item);
+
+                await this.session.FlushAsync();
+            }
+        }
+
+        public virtual async Task ActivateProcessDefinitionAsync(int processDefinitionId, string comment = null)
+        {
+            var procDef = await this.FindProcessDefinitionByIdAsync(processDefinitionId);
+            if (procDef != null)
+            {
+                procDef.State = ProcessDefinitionState.Active;
+
+                var item = new Comment();
+                item.ProcessDefinition = procDef;
+                item.Body = comment;
+                item.Created = Clock.Now;
+                item.UserId = this.context.UserId;
+
+                await this.session.SaveAsync(item);
+
+                await this.session.FlushAsync();
+            }
+        }
+
+        public virtual Task<IList<Comment>> GetCommentsForProcessDefinitionAsync(int processDefinitionId)
+        {
+            var query = this.session.Query<Comment>();
+            query = this.session.Fetch(query, x => x.User)
+                .Where(x => x.ProcessDefinition.Id == processDefinitionId)
+                .OrderByDescending(x => x.Created);
+
+            return this.session.QueryMultipleAsync(query);
         }
     }
 }

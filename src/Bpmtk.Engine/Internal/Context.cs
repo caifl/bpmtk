@@ -17,9 +17,9 @@ namespace Bpmtk.Engine
     public class Context : IContext, IDisposable
     {
         private static AsyncLocal<IContext> current = new AsyncLocal<IContext>();
-        private readonly ProcessEngine engine;
+        private readonly IProcessEngine engine;
 
-        internal Context(ProcessEngine engine, IDbSession dbSession)
+        public Context(IProcessEngine engine, IDbSession dbSession)
         {
             this.engine = engine;
             this.DbSession = dbSession;
@@ -32,7 +32,7 @@ namespace Bpmtk.Engine
 
         public static IContext Current => current.Value;
 
-        public virtual ProcessEngine Engine => this.engine;
+        public virtual IProcessEngine Engine => this.engine;
 
         IProcessEngine IContext.Engine => this.engine;
 

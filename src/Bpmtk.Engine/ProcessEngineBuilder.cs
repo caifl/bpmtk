@@ -76,12 +76,12 @@ namespace Bpmtk.Engine
             return new ProcessEngine(this);
         }
 
-        protected IDbSessionFactory dbSessionFactory;
+        protected IContextFactory contextFactory;
         protected ILoggerFactory loggerFactory;
 
-        public virtual IDbSessionFactory DbSessionFactory
+        public virtual IContextFactory ContextFactory
         {
-            get => this.dbSessionFactory;
+            get => this.contextFactory;
         }
 
         public virtual ILoggerFactory LoggerFactory
@@ -89,9 +89,9 @@ namespace Bpmtk.Engine
             get => this.loggerFactory;
         }
 
-        public virtual IProcessEngineBuilder SetDbSessionFactory(IDbSessionFactory dbSessionFactory)
+        public virtual IProcessEngineBuilder SetContextFactory(IContextFactory contextFactory)
         {
-            this.dbSessionFactory = dbSessionFactory;
+            this.contextFactory = contextFactory;
 
             return this;
         }

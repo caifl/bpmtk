@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bpmtk.Engine.Models;
 using Microsoft.EntityFrameworkCore;
+using Bpmtk.Engine.Storage;
 
-namespace Bpmtk.Engine.Storage
+namespace Bpmtk.Engine
 {
-    public class DbSessionFactory : IDbSessionFactory
+    public class ContextFactory : IContextFactory
     {
         protected Action<DbContextOptionsBuilder> optionsBuilderAction;
 
@@ -15,12 +13,14 @@ namespace Bpmtk.Engine.Storage
             this.optionsBuilderAction = optionsBuilderAction;
         }
 
-        public virtual IDbSession Create()
+        public virtual IContext Create(IProcessEngine engine)
         {
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
             optionsBuilderAction.Invoke(builder);
 
-            return new DbSession(new BpmDbContext(builder.Options));
+            var session = new DbSession(new BpmDbContext(builder.Options));
+
+            return new Context(engine, session);
         }
     }
 }

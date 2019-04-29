@@ -66,6 +66,14 @@ namespace Bpmtk.Engine.WebApi.Controllers
             return q.Select(x => ActivityInstanceModel.Create(x)).ToArray();
         }
 
+        [HttpGet("{id}/variables")]
+        public async Task<ActionResult<IDictionary<string, object>>> GetVariables(long id)
+        {
+            var map = await this.runtimeManager.GetVariablesAsync(id);
+
+            return this.Ok(map);
+        }
+
         [HttpGet("{id}/active-activity-ids")]
         public async Task<ActionResult<IEnumerable<string>>> GetActiveActivityIds(long id)
         {

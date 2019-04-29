@@ -54,11 +54,6 @@ namespace Bpmtk.Engine.WebApi
             services
                 .AddProcessEngine();
 
-            services.AddScoped<IContext>(s =>
-            {
-                return Context.Current;
-            });
-
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
@@ -87,7 +82,11 @@ namespace Bpmtk.Engine.WebApi
             });
 
             app.UseHttpsRedirection();
+
+            //Use process engine.
             app.UseProcessEngine();
+
+            //Use swagger.
             app.UseSwagger();
 
             app.UseSwaggerUI(c =>

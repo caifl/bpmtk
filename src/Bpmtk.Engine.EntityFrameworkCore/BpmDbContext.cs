@@ -96,14 +96,16 @@ namespace Bpmtk.Engine
             set;
         }
 
+        public virtual DbSet<Comment> Comments
+        {
+            get;
+            set;
+        }
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
-
-
-
             modelBuilder.ApplyConfiguration(new ByteArrayConfiguration());
             modelBuilder.ApplyConfiguration(new IdentityLinkConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
@@ -122,6 +124,8 @@ namespace Bpmtk.Engine
 
             modelBuilder.ApplyConfiguration(new ScheduledJobConfiguration());
             modelBuilder.ApplyConfiguration(new EventSubscriptionConfiguration());
+
+            modelBuilder.ApplyConfiguration(new CommentConfiguration());
 
             base.OnModelCreating(modelBuilder);
 

@@ -103,5 +103,8 @@ namespace Bpmtk.Engine.Storage
 
             return Task.CompletedTask;
         }
+
+        public virtual IQueryable<TEntity> Query<TEntity>() where TEntity : class
+            => this.context.Set<TEntity>();
     }
 }

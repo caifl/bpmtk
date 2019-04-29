@@ -227,13 +227,12 @@ namespace Bpmtk.Engine.Runtime
         public virtual async Task<IList<Variable>> GetVariableInstancesAsync(long processInstanceId, 
             string[] variableNames = null)
         {
-            var query = this.session.ProcessInstances
-                .Where(x => x.Id == processInstanceId
-                    && x.Variables.Any(y => variableNames.Contains(y.Name)))
-                    .Select(x => x.Variables);
+            var query = this.session.Query<Variable>()
+                .Where(x => x.ProcessInstance.Id == processInstanceId
+                    && (variableNames == null || variableNames.Contains(x.Name)));
 
-            var items = await this.session.QuerySingleAsync(query);
-            return items.ToList();
+            var items = await this.session.QueryMultipleAsync(query);
+            return items; //.ToList();
         }
 
         public virtual async Task SetVariablesAsync(long processInstanceId, IDictionary<string, object> variables)

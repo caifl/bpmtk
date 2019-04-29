@@ -18,9 +18,8 @@ namespace Bpmtk.Engine.Internal
 
         public virtual IContext CreateContext()
         {
-            var sessionFactory = builder.DbSessionFactory;
-            var session = sessionFactory.Create();
-            return new Context(this, session);
+            var contextFactory = builder.ContextFactory;
+            return contextFactory.Create(this);
         }
 
         public virtual ILoggerFactory LoggerFactory => this.builder.LoggerFactory;

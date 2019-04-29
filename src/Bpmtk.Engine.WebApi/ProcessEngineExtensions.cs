@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 
 namespace Bpmtk.Engine
@@ -20,7 +19,7 @@ namespace Bpmtk.Engine
                 var loggerFactory = x.GetRequiredService<ILoggerFactory>();
                 var httpContextAccessor = x.GetRequiredService<IHttpContextAccessor>();
 
-                var sessionFactory = new PerRequestDbSessionFactory(httpContextAccessor);
+                var contextFactory = new PerRequestContextFactory(httpContextAccessor);
                 //sessionFactory.Configure(builder =>
                 //{
                 //    builder.UseLoggerFactory(loggerFactory);
@@ -29,11 +28,18 @@ namespace Bpmtk.Engine
                 //});
 
                 var engine = new ProcessEngineBuilder()
-                    .SetDbSessionFactory(sessionFactory)
+                    .SetContextFactory(contextFactory)
                     .SetLoggerFactory(loggerFactory)
                     .Build();
 
                 return engine;
+            });
+
+            //Register context.
+            services.AddScoped<IContext>(s =>
+            {
+                var engine = s.GetRequiredService<IProcessEngine>();
+                return engine.CreateContext();
             });
 
             return builder;

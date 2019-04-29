@@ -15,6 +15,8 @@ namespace Bpmtk.Engine
             get;
         }
 
+        IDeploymentQuery CreateQuery();
+
         IQueryable<ProcessDefinition> ProcessDefinitions
         {
             get;
@@ -31,6 +33,14 @@ namespace Bpmtk.Engine
         Task<ProcessDefinition> FindProcessDefinitionByIdAsync(int processDefinitionId);
 
         Task<ProcessDefinition> FindProcessDefinitionByKeyAsync(string processDefinitionKey);
+
+        Task InactivateProcessDefinitionAsync(int processDefinitionId, 
+            string comment = null);
+
+        Task ActivateProcessDefinitionAsync(int processDefinitionId,
+            string comment = null);
+
+        Task<IList<Comment>> GetCommentsForProcessDefinitionAsync(int processDefinitionId);
 
         Task<IList<EventSubscription>> GetEventSubscriptionsAsync(int processDefintionId);
 

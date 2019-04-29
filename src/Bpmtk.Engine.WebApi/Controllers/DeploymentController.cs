@@ -12,20 +12,28 @@ namespace Bpmtk.Engine.WebApi.Controllers
     public class DeploymentController : ControllerBase
     {
         private readonly IContext context;
+        private readonly IDeploymentManager deploymentManager;
 
         public DeploymentController(IContext context)
         {
             this.context = context;
+            this.deploymentManager = context.DeploymentManager;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<DeploymentModel>> Get()
+        public async Task<ActionResult<PagedResult<DeploymentModel>>> Get(DeploymentFilter filter)
         {
-            var q = this.context.DeploymentManager.Deployments;
+            var result = new PagedResult<DeploymentModel>();
+            
+            var query = this.deploymentManager.CreateQuery();
 
-            var data = q.Select(x => DeploymentModel.Create(x)).ToArray();
+            var list = await query.ListAsync(filter.Page, filter.PageSize);
+            var count = await query.CountAsync();
 
-            return data;
+            result.Items = list.Select(x => DeploymentModel.Create(x))
+                .ToList();
+
+            return this.Ok(result);
         }
 
         [HttpGet("{id}/bpmn-model/xml")]
@@ -36,6 +44,15 @@ namespace Bpmtk.Engine.WebApi.Controllers
                 return Encoding.UTF8.GetString(model.Data);
 
             return null;
+        }
+
+        /// <summary>
+        /// Deploy BPMN 2.0 model.
+        /// </summary>
+        [HttpPost("deploy")]
+        public ActionResult Deploy(DeployBpmnModel model)
+        {
+            return this.Ok();
         }
 
         //[HttpGet("{id}/active-activity-ids")]

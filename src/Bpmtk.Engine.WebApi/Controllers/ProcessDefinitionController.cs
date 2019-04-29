@@ -15,10 +15,12 @@ namespace Bpmtk.Engine.WebApi.Controllers
     public class ProcessDefinitionController : ControllerBase
     {
         private readonly IContext context;
+        private readonly IDeploymentManager deploymentManager;
 
         public ProcessDefinitionController(IContext context)
         {
             this.context = context;
+            this.deploymentManager = context.DeploymentManager;
         }
 
         /// <summary>
@@ -86,22 +88,24 @@ namespace Bpmtk.Engine.WebApi.Controllers
             return q;
         }
 
-        //// POST api/values
-        //[HttpPost]
-        //public void Post([FromBody] string value)
-        //{
-        //}
+        [HttpPut("{id}/inactive")]
+        public async Task<ActionResult> Inactivate(int id,
+            ProcessDefinitionActionModel model)
+        {
+            await this.deploymentManager.InactivateProcessDefinitionAsync(id,
+                model?.Comment);
 
-        //// PUT api/values/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value)
-        //{
-        //}
+            return this.Ok();
+        }
 
-        //// DELETE api/values/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
+        [HttpPut("{id}/active")]
+        public async Task<ActionResult> Activate(int id,
+            ProcessDefinitionActionModel model)
+        {
+            await this.deploymentManager.ActivateProcessDefinitionAsync(id, 
+                model?.Comment);
+
+            return this.Ok();
+        }
     }
 }

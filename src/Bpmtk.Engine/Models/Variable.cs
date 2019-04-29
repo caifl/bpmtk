@@ -5,6 +5,12 @@ namespace Bpmtk.Engine.Models
 {
     public class Variable : IValueFields, IVariable
     {
+        public virtual ProcessInstance ProcessInstance
+        {
+            get;
+            set;
+        }
+
         public virtual long Id
         {
             get;

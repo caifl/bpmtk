@@ -64,6 +64,8 @@ namespace Bpmtk.Engine.Storage
             get;
         }
 
+        IQueryable<TEntity> Query<TEntity>() where TEntity : class;
+
         IQueryable<TEntity> Fetch<TEntity, TProperty>(IQueryable<TEntity> query,
             Expression<Func<TEntity, TProperty>> navigationPropertyPath)
             where TEntity : class;

@@ -2,13 +2,12 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Bpmtk.Engine.Storage;
 
 namespace Bpmtk.Engine
 {
     public interface IProcessEngineBuilder
     {
-        IProcessEngineBuilder SetDbSessionFactory(IDbSessionFactory dbSessionFactory);
+        IProcessEngineBuilder SetContextFactory(IContextFactory contextFactory);
 
         IProcessEngineBuilder SetLoggerFactory(ILoggerFactory loggerFactory);
 

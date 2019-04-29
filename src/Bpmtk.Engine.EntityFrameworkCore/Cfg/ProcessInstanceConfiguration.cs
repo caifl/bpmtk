@@ -24,7 +24,7 @@ namespace Bpmtk.Engine.Cfg
 
             //Variables
             builder.HasMany(x => x.Variables)
-               .WithOne()
+               .WithOne(x => x.ProcessInstance)
                .HasForeignKey("ProcessInstanceId")
                .OnDelete(DeleteBehavior.Cascade);
 

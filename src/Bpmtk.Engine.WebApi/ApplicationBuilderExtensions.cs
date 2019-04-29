@@ -12,11 +12,12 @@ namespace Bpmtk.Engine.WebApi
             {
                 var services = context.RequestServices;
 
-                var engine = services.GetRequiredService<IProcessEngine>();
-                var engineContext = engine.CreateContext();
-                Context.SetCurrent(engineContext);
+                var bpmContext = services.GetRequiredService<IContext>();
 
-                engineContext.SetAuthenticatedUser(100);
+                //Set current context.
+                Context.SetCurrent(bpmContext);
+
+                bpmContext.SetAuthenticatedUser(100);
                 //session.SetAuthenticatedUser(4);
                 // Do work that doesn't write to the Response.
                 //if (context.User.Identity.IsAuthenticated)
