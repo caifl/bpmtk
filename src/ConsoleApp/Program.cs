@@ -57,8 +57,8 @@ namespace ConsoleApp
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddConsole();
 
-            var sessionFactory = new DbSessionFactory();
-            sessionFactory.Configure(builder =>
+            var conextFactory = new ContextFactory();
+            conextFactory.Configure(builder =>
             {
                 builder.UseLoggerFactory(loggerFactory);
                 builder.UseLazyLoadingProxies(true);
@@ -66,7 +66,7 @@ namespace ConsoleApp
             });
 
             var engine = new ProcessEngineBuilder()
-                .SetDbSessionFactory(sessionFactory)
+                .SetContextFactory(conextFactory)
                 .SetLoggerFactory(loggerFactory)
                 .Build();
 
