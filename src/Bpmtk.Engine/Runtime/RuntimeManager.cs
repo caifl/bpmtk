@@ -174,14 +174,21 @@ namespace Bpmtk.Engine.Runtime
             var pi = await builder.BuildAsync();
 
             var initialNodes = builder.InitialNodes;
-            var tokens = new List<Token>();
-            foreach (var initialNode in initialNodes)
-            {
-                var token = new Token(pi);
-                token.Node = initialNode;
-                pi.Tokens.Add(token);
-                tokens.Add(token);
-            }
+
+            if (initialNodes.Count == 0)
+                throw new RuntimeException($"The process '{pi.ProcessDefinition.Key}' does not cantains any start nodes.");
+
+            if (initialNodes.Count > 1)
+                throw new NotSupportedException("Multiple startEvents not supported.");
+
+            //var tokens = new List<Token>();
+            //foreach (var initialNode in initialNodes)
+            //{
+            var token = new Token(pi);
+            token.Node = initialNodes[0];
+            pi.Tokens.Add(token);
+            //tokens.Add(token);
+            //}
 
             //Update process-instance status.
             pi.StartTime = Clock.Now;
@@ -191,17 +198,19 @@ namespace Bpmtk.Engine.Runtime
             //Save tokens.
             await this.context.DbSession.FlushAsync();
 
-            //fire processInstanceStartEvent.
+            //foreach (var token in tokens)
+            //{
+            //    //Check if process-instance isEnded.
+            //    if (pi.IsEnded)
+            //        break;
 
-            foreach (var token in tokens)
-            {
-                //Check if process-instance isEnded.
-                if (pi.IsEnded)
-                    break;
+            var executionContext = ExecutionContext.Create(this.context, token);
 
-                var executionContext = ExecutionContext.Create(this.context, token);
-                await executionContext.StartAsync();
-            }
+            //fire processStartEvent.
+            await this.context.Engine.ProcessEventListener.StartedAsync(executionContext);
+
+            await executionContext.StartAsync();
+            //}
 
             return pi;
         }

@@ -21,10 +21,21 @@ namespace Bpmtk.Engine.Runtime
         {
             this.Context = context;
             this.token = token;
+            this.ProcessInstance = token.ProcessInstance;
         }
 
         public static ExecutionContext Create(Context context, Token token)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
             return new ExecutionContext(context, token);
         }
 
@@ -118,10 +129,14 @@ namespace Bpmtk.Engine.Runtime
 
             await this.Context.DbSession.FlushAsync();
 
+            //fire processEndEvent.
+            await this.Context.Engine.ProcessEventListener.EndedAsync(this);
+
             var superToken = procInst.Super;
             if(superToken != null)
             {
-
+                //to be continued ..
+                throw new NotImplementedException("CallActivity not implemented.");
             }
         }
 
@@ -140,7 +155,10 @@ namespace Bpmtk.Engine.Runtime
             return this.ProcessInstance.GetInactiveTokensAt(node.Id);
         }
 
-        public virtual ProcessInstance ProcessInstance => this.token.ProcessInstance;
+        public virtual ProcessInstance ProcessInstance
+        {
+            get;
+        }
 
         public virtual Token Token => this.token;
 

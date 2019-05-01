@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.IO;
+using Bpmtk.Engine.Models;
+using System.Threading.Tasks;
 
 namespace ConsoleApp
 {
@@ -15,48 +18,13 @@ namespace ConsoleApp
     {
         static void Main(string[] args)
         {
-            var JuelSearchPattern = "(?:\\${)(.*?)(?:})";
-
-            var regex = System.Text.RegularExpressions.Regex.Replace("abc ${zh_cn}---${ haha } ???",
-                JuelSearchPattern,
-                new MatchEvaluator((m) =>
-                {
-                    return string.Empty;
-                }));
-
-            //var cfg = new Configuration();
-
-            //cfg.AddFile("ProcessInstance.hbm.xml")
-            //    .AddFile("Token.hbm.xml")
-            //    .AddFile("ActivityInstance.hbm.xml")
-            //    .AddFile("ActivityVariable.hbm.xml")
-            //    .AddFile("Variable.hbm.xml");
-            //cfg.Configure("nhibernate.cfg.xml");
-            ////cfg.AddAssembly(typeof(Program).Assembly)
-
-            //var sessionFactory = cfg.BuildSessionFactory();
-
-            //var session = sessionFactory.OpenSession();
-
-            //var act = new ActivityInstance();
-            //act.Name = "step_1";
-            //act.Variables = new List<ActivityVariable>();
-            //act.Variables.Add(new ActivityVariable() { Name = "test" });
-
-            //session.Save(act);
-            //session.Flush();
-
-            //var items = session.Query<ActivityVariable>().ToList();
-
-            //SchemaExport exporter = new SchemaExport(cfg);
-            //exporter.Execute(sql =>
-            //{
-            //    Console.WriteLine(sql);
-
-            //}, true, false);
+            //Setup LoggerFactory.
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddConsole();
+            loggerFactory.AddConsole(
+                LogLevel.Error  //filter logger level.
+                );
 
+            //Create Bpmtk-Context Factory, and configure database.
             var conextFactory = new ContextFactory();
             conextFactory.Configure(builder =>
             {
@@ -65,146 +33,143 @@ namespace ConsoleApp
                 builder.UseMySql("server=localhost;uid=root;pwd=123456;database=bpmtk2");
             });
 
+            //Create custom ProcessEventListener.
+            var processEventListener = new DemoProcessEventListener();
+
+            //Build Process Engine.
             var engine = new ProcessEngineBuilder()
                 .SetContextFactory(conextFactory)
                 .SetLoggerFactory(loggerFactory)
+                .AddProcessEventListener(processEventListener)
                 .Build();
 
+            //Create new context.
             var context = engine.CreateContext();
-            var query = context.DeploymentManager.Deployments;
 
-            var list = query.ToList();
+            //Start db transaction.
+            var transaction = context.BeginTransaction(); 
 
-            foreach (var item in list)
+            //Register current context. (optional)
+            Context.SetCurrent(context);
+
+            //Create one test user.
+            var identityManager = context.IdentityManager;
+
+            //Check if test user exists.
+            var user = identityManager.FindUserByNameAsync("test").Result;
+            if (user == null)
             {
-                var model = item.Model;
-
-                var procDefList = item.ProcessDefinitions;
-                foreach(var procDef in procDefList)
-                {
-                    var identityLinks = procDef.IdentityLinks;
-                }
+                user = new User() { Name = "Test", UserName = "test" };
+                identityManager.CreateUserAsync(user).GetAwaiter().GetResult();
             }
 
-            //var variable = db.ActivityVariables.ToArray().First(); // (3L);
-            //variable.ByteArray = new ByteArray() { Value = new byte[] { 5, 1, 2, 3 } };
+            //Set current authenticated user id.
+            context.SetAuthenticatedUser(user.Id);
 
-            //var act = new ActivityInstance();
-            //act.Name = "new-act";
-            //act.Variables = new List<ActivityVariable>();
+            var deploymentManager = context.DeploymentManager;
 
-            //var variable = new ActivityVariable();
-            //variable.Name = "var-1";
-            //variable.ByteArray = new ByteArray() { Value = new byte[] { 0, 1, 2, 3 } };
-            //act.Variables.Add(variable);
+            //Deploy BPMN 2.0 Model.
+            var modelContent = GetBpmnModelContentFromResource("ConsoleApp.resources.ParallelGatewayTest.testNestedForkJoin.bpmn20.xml");
 
-            //db.ActivityInstances.Add(act);
-
-            //var items = db.ActivityInstances.ToList();
-            //db.ActivityInstances.RemoveRange(items);
-
-            //var vars= db.ActivityVariables.ToList();
-
-            var tokens = context.RuntimeManager.Tokens.ToList();
-
-            foreach(var token in tokens)
-            {
-                var variables = token.Variables;
-                foreach(var item in variables)
-                {
-
-                }
-            }
-
-            var tasks = context.TaskManager.Tasks.ToList();
-            foreach(var task in tasks)
-            {
-                var identityLinks = task.IdentityLinks;
-                var variables = task.Variables;
-            }
-
-            var users = context.IdentityManager.Users.ToList();
-            foreach (var u in users)
-            {
-                var g = u.Groups;
-            }
-
-            var eventSubscriptions = context.DeploymentManager
-                .GetEventSubscriptionsAsync(0)
+            var deploymentBuilder = deploymentManager.CreateDeploymentBuilder();
+            var deployment = deploymentBuilder
+                .SetCategory("demo")
+                .SetName("Demo deployment")
+                .SetMemo("A simple process demo for BPMTK.")
+                .SetBpmnModel(modelContent)
+                .BuildAsync()
                 .Result;
 
-            var jobs = context.DeploymentManager
-                .GetScheduledJobsAsync(0)
-                .Result;
-
-            var procInst = context.RuntimeManager.FindAsync(1).Result;
-            var super = procInst.Super;
-
-            var hi = context.HistoryManager.ActivityInstances.ToList();
-
-            var bpmnModel = context.DeploymentManager.GetBpmnModelAsync(1).Result;
-
-            try
+            var processDefinitions = deployment.ProcessDefinitions;
+            foreach(var procDef in processDefinitions)
             {
-                var tx = context.BeginTransaction();
-
-                var result = context.RuntimeManager.StartProcessByKeyAsync("AssignTaskByVariableTestCase").Result;
-                //var task = context.TaskManager.FindTaskAsync(1);
-                //context.TaskManager.CompleteAsync(1).GetAwaiter().GetResult();
-
-                tx.Commit();
-            }
-            catch(Exception ex)
-            {
-
+                Console.WriteLine($"Process '{procDef.Key}' has been deployed.");
             }
 
-            //var procInstList = context.RuntimeManager
-            //    .ProcessInstances
-            //    .ToList();
+            var processId = "nestedForkJoin"; //processDefinitionKey
+
+            //Start new process-instance.
+            var runtimeManager = context.RuntimeManager;
+            var pi = runtimeManager.StartProcessByKeyAsync(processId).Result;
+
+            HumanTasksInteraction(context, pi)
+                .GetAwaiter()
+                .GetResult();
+
+            //Verify Process Completed.
+            pi = runtimeManager.FindAsync(pi.Id).Result;
+            Assert.True(pi.State == ExecutionState.Completed);
+
+            //Commit db transaction.
+            transaction.Commit();
+
+            //Dispose context. (close databse connection)
+            context.Dispose();
+
+            Console.WriteLine("It's OK.");
+            Console.ReadKey();
+        }
+
+        protected static async Task HumanTasksInteraction(IContext context, ProcessInstance pi)
+        {
+            //Create taskQuery.
+            var taskManager = context.TaskManager;
+            var query = taskManager.CreateQuery()
+                            .SetProcessInstanceId(pi.Id)
+                            .SetState(TaskState.Active); //only fetch active-tasks.
+
+            // After process start, only task 0 should be active
+            var tasks = await query.ListAsync();
+            Assert.True(tasks.Count == 1);
+            Assert.True(tasks[0].Name == "Task 0");
+
+            // Completing task 0 will create Task A and B
+            await taskManager.CompleteAsync(tasks[0].Id);
+            tasks = await query.ListAsync();
+            Assert.True(2 == tasks.Count);
+            Assert.True("Task A" == tasks[0].Name);
+            Assert.True("Task B" == tasks[1].Name);
+
+            // Completing task A should not trigger any new tasks
+            await taskManager.CompleteAsync(tasks[0].Id);
+            tasks = await query.ListAsync();
+            Assert.True(1 == tasks.Count);
+            Assert.True("Task B" == tasks[0].Name);
+
+            // Completing task B creates tasks B1 and B2
+            await taskManager.CompleteAsync(tasks[0].Id);
+            tasks = await query.ListAsync();
+            Assert.True(2 == tasks.Count);
+            Assert.True("Task B1" == tasks[0].Name);
+            Assert.True("Task B2" == tasks[1].Name);
+            //this.Commit();
 
 
-            //foreach (var procInst in procInsts)
-            //{
-            //    var vars = procInst.Variables;
-            //    foreach (var item in vars)
-            //    {
-            //        //if(item.ByteArrayId != null)
-            //        //{
-            //        //    item.ByteArray = new ByteArray() { Value = new byte[] { 0, 1, 2, 3 }, Id = item.ByteArrayId.Value };
-            //        //}
-            //        //else
-            //            //item.ByteArray = new ByteArray() { Value = new byte[] { 0, 1, 2, 3 } };
+            // Completing B1 and B2 will activate both joins, and process reaches
+            // task C
+            await taskManager.CompleteAsync(tasks[0].Id);
+            await taskManager.CompleteAsync(tasks[1].Id);
+            tasks = await query.ListAsync();
+            Assert.True(1 == tasks.Count);
+            Assert.True("Task C" == tasks[0].Name);
 
-            //    }
+            // Completing Task C will finish the process.
+            await taskManager.CompleteAsync(tasks[0].Id);
+            tasks = await query.ListAsync();
+            Assert.True(0 == tasks.Count); //all tasks completed.
+        }
 
-            //   // Console.WriteLine(vars.Count);
-            //}
+        protected static byte[] GetBpmnModelContentFromResource(string resourceName)
+        { 
+            using (var ms = new MemoryStream())
+            {
+                var stream = typeof(Program).Assembly.GetManifestResourceStream(resourceName);
+                stream.CopyTo(ms);
+                stream.Close();
+                stream.Dispose();
 
-            //db.SaveChanges();
-
-            //var procInst = new ProcessInstance();
-            //procInst.Variables.Add(new Variable() { Name = "pi_var" });
-
-            //var token = new Token() { ProcessInstance = procInst, IsActive = true };
-            //token.Children.Add(new Token() { IsActive = true, ProcessInstance = procInst });
-
-            //procInst.Tokens.Add(token);
-
-
-            //token.Variables.Add(new Variable() { Name = "token_var" });
-
-            //db.Add(procInst);
-            //db.SaveChanges();
-
-            //var item = db.ProcessInstances.Where(x => x.Id == 3)
-            //    .SingleOrDefault();
-
-            //item.Variables.Add(new Variable() { Name = "xyz" });
-            //db.SaveChanges();
-
-
-            Console.WriteLine("Hello World!");
+                return ms.ToArray();
+            }
         }
     }
 }

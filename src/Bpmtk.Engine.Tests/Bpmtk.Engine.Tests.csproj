@@ -16,6 +16,7 @@
     <None Remove="Resources\exclusive_gateway.bpmn.xml" />
     <None Remove="Resources\Gateway\ExclusiveGatewayTest.testDefaultSequenceFlow.bpmn20.xml" />
     <None Remove="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.bpmn20.xml" />
+    <None Remove="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.svg" />
     <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasks.bpmn20.xml" />
     <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasksCompletionCondition.bpmn20.xml" />
     <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcessCompletionCondition.bpmn20.xml" />
@@ -38,6 +39,7 @@
     <EmbeddedResource Include="Resources\exclusive_gateway.bpmn.xml" />
     <EmbeddedResource Include="Resources\Gateway\ExclusiveGatewayTest.testDefaultSequenceFlow.bpmn20.xml" />
     <EmbeddedResource Include="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.bpmn20.xml" />
+    <EmbeddedResource Include="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.svg" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasks.bpmn20.xml" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasksCompletionCondition.bpmn20.xml" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcessCompletionCondition.bpmn20.xml" />
