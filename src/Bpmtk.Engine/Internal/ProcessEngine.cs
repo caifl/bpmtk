@@ -69,6 +69,8 @@ namespace Bpmtk.Engine.Internal
             return defaultValue;
         }
 
+        IProcessEngine IProcessEngine.SetValue(string name, object value) => this.SetValue(name, value);
+
         public virtual ProcessEngine SetValue(string name, object value)
         {
             if (name == null)
