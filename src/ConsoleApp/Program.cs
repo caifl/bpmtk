@@ -43,6 +43,9 @@ namespace ConsoleApp
                 .AddProcessEventListener(processEventListener)
                 .Build();
 
+            //init process-engine props. (optional)
+            //engine.SetValue("isActivityRecorderDisabled", false);
+
             //Create new context.
             var context = engine.CreateContext();
 

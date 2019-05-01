@@ -51,6 +51,12 @@ namespace Bpmtk.Engine
             get => this.loggerFactory;
         }
 
+        public virtual bool IsActivityRecorderDisabled
+        {
+            get;
+            protected set;
+        }
+
         public virtual IProcessEngineBuilder SetContextFactory(IContextFactory contextFactory)
         {
             this.contextFactory = contextFactory;
@@ -98,6 +104,13 @@ namespace Bpmtk.Engine
 
             var entry = new AssignmentStrategyEntry(key, name, assignmentStrategy);
             this.assignmentStrategyEntries.Add(key, entry);
+
+            return this;
+        }
+
+        public virtual IProcessEngineBuilder DisableActivityRecorder()
+        {
+            this.IsActivityRecorderDisabled = true;
 
             return this;
         }

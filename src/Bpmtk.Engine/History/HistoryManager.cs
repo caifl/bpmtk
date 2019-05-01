@@ -11,12 +11,19 @@ namespace Bpmtk.Engine.History
 {
     public class HistoryManager : IHistoryManager
     {
+        private const string KeyIsActivityRecorderDisabled = "IsActivityRecorderDisabled";
         protected IDbSession db;
 
         public HistoryManager(Context context)
         {
             Context = context;
             this.db = context.DbSession;
+            this.IsActivityRecorderDisabled = this.Context.Engine.GetValue<bool>("isActivityRecorderDisabled", false);
+        }
+
+        protected virtual bool IsActivityRecorderDisabled
+        {
+            get;
         }
 
         public virtual IQueryable<ActivityInstance> ActivityInstances => this.db.ActivityInstances;
@@ -28,13 +35,16 @@ namespace Bpmtk.Engine.History
             throw new NotImplementedException();
         }
 
-        public IActivityInstanceQuery CreateActivityQuery()
+        public virtual IActivityInstanceQuery CreateActivityQuery()
         {
             throw new NotImplementedException();
         }
 
         public virtual async Task RecordActivityReadyAsync(ExecutionContext executionContext, IList<Token> joinedTokens)
         {
+            if (!this.IsActivityRecorderDisabled)
+                return;
+
             var act = new ActivityInstance();
 
             //this.Parent = parent;
@@ -72,6 +82,9 @@ namespace Bpmtk.Engine.History
 
         public virtual async Task RecordActivityEndAsync(ExecutionContext executionContext)
         {
+            if (!this.IsActivityRecorderDisabled)
+                return;
+
             var act = executionContext.ActivityInstance;
             if(act != null)
             {
@@ -82,6 +95,9 @@ namespace Bpmtk.Engine.History
 
         public virtual async Task RecordActivityStartAsync(ExecutionContext executionContext)
         {
+            if (!this.IsActivityRecorderDisabled)
+                return;
+
             var act = executionContext.ActivityInstance;
             if (act != null)
             {

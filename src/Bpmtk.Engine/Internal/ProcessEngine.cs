@@ -3,16 +3,19 @@ using Bpmtk.Engine.Tasks;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace Bpmtk.Engine.Internal
 {
     public class ProcessEngine : IProcessEngine, IDisposable
     {
+        private static ProcessEngine instance = null;
         protected readonly static object syncRoot = new object();
 
         private readonly ProcessEngineBuilder builder;
 
-        private static ProcessEngine instance = null;
+        //process-engine properties.
+        private readonly ConcurrentDictionary<string, object> props = new ConcurrentDictionary<string, object>();
 
         public static ProcessEngine GetInstance()
         {
@@ -35,6 +38,45 @@ namespace Bpmtk.Engine.Internal
             //init
             this.ProcessEventListener = new CompositeProcessEventListener(builder.ProcessEventListeners);
             this.TaskEventListener = new CompositeTaskEventListener(builder.TaskEventListeners);
+
+            //initialize process-engine props.
+            // ...
+        }
+
+        public virtual object GetValue(string name, object defaultValue = null)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            object value = null;
+
+            if(this.props.TryGetValue(name, out value))
+                return value;
+
+            return defaultValue;
+        }
+
+        public virtual TValue GetValue<TValue>(string name, TValue defaultValue = default(TValue))
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            var value = this.GetValue(name);
+
+            if (value != null)
+                return (TValue)value; //type cast needed..
+
+            return defaultValue;
+        }
+
+        public virtual ProcessEngine SetValue(string name, object value)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            this.props.AddOrUpdate(name, value, (k, v) => value);
+
+            return this;
         }
 
         public virtual IContext CreateContext()
@@ -89,6 +131,8 @@ namespace Bpmtk.Engine.Internal
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
+
+        //public virtual bool IsActivityRecorderDisabled => this.builder.IsActivityRecorderDisabled;
 
         public virtual IAssignmentStrategy GetTaskAssignmentStrategy(string key)
         {

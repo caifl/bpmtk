@@ -18,6 +18,9 @@ namespace Bpmtk.Engine
         IProcessEngineBuilder AddTaskAssignmentStrategy(string key,
             string name, IAssignmentStrategy taskAssignmentStrategy);
 
+        //Engine Options
+        //IProcessEngineBuilder DisableActivityRecorder();
+
         IProcessEngine Build();
     }
 }
