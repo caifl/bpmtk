@@ -82,13 +82,9 @@ namespace Bpmtk.Engine.Runtime
         {
             this.token.IsActive = false;
 
-            await this.Context.HistoryManager.RecordActivityEndAsync(this);
-
+            //fire activityEndEvent.
             var eventListener = this.Context.Engine.ProcessEventListener;
             await eventListener.ActivityEndAsync(this);
-
-            //fire activityCompletedEvent.
-            this.FireEvent("completed");
 
             var parentToken = this.token.Parent;
             if (parentToken != null)
@@ -222,10 +218,7 @@ namespace Bpmtk.Engine.Runtime
             {
                 var historyManager = this.Context.HistoryManager;
 
-                //fire activityStartEvent.
-                await historyManager.RecordActivityReadyAsync(this);
-                this.FireEvent("ready");
-
+                //fire activityReadyEvent.
                 var eventListener = this.Context.Engine.ProcessEventListener;
                 await eventListener.ActivityReadyAsync(this);
 
@@ -236,12 +229,7 @@ namespace Bpmtk.Engine.Runtime
                     this.Transition = null;
                     this.TransitionSource = null;
 
-                    //Record activity history on start.
-                    await historyManager.RecordActivityStartAsync(this);
-
-                    //fire activityActivatedEvent.
-                    this.FireEvent("activated");
-
+                    //fire activityStartEvent.
                     eventListener = this.Context.Engine.ProcessEventListener;
                     await eventListener.ActivityStartAsync(this);
 
@@ -258,37 +246,12 @@ namespace Bpmtk.Engine.Runtime
             throw new NotSupportedException();
         }
 
-        protected virtual void FireEvent(string eventName)
-        {
-            IList<Bpmtk.Bpmn2.Extensions.Script> scripts = null;
-
-            var node = this.Node;
-            if (node != null)
-                scripts = node.Scripts;
-            else
-                scripts = this.transition?.Scripts;
-
-            if (scripts != null && scripts.Count > 0)
-            {
-                var list = scripts.Where(x => x.On.Equals(eventName)).ToList();
-                if (list.Count > 0)
-                {
-                    var evaluator = this.GetEvaluator();
-                    foreach (var item in list)
-                        evaluator.Evalute(item.Text);
-                }
-            }
-        }
-
         public virtual async SysTasks.Task LeaveNodeAsync(Bpmtk.Bpmn2.SequenceFlow transition)
         {
             if (transition == null)
                 throw new ArgumentNullException(nameof(transition));
 
             //fire activityEndEvent.
-            var historyManager = this.Context.HistoryManager;
-            await historyManager.RecordActivityEndAsync(this);
-
             var eventListener = this.Context.Engine.ProcessEventListener;
             await eventListener.ActivityEndAsync(this);
 
@@ -300,22 +263,9 @@ namespace Bpmtk.Engine.Runtime
             if (transitions == null)
                 throw new ArgumentNullException(nameof(transitions));
 
-            if(this.JoinedTokens != null && this.JoinedTokens.Count > 0)
-            {
-
-            }
-
             //fire activityEndEvent.
-            var historyManager = this.Context.HistoryManager;
-            await historyManager.RecordActivityEndAsync(this);
-
             var eventListener = this.Context.Engine.ProcessEventListener;
             await eventListener.ActivityEndAsync(this);
-
-            //Join tokens.
-            //var list = this.JoinedTokens;
-            //if (list != null && list.Count > 0)
-            //    await this.JoinAsync(list);
 
             if (transitions.Count() > 1)
             {
@@ -414,9 +364,6 @@ namespace Bpmtk.Engine.Runtime
             this.Transition = transition;
 
             //fire transitionTakenEvent.
-            this.FireEvent("taken");
-
-            //notify ProcessEventListener.
             var eventListener = this.Context.Engine.ProcessEventListener;
             await eventListener.TakeTransitionAsync(this);
 
