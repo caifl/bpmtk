@@ -44,6 +44,11 @@ namespace Bpmtk.Engine.Runtime
             get;
         }
 
+        IReadOnlyList<Token> JoinedTokens
+        {
+            get;
+        }
+
         object GetVariable(string name);
 
         void SetVariable(string name, object value);

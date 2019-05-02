@@ -6,16 +6,16 @@ namespace Bpmtk.Engine.Events
 {
     public interface IProcessEventListener
     {
-        Task StartedAsync(IExecutionContext executionContext);
+        Task ProcessStartAsync(IExecutionContext executionContext);
 
-        Task EnterNodeAsync(IExecutionContext executionContext);
+        Task ActivityReadyAsync(IExecutionContext executionContext);
 
-        Task ActivatedAsync(IExecutionContext executionContext);
+        Task ActivityStartAsync(IExecutionContext executionContext);
 
-        Task LeaveNodeAsync(IExecutionContext executionContext);
+        Task ActivityEndAsync(IExecutionContext executionContext);
 
         Task TakeTransitionAsync(IExecutionContext executionContext);
 
-        Task EndedAsync(IExecutionContext executionContext);
+        Task ProcessEndAsync(IExecutionContext executionContext);
     }
 }

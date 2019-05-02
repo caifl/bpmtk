@@ -100,18 +100,18 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual void Activate()
-        {
-            this.State = ExecutionState.Active;
-            this.StartTime = Clock.Now;
-            this.LastStateTime = this.StartTime.Value;
-        }
+        //public virtual void Activate()
+        //{
+        //    this.State = ExecutionState.Active;
+        //    this.StartTime = Clock.Now;
+        //    this.LastStateTime = this.StartTime.Value;
+        //}
 
-        public virtual void Finish()
-        {
-            this.State = ExecutionState.Completed;
-            this.LastStateTime = Clock.Now;
-        }
+        //public virtual void Finish()
+        //{
+        //    this.State = ExecutionState.Completed;
+        //    this.LastStateTime = Clock.Now;
+        //}
 
         //public static ActivityInstance Create(ExecutionContext executionContext)
         //{

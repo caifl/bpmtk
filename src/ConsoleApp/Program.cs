@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Linq;
-using NHibernate.Cfg;
-//using Microsoft.EntityFrameworkCore;
-using Bpmtk.Engine;
-using NHibernate.Tool.hbm2ddl;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Text.RegularExpressions;
 using System.IO;
+using Bpmtk.Engine;
 using Bpmtk.Engine.Models;
 using System.Threading.Tasks;
 
@@ -21,13 +17,14 @@ namespace ConsoleApp
             //Setup LoggerFactory.
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddConsole(
-                LogLevel.Error  //filter logger level.
+                LogLevel.Information //Warning  //filter logger level.
                 );
 
             //Create Bpmtk-Context Factory, and configure database.
             var conextFactory = new ContextFactory();
             conextFactory.Configure(builder =>
             {
+                builder.EnableSensitiveDataLogging();
                 builder.UseLoggerFactory(loggerFactory);
                 builder.UseLazyLoadingProxies(true);
                 builder.UseMySql("server=localhost;uid=root;pwd=123456;database=bpmtk2");

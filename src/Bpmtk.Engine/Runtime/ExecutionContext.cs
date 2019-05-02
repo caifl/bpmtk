@@ -8,21 +8,27 @@ using Bpmtk.Engine.Tasks;
 using Bpmtk.Engine.Utils;
 using Bpmtk.Engine.Variables;
 using Bpmtk.Engine.Bpmn2.Behaviors;
+using Microsoft.Extensions.Logging;
 
 namespace Bpmtk.Engine.Runtime
 {
     public class ExecutionContext : IExecutionContext
     {
+        protected ILogger logger;
         private Token token;
-        private Bpmtk.Bpmn2.FlowNode transitionSource;
         private Bpmtk.Bpmn2.SequenceFlow transition;
 
         protected ExecutionContext(Context context, Token token)
         {
+            var engine = context.Engine;
+
             this.Context = context;
             this.token = token;
             this.ProcessInstance = token.ProcessInstance;
+            this.logger = engine.LoggerFactory.CreateLogger<ExecutionContext>();
         }
+
+        public virtual ILogger Logger => this.logger;
 
         public static ExecutionContext Create(Context context, Token token)
         {
@@ -78,6 +84,9 @@ namespace Bpmtk.Engine.Runtime
 
             await this.Context.HistoryManager.RecordActivityEndAsync(this);
 
+            var eventListener = this.Context.Engine.ProcessEventListener;
+            await eventListener.ActivityEndAsync(this);
+
             //fire activityCompletedEvent.
             this.FireEvent("completed");
 
@@ -130,7 +139,7 @@ namespace Bpmtk.Engine.Runtime
             await this.Context.DbSession.FlushAsync();
 
             //fire processEndEvent.
-            await this.Context.Engine.ProcessEventListener.EndedAsync(this);
+            await this.Context.Engine.ProcessEventListener.ProcessEndAsync(this);
 
             var superToken = procInst.Super;
             if(superToken != null)
@@ -143,16 +152,6 @@ namespace Bpmtk.Engine.Runtime
         public virtual SysTasks.Task<int> GetActiveTaskCountAsync()
         {
             return this.Context.RuntimeManager.GetActiveTaskCountAsync(this.token.Id);
-        }
-
-        public virtual IList<Token> GetJoinedTokens()
-        {
-            var node = this.Node;
-            var scope = this.token.ResolveScope();
-            if (scope != null)
-                return scope.GetInactiveTokensAt(node.Id);
-
-            return this.ProcessInstance.GetInactiveTokensAt(node.Id);
         }
 
         public virtual ProcessInstance ProcessInstance
@@ -187,7 +186,6 @@ namespace Bpmtk.Engine.Runtime
 
             this.token = token;
             this.token.Node = oldToken.Node;
-            //this.token.Scope = oldToken.Scope;
             this.token.ActivityInstance = oldToken.ActivityInstance;
 
             //re-activate.
@@ -204,7 +202,11 @@ namespace Bpmtk.Engine.Runtime
             }
         }
 
-        public virtual Bpmtk.Bpmn2.FlowNode TransitionSource { get => transitionSource; set => transitionSource = value; }
+        public virtual ActivityInstance TransitionSource
+        {
+            get;
+            set;
+        }
 
         public virtual ActivityInstance ActivityInstance
         {
@@ -220,63 +222,36 @@ namespace Bpmtk.Engine.Runtime
             {
                 var historyManager = this.Context.HistoryManager;
 
-                var joinedTokens = new List<Token>();
-                if(!await behavior.CanActivateAsync(this, joinedTokens))
+                //fire activityStartEvent.
+                await historyManager.RecordActivityReadyAsync(this);
+                this.FireEvent("ready");
+
+                var eventListener = this.Context.Engine.ProcessEventListener;
+                await eventListener.ActivityReadyAsync(this);
+
+                var isPreConditionsSatisfied = await behavior.EvaluatePreConditionsAsync(this);
+                if (isPreConditionsSatisfied)
                 {
-                    if(joinedTokens.Count == 1)
-                    {
-                        await historyManager.RecordActivityReadyAsync(this, joinedTokens);
+                    //Clear
+                    this.Transition = null;
+                    this.TransitionSource = null;
 
-                        this.FireEvent("ready");
+                    //Record activity history on start.
+                    await historyManager.RecordActivityStartAsync(this);
 
-                        return;
-                    }
+                    //fire activityActivatedEvent.
+                    this.FireEvent("activated");
 
-                    //find created activity-instance.
-                    var act = joinedTokens.Where(x => x.ActivityInstance != null)
-                        .Select(x => x.ActivityInstance)
-                        .FirstOrDefault();
-                    if (act != null)
-                    {
-                        this.token.ActivityInstance = act;
-                        await this.Context.DbSession.FlushAsync();
-                    }
+                    eventListener = this.Context.Engine.ProcessEventListener;
+                    await eventListener.ActivityStartAsync(this);
 
-                    return;
+                    await behavior.ExecuteAsync(this);
                 }
                 else
                 {
-                    if (joinedTokens.Count > 0)
-                    {
-                        //find created activity-instance.
-                        var act = joinedTokens.Where(x => x.ActivityInstance != null)
-                            .Select(x => x.ActivityInstance)
-                            .FirstOrDefault();
-                        if (act != null)
-                            this.token.ActivityInstance = act;
-                    }
-                    else
-                    {
-                        //fire activityStartEvent.
-                        await historyManager.RecordActivityReadyAsync(this, joinedTokens);
-
-                        this.FireEvent("ready");
-                    }
+                    this.logger.LogInformation($"The activity '{this.Node.Id}' pre-conditions is not satisfied.");
                 }
 
-                //Clear
-                this.Transition = null;
-                this.TransitionSource = null;
-
-                await historyManager.RecordActivityStartAsync(this);
-
-                //fire activityActivatedEvent.
-                this.FireEvent("activated");
-
-                var eventListener = this.Context.Engine.ProcessEventListener;
-                await eventListener.ActivatedAsync(this);
-
-                await behavior.ExecuteAsync(this);
                 return;
             }
 
@@ -314,58 +289,73 @@ namespace Bpmtk.Engine.Runtime
             var historyManager = this.Context.HistoryManager;
             await historyManager.RecordActivityEndAsync(this);
 
-            this.Transition = transition;
+            var eventListener = this.Context.Engine.ProcessEventListener;
+            await eventListener.ActivityEndAsync(this);
 
-            await this.TakeAsync();
+            await this.TakeAsync(transition);
         }
 
-        public virtual async SysTasks.Task LeaveNodeAsync(IEnumerable<Bpmtk.Bpmn2.SequenceFlow> transitions,
-            IEnumerable<Token> joinedTokens)
+        public virtual async SysTasks.Task LeaveNodeAsync(IEnumerable<Bpmtk.Bpmn2.SequenceFlow> transitions)
         {
             if (transitions == null)
                 throw new ArgumentNullException(nameof(transitions));
 
-            if (joinedTokens == null)
-                throw new ArgumentNullException(nameof(joinedTokens));
+            if(this.JoinedTokens != null && this.JoinedTokens.Count > 0)
+            {
 
-            var list = joinedTokens.ToList();
-            if(list.Count > 0)
-                this.Join(list);
-
-            var db = this.Context.DbSession;
-            await db.FlushAsync();
+            }
 
             //fire activityEndEvent.
             var historyManager = this.Context.HistoryManager;
             await historyManager.RecordActivityEndAsync(this);
 
-            var childExecutions = new List<ExecutionContext>();
+            var eventListener = this.Context.Engine.ProcessEventListener;
+            await eventListener.ActivityEndAsync(this);
 
-            foreach (var transition in transitions)
+            //Join tokens.
+            //var list = this.JoinedTokens;
+            //if (list != null && list.Count > 0)
+            //    await this.JoinAsync(list);
+
+            if (transitions.Count() > 1)
             {
-                var childToken = this.token.CreateToken();
+                var outgoingExecutions = new List<OutgoingExecution>();
+                foreach (var transition in transitions)
+                {
+                    var childToken = this.token.CreateToken();
 
-                var childExecutionContext = new ExecutionContext(this.Context, childToken);
-                childExecutionContext.Transition = transition;
+                    var outgoingContext = new ExecutionContext(this.Context, childToken);
+                    outgoingContext.Transition = transition;
 
-                //childExecutionContext.EnterNode(transition.TargetRef);
-                childExecutions.Add(childExecutionContext);
+                    outgoingExecutions.Add(new OutgoingExecution(outgoingContext, transition));
+                }
+
+                //Ensure all concurrent tokens persisted.
+                var db = this.Context.DbSession;
+                await db.FlushAsync();
+
+                foreach (var execution in outgoingExecutions)
+                {
+                    if (!execution.IsEnded) //Check if execution ended.
+                        await execution.ExecuteAsync();
+                }
             }
-
-            await db.FlushAsync();
-
-            foreach (var execution in childExecutions)
+            else
             {
-                var childToken = execution.Token;
-                if (childToken.IsEnded)
-                    continue;
-
-                await execution.TakeAsync();
+                this.Transition = transitions.First();
+                await this.TakeAsync(transition);
             }
         }
 
-        public virtual void Join(IList<Token> joinedTokens)
+        public virtual async SysTasks.Task JoinAsync()
         {
+            if (this.JoinedTokens == null)
+                return;
+
+            var joinedTokens = new List<Token>(this.JoinedTokens);
+            if (joinedTokens == null || joinedTokens.Count == 0)
+                return;
+
             var scopeToken = this.token.ResolveScope();
 
             //保留当前token.
@@ -405,17 +395,32 @@ namespace Bpmtk.Engine.Runtime
 
             if (!current.Equals(token))
                 this.ReplaceToken(current);
+
+            var db = this.Context.DbSession;
+            await db.FlushAsync();
         }
 
-        protected virtual async SysTasks.Task TakeAsync()
+        protected virtual async SysTasks.Task TakeAsync(Bpmtk.Bpmn2.SequenceFlow transition)
         {
-            var targetNode = this.transition.TargetRef;
+            //Store transition source activity instance.
+            this.TransitionSource = this.token.ActivityInstance;
+
+            //Clear related information.
+            this.token.Node = null;
+            this.token.ActivityInstance = null;
+            this.JoinedTokens = null;
+
+            //Set outgoing transition.
+            this.Transition = transition;
 
             //fire transitionTakenEvent.
-            this.token.Node = null;
-
             this.FireEvent("taken");
 
+            //notify ProcessEventListener.
+            var eventListener = this.Context.Engine.ProcessEventListener;
+            await eventListener.TakeTransitionAsync(this);
+
+            var targetNode = transition.TargetRef;
             await this.EnterNodeAsync(targetNode);
         }
 
@@ -469,5 +474,35 @@ namespace Bpmtk.Engine.Runtime
         }
 
         IContext IExecutionContext.Context => this.Context;
+
+        public virtual IList<Token> JoinedTokens
+        {
+            get;
+            set;
+        }
+
+        IReadOnlyList<Token> IExecutionContext.JoinedTokens => new List<Token>(this.JoinedTokens);
+
+        class OutgoingExecution
+        {
+            private readonly ExecutionContext executionContext;
+            private readonly Bpmtk.Bpmn2.SequenceFlow transition;
+
+            public OutgoingExecution(ExecutionContext executionContext, Bpmtk.Bpmn2.SequenceFlow transition)
+            {
+                this.executionContext = executionContext;
+                this.transition = transition;
+            }
+
+            public virtual bool IsEnded
+            {
+                get => this.executionContext.Token.IsEnded;
+            }
+
+            public SysTasks.Task ExecuteAsync()
+            {
+                return executionContext.TakeAsync(this.transition);
+            }
+        }
     }
 }

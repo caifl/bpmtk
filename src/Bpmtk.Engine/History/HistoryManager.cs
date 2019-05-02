@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Storage;
+using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.History
 {
@@ -40,9 +41,9 @@ namespace Bpmtk.Engine.History
             throw new NotImplementedException();
         }
 
-        public virtual async Task RecordActivityReadyAsync(ExecutionContext executionContext, IList<Token> joinedTokens)
+        public virtual async Task RecordActivityReadyAsync(ExecutionContext executionContext)
         {
-            if (!this.IsActivityRecorderDisabled)
+            if (this.IsActivityRecorderDisabled)
                 return;
 
             var act = new ActivityInstance();
@@ -82,28 +83,70 @@ namespace Bpmtk.Engine.History
 
         public virtual async Task RecordActivityEndAsync(ExecutionContext executionContext)
         {
-            if (!this.IsActivityRecorderDisabled)
+            if (this.IsActivityRecorderDisabled)
                 return;
 
+            var hasChanges = false;
             var act = executionContext.ActivityInstance;
-            if(act != null)
+            var date = Clock.Now;
+            if (act != null)
             {
-                act.Finish();
-                await this.db.FlushAsync();
+                act.State = ExecutionState.Completed;
+                act.LastStateTime = date;
+                hasChanges = true;
             }
+
+            var joinedTokens = executionContext.JoinedTokens;
+            if (joinedTokens != null && joinedTokens.Count > 0)
+            {
+                foreach (var token in joinedTokens)
+                {
+                    act = token.ActivityInstance;
+                    if (act != null)
+                    {
+                        act.State = ExecutionState.Completed;
+                        act.LastStateTime = date;
+                        hasChanges = true;
+                    }
+                }
+            }
+
+            if (hasChanges)
+                await this.db.FlushAsync();
         }
 
         public virtual async Task RecordActivityStartAsync(ExecutionContext executionContext)
         {
-            if (!this.IsActivityRecorderDisabled)
+            if (this.IsActivityRecorderDisabled)
                 return;
 
+            var hasChanges = false;
+            var date = Clock.Now;
             var act = executionContext.ActivityInstance;
             if (act != null)
             {
-                act.Activate();
-                await this.db.FlushAsync();
+                act.State = ExecutionState.Active;
+                act.LastStateTime = date;
+                hasChanges = true;
             }
+
+            var joinedTokens = executionContext.JoinedTokens;
+            if(joinedTokens != null && joinedTokens.Count > 0)
+            {
+                foreach(var token in joinedTokens)
+                {
+                    act = token.ActivityInstance;
+                    if(act != null)
+                    {
+                        act.State = ExecutionState.Active;
+                        act.LastStateTime = date;
+                        hasChanges = true;
+                    }
+                }
+            }
+
+            if(hasChanges)
+                await this.db.FlushAsync();
         }
 
         public Task<IList<ActivityInstance>> GetActivityInstancesAsync(long processInstanceId)

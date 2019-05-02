@@ -9,7 +9,7 @@ namespace ConsoleApp
 {
     class DemoProcessEventListener : IProcessEventListener
     {
-        public Task ActivatedAsync(IExecutionContext executionContext)
+        public Task ActivityStartAsync(IExecutionContext executionContext)
         {
             var node = executionContext.Node;
 
@@ -18,7 +18,16 @@ namespace ConsoleApp
             return Task.CompletedTask;
         }
 
-        public Task EndedAsync(IExecutionContext executionContext)
+        public Task ActivityEndAsync(IExecutionContext executionContext)
+        {
+            var node = executionContext.Node;
+
+            Console.WriteLine("Activity ended: {0}[{1}]", node.Id, node.Name);
+
+            return Task.CompletedTask;
+        }
+
+        public Task ProcessEndAsync(IExecutionContext executionContext)
         {
             var processInstance = executionContext.ProcessInstance;
             //var node = executionContext.Node;
@@ -28,7 +37,7 @@ namespace ConsoleApp
             return Task.CompletedTask;
         }
 
-        public Task EnterNodeAsync(IExecutionContext executionContext)
+        public Task ActivityReadyAsync(IExecutionContext executionContext)
         {
             var node = executionContext.Node;
 
@@ -37,16 +46,7 @@ namespace ConsoleApp
             return Task.CompletedTask;
         }
 
-        public Task LeaveNodeAsync(IExecutionContext executionContext)
-        {
-            var node = executionContext.Node;
-
-            Console.WriteLine("Activity ended: '{0}[{1}]'.", node.Id, node.Name);
-
-            return Task.CompletedTask;
-        }
-
-        public Task StartedAsync(IExecutionContext executionContext)
+        public Task ProcessStartAsync(IExecutionContext executionContext)
         {
             var processInstance = executionContext.ProcessInstance;
 

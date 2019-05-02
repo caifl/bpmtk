@@ -9,8 +9,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public abstract class FlowNodeActivityBehavior : IFlowNodeActivityBehavior
     {
-        public virtual System.Threading.Tasks.Task<bool> CanActivateAsync(ExecutionContext executionContext,
-            IList<Token> joinedTokens)
+        public virtual System.Threading.Tasks.Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
             => System.Threading.Tasks.Task.FromResult(true);
 
         protected virtual SequenceFlow GetDefaultOutgoing(ExecutionContext executionContext)
@@ -41,8 +40,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             await this.LeaveDefaultAsync(executionContext);
         }
 
-        public virtual async System.Threading.Tasks.Task LeaveAsync(ExecutionContext executionContext, bool ignoreConditions,
-            IList<Token> joinedTokens)
+        public virtual async System.Threading.Tasks.Task LeaveAsync(ExecutionContext executionContext, bool ignoreConditions)
         {
             var node = executionContext.Node;
             var outgoings = node.Outgoings;
@@ -83,7 +81,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             else
                 transitions = new List<SequenceFlow>(outgoings);
 
-            await executionContext.LeaveNodeAsync(transitions, joinedTokens);
+            await executionContext.LeaveNodeAsync(transitions);
         }
 
         private async System.Threading.Tasks.Task LeaveDefaultAsync(ExecutionContext executionContext)

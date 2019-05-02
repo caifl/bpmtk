@@ -207,7 +207,7 @@ namespace Bpmtk.Engine.Runtime
             var executionContext = ExecutionContext.Create(this.context, token);
 
             //fire processStartEvent.
-            await this.context.Engine.ProcessEventListener.StartedAsync(executionContext);
+            await this.context.Engine.ProcessEventListener.ProcessStartAsync(executionContext);
 
             await executionContext.StartAsync();
             //}

@@ -14,34 +14,34 @@ namespace Bpmtk.Engine.Events
             this.processEventListeners = processEventListeners;
         }
 
-        public virtual async Task ActivatedAsync(IExecutionContext executionContext)
+        public virtual async Task ActivityStartAsync(IExecutionContext executionContext)
         {
             foreach (var item in this.processEventListeners)
-                await item.ActivatedAsync(executionContext);
+                await item.ActivityStartAsync(executionContext);
         }
 
-        public virtual async Task EndedAsync(IExecutionContext executionContext)
+        public virtual async Task ActivityEndAsync(IExecutionContext executionContext)
         {
             foreach (var item in this.processEventListeners)
-                await item.EndedAsync(executionContext);
+                await item.ActivityEndAsync(executionContext);
         }
 
-        public virtual async Task EnterNodeAsync(IExecutionContext executionContext)
+        public virtual async Task ProcessEndAsync(IExecutionContext executionContext)
         {
             foreach (var item in this.processEventListeners)
-                await item.EnterNodeAsync(executionContext);
+                await item.ProcessEndAsync(executionContext);
         }
 
-        public async Task LeaveNodeAsync(IExecutionContext executionContext)
+        public virtual async Task ActivityReadyAsync(IExecutionContext executionContext)
         {
             foreach (var item in this.processEventListeners)
-                await item.LeaveNodeAsync(executionContext);
+                await item.ActivityReadyAsync(executionContext);
         }
 
-        public async Task StartedAsync(IExecutionContext executionContext)
+        public async Task ProcessStartAsync(IExecutionContext executionContext)
         {
             foreach (var item in this.processEventListeners)
-                await item.StartedAsync(executionContext);
+                await item.ProcessStartAsync(executionContext);
         }
 
         public async Task TakeTransitionAsync(IExecutionContext executionContext)
