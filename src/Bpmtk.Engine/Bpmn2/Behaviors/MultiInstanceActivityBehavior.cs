@@ -76,9 +76,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
             var parentExecution = ExecutionContext.Create(context, parentToken);
 
-            var numberOfInstances = parentExecution.GetVariableLocal<int>("numberOfInstances");
-            var numberOfCompletedInstances = parentExecution.GetVariableLocal<int>("numberOfCompletedInstances") + 1;
-            var numberOfActiveInstances = parentExecution.GetVariableLocal<int>("numberOfActiveInstances");
+            var numberOfInstances = parentExecution.GetVariable<int>("numberOfInstances", true);
+            var numberOfCompletedInstances = parentExecution.GetVariable<int>("numberOfCompletedInstances", true) + 1;
+            var numberOfActiveInstances = parentExecution.GetVariable<int>("numberOfActiveInstances", true);
 
             if (!this.loopCharacteristics.IsSequential)
             {
@@ -86,9 +86,10 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 parentExecution.SetVariable("numberOfActiveInstances", numberOfActiveInstances);
             }
 
-            parentExecution.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
+            parentExecution.SetVariable("numberOfCompletedInstances", 
+                numberOfCompletedInstances, true);
 
-            var loopCounter = executionContext.GetVariableLocal<int>("loopCounter");
+            var loopCounter = executionContext.GetVariable<int>("loopCounter", true);
 
             var loopDataOutputRef = this.loopCharacteristics.LoopDataOutputRef;
             var outputDataItem = this.loopCharacteristics.OutputDataItem;
@@ -127,7 +128,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             }
             else
             {
-                executionContext.SetVariableLocal("loopCounter", loopCounter);
+                executionContext.SetVariable("loopCounter", loopCounter, true);
                 //this.ExecuteOriginalBehavior(executionContext, loopCounter);
             }
 

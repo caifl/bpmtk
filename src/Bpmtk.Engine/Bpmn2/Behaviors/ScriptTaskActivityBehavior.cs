@@ -17,7 +17,6 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             {
                 var evaluator = executionContext.GetEvaluator(scriptTask.ScriptFormat);
                 evaluator.Evalute(script);
-                return;
             }
 
             await base.LeaveAsync(executionContext);

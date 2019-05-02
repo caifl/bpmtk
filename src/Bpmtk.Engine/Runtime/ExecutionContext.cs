@@ -371,37 +371,27 @@ namespace Bpmtk.Engine.Runtime
             await this.EnterNodeAsync(targetNode);
         }
 
-        public virtual object GetVariable(string name)
-            => this.token.GetVariable(name)?.GetValue();
+        public virtual object GetVariable(string name, bool localOnly = false)
+            => this.token.GetVariable(name, localOnly);
 
-        public virtual object GetVariableLocal(string name)
-            => this.token.GetVariableLocal(name);
-
-        public virtual TValue GetVariableLocal<TValue>(string name)
+        public virtual TValue GetVariable<TValue>(string name, bool localOnly = false)
         {
-            var value = this.token.GetVariableLocal(name);
+            var value = this.GetVariable(name, localOnly);
             if (value != null)
                 return (TValue)value;
 
             return default(TValue);
         }
 
-        public virtual TValue GetVariable<TValue>(string name)
+        public virtual ExecutionContext SetVariable(string name, object value, bool localOnly = false)
         {
-            var value = this.token.GetVariable(name);
-            if (value != null)
-                return (TValue)value;
+            this.token.SetVariable(name, value, localOnly);
 
-            return default(TValue);
+            return this;
         }
 
-        public virtual void SetVariable(string name, object value)
-            => this.token.SetVariable(name, value);
-
-        public virtual void SetVariableLocal(string name, object value)
-        {
-            this.token.SetVariableLocal(name, value);
-        }
+        IExecutionContext IExecutionContext.SetVariable(string name, object value, bool localOnly)
+            => this.SetVariable(name, value, localOnly);
 
         public virtual IEvaluator GetEvaluator(string scriptFormat = null)
             => new Internal.JavascriptEvalutor(this);

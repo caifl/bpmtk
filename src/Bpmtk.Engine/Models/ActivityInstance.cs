@@ -9,14 +9,14 @@ namespace Bpmtk.Engine.Models
     public class ActivityInstance : ExecutionObject
     {
         //private ICollection<ActivityVariable> variableInstances;
-        private IDictionary<string, ActivityVariable> variables;
+        private IDictionary<string, ActivityVariable> variableByName;
         protected ICollection<ActivityInstance> children;
 
         public ActivityInstance()
         {
             //this.Parent = parent;
             //this.variableInstances = new List<ActivityVariable>();
-            this.variables = new Dictionary<string, ActivityVariable>();
+            //this.variableByName = new Dictionary<string, ActivityVariable>();
             this.children = new List<ActivityInstance>();
 
             //this.ProcessInstance = processInstance;
@@ -100,6 +100,8 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+
+
         //public virtual void Activate()
         //{
         //    this.State = ExecutionState.Active;
@@ -130,45 +132,66 @@ namespace Bpmtk.Engine.Models
 
         //    return act;
         //}
-
-        public virtual bool GetVariable(string name, out object value)
+        protected virtual void EnsureVariablesInitialized()
         {
-            value = null;
-            ActivityVariable variable = null;
-            if (this.variables.TryGetValue(name, out variable))
-            {
-                value = variable.GetValue();
-                return true;
-            }
+            if (this.variableByName != null)
+                return;
 
-            return false;
+            //if(this.Variables == null)
+            //    throw new RuntimE
+
+            if (this.Variables != null)
+                this.variableByName = this.Variables.ToDictionary(x => x.Name);
         }
 
         public override void SetVariable(string name, object value)
+            => this.SetVariable(name, value, false);
+
+        public virtual void SetVariable(string name, object value, bool localOnly)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
             ActivityVariable variable = null;
-            if (this.variables.TryGetValue(name, out variable))
-                variable.SetValue(value);
-
-            //if (this.Parent != null)
-            //{
-            //    this.Parent.SetVariable(name, value);
-            //    return;
-            //}
-
-            //this.ProcessInstance.SetVariable(name, value);
-        }
-
-        protected virtual void CreateOrUpdateVariable(string name, object value)
-        {
-            ActivityVariable variable = null;
-            if (this.variables.TryGetValue(name, out variable))
+            if (this.variableByName.TryGetValue(name, out variable))
             {
                 variable.SetValue(value);
                 return;
             }
 
-            this.CreateVariableInstance(name, value);
+            if (!localOnly)
+            {
+                if (this.Parent != null)
+                {
+                    this.Parent.SetVariable(name, value);
+                    return;
+                }
+
+                this.ProcessInstance.SetVariable(name, value);
+            }
+            else
+                this.AddVariable(name, value);
+        }
+
+        protected virtual ActivityVariable AddVariable(string name, object value,
+            IVariableType type = null)
+        {
+            if (value == null)
+                return null;
+
+            if (type == null)
+                type = VariableType.Resolve(value);
+
+            var variable = new ActivityVariable();
+            variable.Name = name;
+            variable.Type = type.Name;
+
+            type.SetValue(variable, value);
+
+            this.Variables.Add(variable);
+            this.variableByName.Add(name, variable);
+
+            return variable;
         }
 
         //public virtual void InitializeContext(IContext context,
@@ -199,26 +222,25 @@ namespace Bpmtk.Engine.Models
         //    }
         //}
 
-        protected virtual ActivityVariable CreateVariableInstance(string name,
-            object initialValue = null)
+        public override object GetVariable(string name)
+            => this.GetVariable(name, false);
+
+        public virtual object GetVariable(string name, bool localOnly)
         {
-            var item = new ActivityVariable();
-            //this.variableInstances.Add(item);
-            this.variables.Add(item.Name, item);
+            this.EnsureVariablesInitialized();
 
-            return item;
-        }
+            ActivityVariable variable = null;
+            if (this.variableByName.TryGetValue(name, out variable))
+                return variable.GetValue();
 
-        public override Variable GetVariable(string name)
-        {
-            //object value = null;
-            //if (this.GetVariable(name, out value))
-            //    return value;
+            if (!localOnly)
+            {
+                if (this.Parent != null)
+                    return this.Parent.GetVariable(name);
 
-            //if (this.Parent != null)
-            //    return this.Parent.GetVariable(name);
+                return this.ProcessInstance.GetVariable(name);
+            }
 
-            //return this.ProcessInstance.GetVariable(name);
             return null;
         }
 

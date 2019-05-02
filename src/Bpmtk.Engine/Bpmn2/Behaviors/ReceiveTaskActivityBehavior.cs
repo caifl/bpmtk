@@ -31,7 +31,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                     object value = null;
                     if (signalData.TryGetValue(dataOutput.Id, out value))
                     {
-                        executionContext.SetVariableLocal(dataOutput.Id, value);
+                        executionContext.SetVariable(dataOutput.Id, value, true);
                     }
                 }
             }

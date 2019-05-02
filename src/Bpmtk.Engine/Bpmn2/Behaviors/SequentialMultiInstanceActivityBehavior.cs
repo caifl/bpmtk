@@ -73,9 +73,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             int numberOfActiveInstances = this.loopCharacteristics.IsSequential ? 1 : numberOfInstances;
             int numberOfCompletedInstances = 0;
 
-            executionContext.SetVariableLocal("numberOfInstances", numberOfInstances);
-            executionContext.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
-            executionContext.SetVariableLocal("numberOfActiveInstances", numberOfActiveInstances);
+            executionContext.SetVariable("numberOfInstances", numberOfInstances, true);
+            executionContext.SetVariable("numberOfCompletedInstances", numberOfCompletedInstances, true);
+            executionContext.SetVariable("numberOfActiveInstances", numberOfActiveInstances, true);
 
             if (this.loopCharacteristics.IsSequential)
             {
@@ -86,7 +86,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 //childToken.Scope = token.Scope;
 
                 var childExecutionContext = ExecutionContext.Create(context, childToken);
-                childExecutionContext.SetVariableLocal("loopCounter", 0);
+                childExecutionContext.SetVariable("loopCounter", 0, true);
 
                 this.ExecuteOriginalBehavior(childExecutionContext, 0);
             }

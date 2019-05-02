@@ -36,6 +36,12 @@ namespace Bpmtk.Engine.Tasks
             var date = Clock.Now;
 
             var task = new TaskInstance();
+
+            //init
+            task.IdentityLinks = new List<IdentityLink>();
+            task.Variables = new List<Variable>();
+
+            //
             task.Name = this.name;
             task.ActivityId = this.activityId;
             task.Created = date;

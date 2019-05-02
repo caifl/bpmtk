@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
@@ -73,6 +73,12 @@ namespace Bpmtk.Engine.Bpmn2.Parser
                 document = XDocument.Load(reader);
             }
 
+            if (this.exceptions.Count > 0)
+            {
+                var message = this.GetErrorDetails();
+                throw new BpmnException("The BPMN model parse error: \n" + message);
+            }
+
             var element = document.Root;
 
             var handler = new DefinitionsParseHandler();
@@ -85,6 +91,18 @@ namespace Bpmtk.Engine.Bpmn2.Parser
 
             var flowElements = context.FlowElements;
             return new BpmnParserResults(definitions, flowElements, this.exceptions);
+        }
+
+        protected virtual string GetErrorDetails()
+        {
+            var sb = new StringBuilder();
+
+            foreach(var ex in this.exceptions)
+            {
+                sb.AppendLine(ex.Message);
+            }
+
+            return sb.ToString();
         }
     }
 }

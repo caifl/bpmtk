@@ -7,7 +7,6 @@ namespace Bpmtk.Engine.Models
 {
     public abstract class ExecutionObject
     {
-
         public virtual long Id
         {
             get;
@@ -50,7 +49,7 @@ namespace Bpmtk.Engine.Models
         //    return null;
         //}
 
-        public abstract Variable GetVariable(string name);
+        public abstract object GetVariable(string name);
 
         public abstract void SetVariable(string name, object value);
 

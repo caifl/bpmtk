@@ -66,25 +66,28 @@ namespace Bpmtk.Engine.Models
         //    this.Variables = new List<Variable>();
         //}
 
-        public virtual bool GetVariable(string name, out object value)
-        {
-            this.EnsureVariablesInitialized();
+        //public virtual bool GetVariable(string name, out object value)
+        //{
+        //    this.EnsureVariablesInitialized();
 
-            value = null;
-            Variable variable = null;
+        //    value = null;
+        //    Variable variable = null;
 
-            if (this.variableByName.TryGetValue(name, out variable))
-            {
-                value = variable.GetValue();
-                return true;
-            }
+        //    if (this.variableByName.TryGetValue(name, out variable))
+        //    {
+        //        value = variable.GetValue();
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         protected virtual void EnsureVariablesInitialized()
         {
-            if (this.variableByName == null)
+            if (this.variableByName != null)
+                return;
+
+            if(this.Variables != null)
                 this.variableByName = this.Variables.ToDictionary(x => x.Name);
         }
 
@@ -105,13 +108,13 @@ namespace Bpmtk.Engine.Models
             this.AddVariable(name,  value);
         }
 
-        public override Variable GetVariable(string name)
+        public override object GetVariable(string name)
         {
             this.EnsureVariablesInitialized();
 
-            Variable value = null;
-            if (this.variableByName.TryGetValue(name, out value))
-                return value;
+            Variable variable = null;
+            if (this.variableByName.TryGetValue(name, out variable))
+                return variable.GetValue();
 
             return null;
         }
@@ -132,9 +135,6 @@ namespace Bpmtk.Engine.Models
             type.SetValue(variable, value);
 
             this.Variables.Add(variable);
-
-            this.EnsureVariablesInitialized();
-
             this.variableByName.Add(name, variable);
 
             return variable;

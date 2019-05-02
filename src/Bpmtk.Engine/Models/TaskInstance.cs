@@ -9,6 +9,7 @@ namespace Bpmtk.Engine.Models
         protected ProcessInstance processInstance;
         protected ActivityInstance activityInstance;
         protected bool isSuspended;
+        protected IDictionary<string, Variable> variableByName;
         //protected ICollection<IdentityLink> identityLinks;
 
         //protected TaskInstance()
@@ -194,16 +195,32 @@ namespace Bpmtk.Engine.Models
         //    if (this.processInstance != null)
         //        this.processInstance.Terminate(context, endReason);
         //}
-
-        public virtual object GetVariable(string name)
+        protected virtual void EnsureVariablesInitialized()
         {
-            if (this.Token != null)
-                return this.Token.GetVariable(name)?.GetValue();
-            else if (this.ActivityInstance != null)
-                return this.ActivityInstance.GetVariable(name)?.GetValue();
+            if (this.variableByName != null)
+                return;
 
-            else if (this.ProcessInstance != null)
-                return this.ProcessInstance.GetVariable(name)?.GetValue();
+            if(this.Variables != null)
+                this.variableByName = this.Variables.ToDictionary(x => x.Name);
+        }
+
+        public virtual object GetVariable(string name, bool localOnly = false)
+        {
+            this.EnsureVariablesInitialized();
+
+            Variable variable = null;
+            if(this.variableByName.TryGetValue(name, out variable))
+                return variable.GetValue();
+
+            if (!localOnly)
+            {
+                if (this.Token != null)
+                    return this.Token.GetVariable(name);
+                else if (this.ActivityInstance != null)
+                    return this.ActivityInstance.GetVariable(name);
+                else if (this.ProcessInstance != null)
+                    return this.ProcessInstance.GetVariable(name);
+            }
 
             return null;
         }

@@ -53,6 +53,11 @@ namespace Bpmtk.Engine.History
 
             var act = new ActivityInstance();
 
+            //init
+            act.Variables = new List<ActivityVariable>();
+            act.IdentityLinks = new List<IdentityLink>();
+            //act.Children = new List<ActivityInstance>();
+
             //this.Parent = parent;
             //this.variableInstances = new List<ActivityVariable>();
             var node = executionContext.Node;

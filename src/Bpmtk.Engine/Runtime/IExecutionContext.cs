@@ -49,12 +49,8 @@ namespace Bpmtk.Engine.Runtime
             get;
         }
 
-        object GetVariable(string name);
+        object GetVariable(string name, bool localOnly = false);
 
-        void SetVariable(string name, object value);
-
-        object GetVariableLocal(string name);
-
-        void SetVariableLocal(string name, object value);
+        IExecutionContext SetVariable(string name, object value, bool localOnly = false);
     }
 }

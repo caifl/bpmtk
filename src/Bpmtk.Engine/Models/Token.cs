@@ -2,19 +2,17 @@
 using System.Linq;
 using System.Collections.Generic;
 using Bpmtk.Bpmn2;
+using Bpmtk.Engine.Variables;
 
 namespace Bpmtk.Engine.Models
 {
     public class Token
     {
-        private bool isInitialized;
         private FlowNode node;
         private IDictionary<string, Variable> variableByName;
 
         protected Token()
-        {
-            isInitialized = false;
-        }
+        { }
 
         public virtual bool IsEnded
         {
@@ -26,7 +24,6 @@ namespace Bpmtk.Engine.Models
             if (parent == null)
                 throw new ArgumentNullException(nameof(parent));
 
-            this.isInitialized = true;
             this.Parent = parent;
             this.Children = new List<Token>();
             this.Variables = new List<Variable>();
@@ -173,29 +170,19 @@ namespace Bpmtk.Engine.Models
             this.ActivityId = this.node?.Id;
         }
 
-        protected virtual void EnsureInitialized()
+        protected virtual void EnsureVariablesInitialized()
         {
-            if (!this.isInitialized)
-            {
-                if (this.node == null && this.ActivityId != null)
-                {
-                    //var procDef = this.ProcessInstance.ProcessDefinition;
-                    //var deploymentId = procDef.DeploymentId;
-                    //var dm = Context.Current.GetService<IDeploymentManager>();
-                    //var model = dm.GetBpmnModel(deploymentId);
-                    //this.node = model?.GetFlowElement(this.ActivityId) as FlowNode;
-                }
+            if (this.variableByName != null)
+                return;
 
-                this.isInitialized = true;
-            }
+            if (this.Variables != null)
+                this.variableByName = this.Variables.ToDictionary(x => x.Name);
         }
 
         public virtual FlowNode Node
         {
             get
             {
-                this.EnsureInitialized();
-
                 return this.node;
             }
             set
@@ -250,13 +237,12 @@ namespace Bpmtk.Engine.Models
             return token;
         }
 
-        protected virtual void EnsureVariablesInitialized()
+        public virtual object ResolveVariable(string name, bool isResolved)
         {
-            if (this.variableByName == null)
-                this.variableByName = this.Variables.ToDictionary(x => x.Name);
+            return null;
         }
 
-        public virtual object GetVariableLocal(string name)
+        public virtual object GetVariable(string name, bool localOnly = false)
         {
             this.EnsureVariablesInitialized();
 
@@ -264,57 +250,62 @@ namespace Bpmtk.Engine.Models
             if (this.variableByName.TryGetValue(name, out variable))
                 return variable.GetValue();
 
+            if (!localOnly)
+            {
+                if (this.Parent != null)
+                    return this.Parent.GetVariable(name);
+
+                return this.ProcessInstance.GetVariable(name);
+            }
+
             return null;
         }
 
-        public virtual IVariable GetVariable(string name)
-        {
-            if(this.variableByName == null)
-                this.variableByName = this.Variables.ToDictionary(x => x.Name);
-
-            Variable variable = null;
-            if (this.variableByName.TryGetValue(name, out variable))
-                return variable;
-
-            if (this.Parent != null)
-                return this.Parent.GetVariable(name);
-
-            return this.ProcessInstance.GetVariable(name);
-        }
-
-        public virtual void SetVariable(string name, object value)
-        {
-            if (this.variableByName == null)
-                this.variableByName = this.Variables.ToDictionary(x => x.Name);
-
-            Variable variable = null;
-            if (this.variableByName.TryGetValue(name, out variable))
-                variable.SetValue(value);
-
-            if (this.Parent != null)
-                this.Parent.SetVariable(name, value);
-
-            this.ProcessInstance.SetVariable(name, value);
-        }
-
-        public virtual void SetVariableLocal(string name, object value)
+        public virtual void SetVariable(string name, object value,
+            bool localOnly = false)
         {
             this.EnsureVariablesInitialized();
 
             Variable variable = null;
             if (this.variableByName.TryGetValue(name, out variable))
+               variable.SetValue(value);
+
+            if (!localOnly)
             {
-                variable.SetValue(value);
-                return;
+                if (this.Parent != null)
+                    this.Parent.SetVariable(name, value);
+
+                this.ProcessInstance.SetVariable(name, value);
             }
+            else
+            {
+                //add new variable object.
+                this.AddVariable(name, value);
 
-            //variable = new Variable(this, name, value);
-            //this.variableByName.Add(name, variable);
-            //this.variables.Add(variable);
+                if (this.ActivityInstance != null)
+                    this.ActivityInstance.SetVariable(name, value);
+            }
+        }
 
-            //Try update historic data.
-            if (this.ActivityInstance != null)
-                this.ActivityInstance.SetVariable(name, value);
+        protected virtual Variable AddVariable(string name, object value,
+            IVariableType type = null)
+        {
+            if (value == null)
+                return null;
+
+            if (type == null)
+                type = VariableType.Resolve(value);
+
+            var variable = new Variable();
+            variable.Name = name;
+            variable.Type = type.Name;
+
+            type.SetValue(variable, value);
+
+            this.Variables.Add(variable);
+            this.variableByName.Add(name, variable);
+
+            return variable;
         }
 
         public virtual Token ResolveScope()
