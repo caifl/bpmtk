@@ -9,7 +9,7 @@
     </bpmn:startEvent>
     <bpmn:userTask id="Task_105g1f1" name="Hello Word">
       <bpmn:extensionElements>
-        <bpmtk:script on="activated">
+        <bpmtk:script on="start">
           <![CDATA[execution.SetVariable('user', 'felix')]]>
         </bpmtk:script>
         <bpmtk:attribute name="assignee">${user}</bpmtk:attribute>

@@ -6,7 +6,7 @@
   <bpmn:process id="BpmnInlineScriptEventTestCase" isExecutable="true">
     <bpmn:startEvent id="StartEvent_0busnrn" name="start">
       <bpmn:extensionElements>
-        <bpmtk:script on="activated">
+        <bpmtk:script on="start">
           <![CDATA[execution.SetVariable('greeting', 'hello bpmtk!')]]>
         </bpmtk:script>
       </bpmn:extensionElements>
@@ -14,7 +14,7 @@
     </bpmn:startEvent>
     <bpmn:task id="Task_105g1f1" name="Hello Word">
       <bpmn:extensionElements>
-        <bpmtk:script on="leave">
+        <bpmtk:script on="end">
           <![CDATA[execution.SetVariable('taskEnded', true)]]>
         </bpmtk:script>
       </bpmn:extensionElements>

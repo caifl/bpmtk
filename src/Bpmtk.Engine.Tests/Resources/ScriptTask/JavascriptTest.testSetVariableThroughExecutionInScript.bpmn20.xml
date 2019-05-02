@@ -5,7 +5,7 @@
   typeLanguage="http://www.w3.org/2001/XMLSchema"
   targetNamespace="Examples">
   
-  <process id="setScriptVariableThroughExecution">
+  <process id="setScriptVariableThroughExecution" isExecutable="true">
     <dataObject id="myVar" name="这是一个测试变量" itemSubjectRef="xsd:string">
       <extensionElements>
         <bpmtk:value><![CDATA[]]></bpmtk:value>

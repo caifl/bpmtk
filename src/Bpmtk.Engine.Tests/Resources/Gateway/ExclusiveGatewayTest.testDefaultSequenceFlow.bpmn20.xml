@@ -5,7 +5,7 @@
   xmlns:bpmtk="http://bpmtk.org/bpmn"
   targetNamespace="Examples">
   
-  <process id="exclusiveGwDefaultSequenceFlow">
+  <process id="exclusiveGwDefaultSequenceFlow" isExecutable="true">
   
     <startEvent id="theStart" />
     <sequenceFlow id="flow1" sourceRef="theStart" targetRef="exclusiveGw" />

@@ -21,16 +21,17 @@ namespace Bpmtk.Engine.Tests.Event
 
             var pi = await this.runtimeManager.StartProcessByKeyAsync("BpmnInlineScriptEventTestCase");
 
-            var greeting = pi.GetVariable("greeting");
+            var variables = await this.runtimeManager.GetVariablesAsync(pi.Id);
+            var greeting = variables["greeting"];
             Assert.True("hello bpmtk!".Equals(greeting));
 
-            var taskEnded = pi.GetVariable("taskEnded");
+            var taskEnded = variables["taskEnded"];
 
             Assert.True(true.Equals(taskEnded));
 
             this.AssertProcessEnded(pi.Id);
 
-            this.Commit();
+            //this.Commit();
         }
     }
 }

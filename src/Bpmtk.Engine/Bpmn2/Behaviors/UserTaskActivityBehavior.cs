@@ -52,7 +52,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
                     case TaskName:
                         {
-                            taskName = evaluator.EvaluteToString(value);
+                            taskName = evaluator.Evalute<string>(value);
                             if(taskName != null)
                                 builder.SetName(taskName);
                             break;

@@ -13,13 +13,18 @@ namespace Bpmtk.Engine.History
     public class HistoryManager : IHistoryManager
     {
         private const string KeyIsActivityRecorderDisabled = "IsActivityRecorderDisabled";
+        private const string KeyIsTokenRecorderEnabled = "IsTokenRecorderEnabled";
         protected IDbSession db;
 
         public HistoryManager(Context context)
         {
-            Context = context;
+            Context = context ?? throw new ArgumentNullException(nameof(context));
             this.db = context.DbSession;
-            this.IsActivityRecorderDisabled = this.Context.Engine.GetValue<bool>("isActivityRecorderDisabled", false);
+
+            var engine = context.Engine;
+
+            this.IsTokenRecorderEnabled = engine.GetValue<bool>(KeyIsTokenRecorderEnabled, false);
+            this.IsActivityRecorderDisabled = engine.GetValue<bool>(KeyIsActivityRecorderDisabled, false);
         }
 
         protected virtual bool IsActivityRecorderDisabled
@@ -27,14 +32,14 @@ namespace Bpmtk.Engine.History
             get;
         }
 
+        public virtual bool IsTokenRecorderEnabled
+        {
+            get;
+        }
+
         public virtual IQueryable<ActivityInstance> ActivityInstances => this.db.ActivityInstances;
 
         public virtual Context Context { get; }
-
-        public Task CreateActivityInstanceAsync(ActivityInstance activityInstance)
-        {
-            throw new NotImplementedException();
-        }
 
         public virtual IActivityInstanceQuery CreateActivityQuery()
         {

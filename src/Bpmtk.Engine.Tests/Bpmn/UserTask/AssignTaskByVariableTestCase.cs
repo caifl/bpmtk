@@ -26,11 +26,13 @@ namespace Bpmtk.Engine.Tests.Bpmn.UserTask
             var tasks = await query.ListAsync();
             Assert.True(tasks.Count == 1);
 
-            Assert.True(tasks[0].AssigneeId == 1);
+            Assert.True(tasks[0].AssigneeId == this.context.UserId);
 
-            //this.AssertProcessEnded(pi.Id);
+            await this.taskManager.CompleteAsync(tasks[0].Id);
 
-            this.Commit();
+            this.AssertProcessEnded(pi.Id);
+
+            //this.Commit();
         }
     }
 }

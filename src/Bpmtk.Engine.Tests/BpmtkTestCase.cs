@@ -67,7 +67,7 @@ namespace Bpmtk.Engine.Tests
             var contextFactory = new ContextFactory();
             contextFactory.Configure(builder =>
             {
-                builder.UseLoggerFactory(loggerFactory);
+               // builder.UseLoggerFactory(loggerFactory);
                 builder.UseLazyLoadingProxies(true);
                 builder.UseMySql("server=localhost;uid=root;pwd=123456;database=bpmtk2");
             });

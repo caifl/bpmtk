@@ -59,7 +59,7 @@ namespace Bpmtk.Engine.Tests.Scripting
 
             var pi = await this.runtimeManager.StartProcessByKeyAsync("setScriptVariableThroughExecution");
 
-            var myVar = pi.GetVariable("myVar");
+            var myVar = pi.GetVariable("myVar")?.GetValue();
             Assert.True("test123".Equals(myVar));
 
             var tasks = await this.taskManager.CreateQuery()

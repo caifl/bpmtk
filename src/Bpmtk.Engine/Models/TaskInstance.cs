@@ -197,9 +197,13 @@ namespace Bpmtk.Engine.Models
 
         public virtual object GetVariable(string name)
         {
-            var act = this.activityInstance;
-            if (act != null)
-                return act.GetVariable(name);
+            if (this.Token != null)
+                return this.Token.GetVariable(name)?.GetValue();
+            else if (this.ActivityInstance != null)
+                return this.ActivityInstance.GetVariable(name)?.GetValue();
+
+            else if (this.ProcessInstance != null)
+                return this.ProcessInstance.GetVariable(name)?.GetValue();
 
             return null;
         }
