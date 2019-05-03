@@ -49,11 +49,12 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             this.innerActivityBehavior.ExecuteAsync(executionContext).GetAwaiter().GetResult();
         }
 
-        protected override int CreateInstances(ExecutionContext executionContext)
+        protected override System.Threading.Tasks.Task<int> CreateInstancesAsync(ExecutionContext executionContext)
         {
             var numberOfInstances = this.ResolveNumberOfInstances(executionContext);
             if (numberOfInstances == 0)
-                return numberOfInstances;
+                return System.Threading.Tasks.Task.FromResult(numberOfInstances);
+
             else if (numberOfInstances < 0)
             {
                 throw new RuntimeException("Invalid number of instances: must be non-negative integer value"
@@ -81,11 +82,8 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             {
                 var childToken = token.CreateToken();
 
-                //
-                childToken.Node = node;
-                //childToken.Scope = token.Scope;
-
                 var childExecutionContext = ExecutionContext.Create(context, childToken);
+                //childExecutionContext.Node = node;
                 childExecutionContext.SetVariable("loopCounter", 0, true);
 
                 this.ExecuteOriginalBehavior(childExecutionContext, 0);
@@ -134,8 +132,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             //    //Execute inner-activity.
             //    this.Activity.Execute(innerExecution);
             //}
-
-            return numberOfInstances;
+            return System.Threading.Tasks.Task.FromResult(numberOfInstances);
         }
     }
 }

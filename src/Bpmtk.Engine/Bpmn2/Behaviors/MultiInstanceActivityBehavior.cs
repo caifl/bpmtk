@@ -15,7 +15,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             this.loopCharacteristics = loopCharacteristics;
         }
 
-        protected abstract int CreateInstances(ExecutionContext executionContext);
+        
 
         protected virtual bool IsCompleted(ExecutionContext executionContext)
         {

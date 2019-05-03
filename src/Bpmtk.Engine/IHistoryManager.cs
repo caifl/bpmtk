@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
+using Bpmtk.Engine.History;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine

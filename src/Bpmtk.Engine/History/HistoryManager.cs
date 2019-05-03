@@ -14,12 +14,12 @@ namespace Bpmtk.Engine.History
     {
         private const string KeyIsActivityRecorderDisabled = "IsActivityRecorderDisabled";
         private const string KeyIsTokenRecorderEnabled = "IsTokenRecorderEnabled";
-        protected IDbSession db;
+        protected IDbSession session;
 
         public HistoryManager(Context context)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            this.db = context.DbSession;
+            this.session = context.DbSession;
 
             var engine = context.Engine;
 
@@ -37,14 +37,12 @@ namespace Bpmtk.Engine.History
             get;
         }
 
-        public virtual IQueryable<ActivityInstance> ActivityInstances => this.db.ActivityInstances;
+        public virtual IQueryable<ActivityInstance> ActivityInstances => this.session.ActivityInstances;
 
         public virtual Context Context { get; }
 
         public virtual IActivityInstanceQuery CreateActivityQuery()
-        {
-            throw new NotImplementedException();
-        }
+            => new ActivityInstanceQuery(this.session);
 
         public virtual async Task RecordActivityReadyAsync(ExecutionContext executionContext)
         {
@@ -61,6 +59,14 @@ namespace Bpmtk.Engine.History
             //this.Parent = parent;
             //this.variableInstances = new List<ActivityVariable>();
             var node = executionContext.Node;
+
+            //Check if nested.
+            if(node.Container is Bpmtk.Bpmn2.SubProcess)
+            {
+                //find parent activity-instance.
+                var scope = executionContext.Token.ResolveScope();
+                act.Parent = scope.ActivityInstance;
+            }
 
             act.ProcessInstance = executionContext.ProcessInstance;
             //this.activity = activity;
@@ -84,8 +90,8 @@ namespace Bpmtk.Engine.History
                 act.Description = Bpmtk.Engine.Utils.StringHelper.Join(textArray, "\n", 255);
             }
 
-            await this.db.SaveAsync(act);
-            await this.db.FlushAsync();
+            await this.session.SaveAsync(act);
+            await this.session.FlushAsync();
 
             //Set current-act-inst.
             executionContext.ActivityInstance = act;
@@ -122,7 +128,7 @@ namespace Bpmtk.Engine.History
             }
 
             if (hasChanges)
-                await this.db.FlushAsync();
+                await this.session.FlushAsync();
         }
 
         public virtual async Task RecordActivityStartAsync(ExecutionContext executionContext)
@@ -136,6 +142,7 @@ namespace Bpmtk.Engine.History
             if (act != null)
             {
                 act.State = ExecutionState.Active;
+                act.StartTime = date;
                 act.LastStateTime = date;
                 hasChanges = true;
             }
@@ -149,6 +156,7 @@ namespace Bpmtk.Engine.History
                     if(act != null)
                     {
                         act.State = ExecutionState.Active;
+                        act.StartTime = date;
                         act.LastStateTime = date;
                         hasChanges = true;
                     }
@@ -156,13 +164,13 @@ namespace Bpmtk.Engine.History
             }
 
             if(hasChanges)
-                await this.db.FlushAsync();
+                await this.session.FlushAsync();
         }
 
         public Task<IList<ActivityInstance>> GetActivityInstancesAsync(long processInstanceId)
         {
             var q = this.ActivityInstances.Where(x => x.ProcessInstance.Id == processInstanceId);
-            return this.db.QueryMultipleAsync(q);
+            return this.session.QueryMultipleAsync(q);
         }
     }
 }

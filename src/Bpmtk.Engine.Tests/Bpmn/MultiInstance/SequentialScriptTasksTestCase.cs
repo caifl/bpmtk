@@ -29,11 +29,12 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             var myVar = pi.GetVariable("sum");
             Assert.True(10 == Convert.ToInt32(myVar));
 
-            var actInsts = this.context.HistoryManager.CreateActivityQuery()
-                .List();
+            var query = this.context.HistoryManager.CreateActivityQuery();
+            var list = await query
+                .SetProcessInstanceId(pi.Id)
+                .SetActivityType("ScriptTask")
+                .ListAsync();
 
-            var list = actInsts.Where(x => x.ActivityType == "ScriptTask")
-                .ToList();
             Assert.True(list.Count == 5);
 
             foreach(var item in list)

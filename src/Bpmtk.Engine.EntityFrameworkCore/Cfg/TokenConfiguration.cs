@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 using Bpmtk.Engine.Models;
 
@@ -11,7 +10,8 @@ namespace Bpmtk.Engine.Cfg
     {
         public virtual void Configure(EntityTypeBuilder<Token> builder)
         {
-            //ignore bpmn-node.
+            //ignore IsEnded/Node.
+            builder.Ignore(x => x.IsEnded);
             builder.Ignore(x => x.Node);
 
             builder.HasKey(x => x.Id);
@@ -35,7 +35,7 @@ namespace Bpmtk.Engine.Cfg
             //    .HasForeignKey("ScopeId")
             //    .OnDelete(DeleteBehavior.SetNull);
 
-            builder.Property(x => x.ActivityId).IsRequired(true).HasMaxLength(64);
+            builder.Property(x => x.ActivityId).HasMaxLength(64);
             builder.Property(x => x.TransitionId).HasMaxLength(64);
             builder.Property(x => x.IsActive).IsRequired(true);
                 //.HasConversion(new BoolToZeroOneConverter<Int16>());

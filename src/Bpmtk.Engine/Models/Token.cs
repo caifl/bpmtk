@@ -8,7 +8,7 @@ namespace Bpmtk.Engine.Models
 {
     public class Token
     {
-        private FlowNode node;
+        protected FlowNode node;
         private IDictionary<string, Variable> variableByName;
 
         protected Token()
@@ -17,41 +17,26 @@ namespace Bpmtk.Engine.Models
         public virtual bool IsEnded
         {
             get;
+            set;
         }
 
-        protected Token(Token parent)
+        protected Token(Token parent) 
+            : this(parent.ProcessInstance)
         {
             if (parent == null)
                 throw new ArgumentNullException(nameof(parent));
 
             this.Parent = parent;
-            this.Children = new List<Token>();
-            this.Variables = new List<Variable>();
-            this.variableByName = new Dictionary<string, Variable>();
-            this.ProcessInstance = parent.ProcessInstance;
-            this.IsActive = true;
         }
 
         public Token(ProcessInstance processInstance)
         {
-            this.ProcessInstance = processInstance;
-            this.Variables = new List<Variable>();
-            this.Children = new List<Token>();
+            this.ProcessInstance = processInstance ?? throw new ArgumentNullException(nameof(processInstance));
             this.IsActive = true;
-        }
 
-        public Token(ProcessInstance processInstance, FlowNode initialNode)
-        {
+            this.Children = new List<Token>();
             this.Variables = new List<Variable>();
             this.variableByName = new Dictionary<string, Variable>();
-            this.Children = new List<Token>();
-            this.ProcessInstance = processInstance ?? throw new ArgumentNullException(nameof(processInstance));
-            this.node = initialNode ?? throw new ArgumentNullException(nameof(initialNode));
-            this.IsActive = true;
-            this.IsMIRoot = false;
-            this.IsSuspended = false;
-
-            this.OnNodeChanged();
         }
 
         public virtual long Id
@@ -70,6 +55,16 @@ namespace Bpmtk.Engine.Models
         {
             get;
             set;
+        }
+
+        public virtual FlowNode Node
+        {
+            get => this.node;
+            set
+            {
+                this.node = value;
+                this.ActivityId = value?.Id;
+            }
         }
 
         //public virtual DateTime EnterTime
@@ -106,24 +101,6 @@ namespace Bpmtk.Engine.Models
             else
                 this.ProcessInstance.Tokens.Remove(this);
         }
-
-        //public virtual void Remove(IContext context)
-        //{
-        //    if (this.Parent != null)
-        //    {
-        //        this.Parent.children.Remove(this);
-        //        var store = context.GetService<IInstanceStore>();
-        //        store.Remove(this);
-        //    }
-        //    else
-        //        throw new Exception("Can't delete root-token.");
-        //}
-
-        /// <summary>
-        /// Gets the root-token.
-        /// </summary>
-        public virtual Token GetRoot()
-            => this;
 
         protected void CollectInactiveTokensAt(string activityId, IList<Token> tokens)
         {
@@ -165,10 +142,10 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        protected virtual void OnNodeChanged()
-        {
-            this.ActivityId = this.node?.Id;
-        }
+        //protected virtual void OnNodeChanged()
+        //{
+        //    this.ActivityId = this.node?.Id;
+        //}
 
         protected virtual void EnsureVariablesInitialized()
         {
@@ -179,18 +156,18 @@ namespace Bpmtk.Engine.Models
                 this.variableByName = this.Variables.ToDictionary(x => x.Name);
         }
 
-        public virtual FlowNode Node
-        {
-            get
-            {
-                return this.node;
-            }
-            set
-            {
-                this.node = value;
-                this.ActivityId = value?.Id;
-            }
-        }
+        //public virtual FlowNode Node
+        //{
+        //    get
+        //    {
+        //        return this.node;
+        //    }
+        //    set
+        //    {
+        //        this.node = value;
+        //        this.ActivityId = value?.Id;
+        //    }
+        //}
 
         public virtual bool IsActive
         {

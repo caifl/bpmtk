@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
@@ -15,32 +15,35 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             this.innerActivityBehavior.LoopActivityBehavior = this;
         }
 
-        //public override void Execute(ExecutionContext executionContext)
-        //{
-        //    //var token = executionContext.Token;
-        //    //int numberOfInstances = 0;
+        protected abstract Task<int> CreateInstancesAsync(ExecutionContext executionContext);
 
-        //    //try
-        //    //{
-        //    //    numberOfInstances = this.LoopCharacteristics.CreateInstances(executionContext);
-        //    //}
-        //    //catch (BpmnError error)
-        //    //{
-        //    //    throw error;
-        //    //    //ErrorPropagation.propagateError(error, execution);
-        //    //}
+        public override async Task ExecuteAsync(ExecutionContext executionContext)
+        {
+            var token = executionContext.Token;
+            int numberOfInstances = 0;
 
-        //    //if (numberOfInstances == 0) //实例数量为零的情况下仍然建立一个活动实例, 只是不执行该节点的任何行为
-        //    //{
-        //    //    this.OnActivating(executionContext);
+            try
+            {
+                numberOfInstances = await this.CreateInstancesAsync(executionContext);
+            }
+            catch (BpmnError error)
+            {
+                throw error;
+                //ErrorPropagation.propagateError(error, execution);
+            }
 
-        //    //    this.OnActivated(executionContext);
+            if (numberOfInstances == 0) //实例数量为零的情况下仍然建立一个活动实例, 只是不执行该节点的任何行为
+            {
+                await this.innerActivityBehavior.ExecuteAsync(executionContext);
+                //this.OnActivating(executionContext);
 
-        //    //    //ignore activity behavior.
-        //    //    //base.Execute(executionContext);
+                //this.OnActivated(executionContext);
 
-        //    //    base.LeaveDefault(executionContext);
-        //    //}
-        //}
+                ////ignore activity behavior.
+                ////base.Execute(executionContext);
+
+                //base.LeaveDefault(executionContext);
+            }
+        }
     }
 }

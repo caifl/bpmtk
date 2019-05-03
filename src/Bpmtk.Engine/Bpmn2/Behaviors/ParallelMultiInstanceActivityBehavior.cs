@@ -1,4 +1,5 @@
-﻿using Bpmtk.Bpmn2;
+﻿using System.Threading.Tasks;
+using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
@@ -9,7 +10,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         {
         }
 
-        protected override int CreateInstances(ExecutionContext executionContext)
+        protected override Task<int> CreateInstancesAsync(ExecutionContext executionContext)
         {
             throw new System.NotImplementedException();
         }

@@ -5,7 +5,7 @@
   xmlns:bpmtk="http://www.bpmtk.com/bpmn/extensions"
   targetNamespace="Examples">
   
-  <process id="miSequentialScriptTask">
+  <process id="miSequentialScriptTask" isExecutable="true">
   
     <startEvent id="theStart" />
     <sequenceFlow id="flow1" sourceRef="theStart" targetRef="miScriptTask" />

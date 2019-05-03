@@ -71,16 +71,31 @@ namespace Bpmtk.Engine.Runtime
             throw new NotSupportedException();
         }
 
-        public virtual ExecutionContext CreateSubProcessContext()
+        public virtual async SysTasks.Task<ExecutionContext> StartSubProcessAsync(Bpmtk.Bpmn2.FlowNode initialNode,
+            IDictionary<string, object> variables)
         {
-            var token = this.token.CreateToken();
+            //
+            this.token.IsScope = true;
 
-            return Create(this.Context, token);
+            //Initialize scope context.
+
+            //Create sub-token.
+            var subToken = this.token.CreateToken();
+            subToken.Node = initialNode;
+
+            //Save changes.
+            await this.Context.DbSession.FlushAsync();
+
+            var subExecution = Create(this.Context, subToken);
+            await subExecution.EnterNodeAsync(initialNode);
+
+            return subExecution;
         }
 
         public virtual async SysTasks.Task EndAsync()
         {
             this.token.IsActive = false;
+            this.token.IsEnded = true;
 
             //fire activityEndEvent.
             var eventListener = this.Context.Engine.ProcessEventListener;
@@ -90,7 +105,7 @@ namespace Bpmtk.Engine.Runtime
             if (parentToken != null)
             {
                 //判断是否在子流程中
-                var container = this.token.Node.Container;
+                var container = this.Node.Container;
                 if (container is Bpmtk.Bpmn2.SubProcess)
                 {
                     this.token.Remove();

@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Bpmn2;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public class ParallelGatewayActivityBehavior : GatewayActivityBehavior
     {
+        protected override SequenceFlow GetDefaultOutgoing(ExecutionContext executionContext)
+            => null;
+
         public override System.Threading.Tasks.Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
         {
             var node = executionContext.Node;
