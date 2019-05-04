@@ -71,6 +71,25 @@ namespace Bpmtk.Engine.Runtime
             throw new NotSupportedException();
         }
 
+        public virtual async SysTasks.Task<IList<ExecutionContext>> CreateInnerExecutions(int numberOfInstances)
+        {
+            var list = new List<ExecutionContext>();
+
+            for (int i = 0; i < numberOfInstances; i++)
+            {
+                var childToken = this.token.CreateToken();
+                childToken.Node = this.Node;
+
+                var innerExecution = ExecutionContext.Create(this.Context, childToken);
+
+                list.Add(innerExecution);
+            }
+
+            await this.Context.DbSession.FlushAsync();
+
+            return list;
+        }
+
         public virtual async SysTasks.Task<ExecutionContext> StartSubProcessAsync(Bpmtk.Bpmn2.FlowNode initialNode,
             IDictionary<string, object> variables)
         {

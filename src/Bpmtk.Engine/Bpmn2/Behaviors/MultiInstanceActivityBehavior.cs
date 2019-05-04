@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Runtime;
@@ -15,6 +16,56 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         {
             this.loopCharacteristics = loopCharacteristics;
         }
+
+        protected virtual async System.Threading.Tasks.Task ExecuteOriginalBehaviorAsync(ExecutionContext executionContext, int loopCounter)
+        {
+            var engine = executionContext.Engine;
+
+            //fire activityReadEvent.
+            await engine.ProcessEventListener.ActivityReadyAsync(executionContext);
+
+            var map = new Dictionary<string, object>();
+            //map.Add("loopCounter", loopCounter);
+
+            var inputDataItem = this.loopCharacteristics.InputDataItem;
+            var loopDataInputRef = this.loopCharacteristics.LoopDataInputRef;
+            var outputDataItem = this.loopCharacteristics.OutputDataItem;
+
+            if (this.loopCharacteristics.InputDataItem != null && loopDataInputRef != null)
+            {
+                var itemVarName = inputDataItem.Id;
+                var collectionVarName = loopDataInputRef.Id;
+
+                var collection = executionContext.GetVariable(loopDataInputRef.Id);
+                if (collection != null && collection is IList)
+                {
+                    var list = collection as IList;
+                    if (list.Count > loopCounter)
+                    {
+                        var itemValue = list[loopCounter];
+                        map[itemVarName] = itemValue;
+                    }
+                }
+
+                if (outputDataItem != null)
+                {
+                    //var dataObject = this.OutputDataItem.
+                    //map[this.OutputDataItem.Id] = ;
+                }
+            }
+
+            //var em = map.GetEnumerator();
+            //while(em.MoveNext())
+            //{
+            //    executionContext.SetVariableLocal()
+            //}
+
+            //fire activityStartEvent.
+            await engine.ProcessEventListener.ActivityStartAsync(executionContext);
+
+            await this.innerActivityBehavior.ExecuteAsync(executionContext);
+        }
+
 
         //public override Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
         //{
