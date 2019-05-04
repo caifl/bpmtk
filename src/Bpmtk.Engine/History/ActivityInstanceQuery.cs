@@ -52,8 +52,17 @@ namespace Bpmtk.Engine.History
             if (this.id.HasValue)
                 return query.Where(x => x.Id == this.id);
 
+            if (this.activityId != null)
+                query = query.Where(x => x.ActivityId == this.activityId);
+
+            if (this.processInstanceId != null)
+                query = query.Where(x => x.ProcessInstance.Id == this.processInstanceId);
+
             if (this.isMIRoot != null)
                 query = query.Where(x => x.IsMIRoot == this.isMIRoot);
+
+            if (this.activityType != null)
+                query = query.Where(x => x.ActivityType == this.activityType);
 
             if (this.state != null)
                 query = query.Where(x => x.State == this.state);
@@ -61,12 +70,6 @@ namespace Bpmtk.Engine.History
             {
                 query = query.Where(x => this.anyStates.Contains(x.State));
             }
-
-            if (this.activityId != null)
-                query = query.Where(x => x.ActivityId == this.activityId);
-
-            if (this.processInstanceId != null)
-                query = query.Where(x => x.ProcessInstance.Id == this.processInstanceId);
 
             if (this.name != null)
                 query = query.Where(x => x.Name.Contains(this.name));

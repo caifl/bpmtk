@@ -20,7 +20,10 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         public override async System.Threading.Tasks.Task LeaveAsync(ExecutionContext executionContext)
         {
             if (this.LoopActivityBehavior != null)
+            {
                 await this.LoopActivityBehavior.LeaveAsync(executionContext);
+                return;
+            }
 
             await base.LeaveAsync(executionContext);
         }

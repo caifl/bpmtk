@@ -144,34 +144,77 @@ namespace Bpmtk.Engine.Models
                 this.variableByName = this.Variables.ToDictionary(x => x.Name);
         }
 
-        public override void SetVariable(string name, object value)
-            => this.SetVariable(name, value, false);
-
-        public virtual void SetVariable(string name, object value, bool localOnly)
+        public virtual bool HasVariable(string name)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
+            this.EnsureVariablesInitialized();
+
+            return this.variableByName.ContainsKey(name);
+        }
+
+        /// <summary>
+        /// Find variable instance by name in local scope.
+        /// </summary>
+        public virtual ActivityVariable FindVariableByName(string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            this.EnsureVariablesInitialized();
+
             ActivityVariable variable = null;
             if (this.variableByName.TryGetValue(name, out variable))
+                return variable;
+
+            return null;
+        }
+
+        public override void SetVariable(string name, object value)
+        {
+            var variable = this.FindVariableByName(name);
+            if (variable != null)
             {
                 variable.SetValue(value);
-                return;
-            }
-
-            if (!localOnly)
-            {
-                if (this.Parent != null)
-                {
-                    this.Parent.SetVariable(name, value);
-                    return;
-                }
-
-                this.ProcessInstance.SetVariable(name, value);
             }
             else
+            {
+                //add new variable object.
                 this.AddVariable(name, value);
+            }
         }
+
+        //public override void SetVariable(string name, object value)
+        //    => this.SetVariable(name, value, false);
+
+        //public virtual void SetVariable(string name, object value, bool localOnly)
+        //{
+        //    if (name == null)
+        //        throw new ArgumentNullException(nameof(name));
+
+        //    this.EnsureVariablesInitialized();
+
+        //    ActivityVariable variable = null;
+        //    if (this.variableByName.TryGetValue(name, out variable))
+        //    {
+        //        variable.SetValue(value);
+        //        return;
+        //    }
+
+        //    if (!localOnly)
+        //    {
+        //        if (this.Parent != null)
+        //        {
+        //            this.Parent.SetVariable(name, value);
+        //            return;
+        //        }
+
+        //        this.ProcessInstance.SetVariable(name, value);
+        //    }
+        //    else
+        //        this.AddVariable(name, value);
+        //}
 
         protected virtual ActivityVariable AddVariable(string name, object value,
             IVariableType type = null)

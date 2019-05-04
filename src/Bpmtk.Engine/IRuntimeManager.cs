@@ -50,7 +50,11 @@ namespace Bpmtk.Engine
             IDictionary<string, object> messageData = null);
 
         Task<IList<string>> GetActiveActivityIdsAsync(long processInstanceId);
- 
+
+        Task<IList<Token>> GetActiveTokensAsync(long processInstanceId);
+
+        Task TriggerAsync(long tokenId, IDictionary<string, object> variables = null);
+
         Task<int> GetActiveTaskCountAsync(long tokenId);
 
         Task<ProcessInstance> FindAsync(long processInstanceId);

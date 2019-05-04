@@ -32,26 +32,24 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             var query = this.context.HistoryManager.CreateActivityQuery();
             var list = await query
                 .SetProcessInstanceId(pi.Id)
+                .SetIsMIRoot(false)
                 .SetActivityType("ScriptTask")
                 .ListAsync();
 
             Assert.True(list.Count == 5);
-
-            foreach(var item in list)
+            foreach (var item in list)
             {
                 Assert.True(item.StartTime != null);
                 Assert.True(item.State == ExecutionState.Completed);
             }
 
-            //var tokenQuery = this.runtimeManager.CreateTokenQuery();
-            //tokenQuery.SetProcessInstanceId(pi.Id);
+            var tokens = await this.runtimeManager.GetActiveTokensAsync(pi.Id);
 
-            //var tokens = tokenQuery.List();
-
-            //Assert.True(tokens.Count == 1);
+            //
+            Assert.True(tokens.Count == 1);
 
             //trigger
-            //this.runtimeService.Trigger(tokens[0].Id);
+            await this.runtimeManager.TriggerAsync(tokens[0].Id);
 
             //var query = this.taskService.CreateQuery().SetState(TaskState.Active);
 
@@ -69,7 +67,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 
             //this.taskService.Complete(tasks[0].Id);
 
-            //this.AssertProcessInstanceEnd(pi.Id);
+            this.AssertProcessEnded(pi.Id);
 
             this.Commit();
         }

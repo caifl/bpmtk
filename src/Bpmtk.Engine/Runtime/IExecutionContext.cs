@@ -49,8 +49,17 @@ namespace Bpmtk.Engine.Runtime
             get;
         }
 
-        object GetVariable(string name, bool localOnly = false);
+        IProcessEngine Engine
+        {
+            get;
+        }
 
-        IExecutionContext SetVariable(string name, object value, bool localOnly = false);
+        object GetVariable(string name);
+
+        object GetVariableLocal(string name);
+
+        IExecutionContext SetVariable(string name, object value);
+
+        IExecutionContext SetVariableLocal(string name, object value);
     }
 }

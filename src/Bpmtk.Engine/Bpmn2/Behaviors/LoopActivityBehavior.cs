@@ -19,30 +19,29 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
         public override async Task ExecuteAsync(ExecutionContext executionContext)
         {
-            var token = executionContext.Token;
-            int numberOfInstances = 0;
-
-            try
+            var loopCounter = executionContext.GetVariableLocal("loopCounter");
+            if (loopCounter == null)
             {
-                numberOfInstances = await this.CreateInstancesAsync(executionContext);
-            }
-            catch (BpmnError error)
-            {
-                throw error;
-                //ErrorPropagation.propagateError(error, execution);
-            }
+                int numberOfInstances = 0;
 
-            if (numberOfInstances == 0) //实例数量为零的情况下仍然建立一个活动实例, 只是不执行该节点的任何行为
+                try
+                {
+                    numberOfInstances = await this.CreateInstancesAsync(executionContext);
+                }
+                catch (BpmnError error)
+                {
+                    throw error;
+                    //ErrorPropagation.propagateError(error, execution);
+                }
+
+                if (numberOfInstances == 0) 
+                {
+                    await base.LeaveAsync(executionContext);
+                }
+            }
+            else
             {
                 await this.innerActivityBehavior.ExecuteAsync(executionContext);
-                //this.OnActivating(executionContext);
-
-                //this.OnActivated(executionContext);
-
-                ////ignore activity behavior.
-                ////base.Execute(executionContext);
-
-                //base.LeaveDefault(executionContext);
             }
         }
     }

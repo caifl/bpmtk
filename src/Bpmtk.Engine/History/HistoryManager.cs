@@ -49,6 +49,8 @@ namespace Bpmtk.Engine.History
             if (this.IsActivityRecorderDisabled)
                 return;
 
+            var token = executionContext.Token;
+
             var act = new ActivityInstance();
 
             //init
@@ -60,8 +62,11 @@ namespace Bpmtk.Engine.History
             //this.variableInstances = new List<ActivityVariable>();
             var node = executionContext.Node;
 
-            //Check if nested.
-            if(node.Container is Bpmtk.Bpmn2.SubProcess)
+            if(token.Parent != null && token.Parent.IsMIRoot)
+            {
+                act.Parent = token.Parent.ActivityInstance;
+            }      
+            else if(node.Container is Bpmtk.Bpmn2.SubProcess)//Check if nested.
             {
                 //find parent activity-instance.
                 var scope = executionContext.Token.ResolveScope();
@@ -88,6 +93,13 @@ namespace Bpmtk.Engine.History
             {
                 var textArray = node.Documentations.Select(x => x.Text).ToArray();
                 act.Description = Bpmtk.Engine.Utils.StringHelper.Join(textArray, "\n", 255);
+            }
+
+            //Initialize context.
+            var variables = token.Variables;
+            foreach(var variable in variables)
+            {
+                act.SetVariable(variable.Name, variable.GetValue());
             }
 
             await this.session.SaveAsync(act);
@@ -144,6 +156,11 @@ namespace Bpmtk.Engine.History
                 act.State = ExecutionState.Active;
                 act.StartTime = date;
                 act.LastStateTime = date;
+
+                var isMIRoot = executionContext.Token.IsMIRoot;
+                if(isMIRoot)
+                    act.IsMIRoot = isMIRoot;
+
                 hasChanges = true;
             }
 

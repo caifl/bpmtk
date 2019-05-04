@@ -46,6 +46,24 @@ namespace Bpmtk.Engine.Runtime
             return await this.session.QueryMultipleAsync(query);
         }
 
+        public virtual async Task<IList<Token>> GetActiveTokensAsync(long processInstanceId)
+        {
+            var query = this.session.Tokens
+                .Where(x => x.ProcessInstance.Id == processInstanceId && x.IsActive);
+
+            return await this.session.QueryMultipleAsync(query);
+        }
+
+        public async Task TriggerAsync(long tokenId, IDictionary<string, object> variables = null)
+        {
+            var token = await this.session.FindAsync<Token>(tokenId);
+            if (token == null)
+                throw new ObjectNotFoundException(nameof(Token));
+
+            var executionContext = ExecutionContext.Create(this.context, token);
+            await executionContext.SignalAsync(null, variables);
+        }
+
         public virtual async Task<ProcessInstance> StartProcessByKeyAsync(string processDefinitionKey,
             IDictionary<string, object> variables)
         {

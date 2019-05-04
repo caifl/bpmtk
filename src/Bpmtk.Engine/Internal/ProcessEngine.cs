@@ -43,17 +43,20 @@ namespace Bpmtk.Engine.Internal
             // ...
         }
 
-        public virtual object GetValue(string name, object defaultValue = null)
+        public virtual bool TryGetValue(string name, out object value)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            object value = null;
+            return this.props.TryGetValue(name, out value);
+        }
 
-            if(this.props.TryGetValue(name, out value))
-                return value;
+        public virtual object GetValue(string name, object defaultValue = null)
+        {
+            object value = defaultValue;
 
-            return defaultValue;
+            this.TryGetValue(name, out value);
+            return value;
         }
 
         public virtual TValue GetValue<TValue>(string name, TValue defaultValue = default(TValue))

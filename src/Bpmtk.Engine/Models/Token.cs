@@ -142,6 +142,15 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        /// <summary>
+        /// Reset context.
+        /// </summary>
+        public virtual void Clear()
+        {
+            this.variableByName.Clear();
+            this.Variables.Clear();
+        }
+
         //protected virtual void OnNodeChanged()
         //{
         //    this.ActivityId = this.node?.Id;
@@ -214,54 +223,95 @@ namespace Bpmtk.Engine.Models
             return token;
         }
 
-        public virtual object ResolveVariable(string name, bool isResolved)
+        /// <summary>
+        /// Find variable instance by name in local scope.
+        /// </summary>
+        public virtual Variable FindVariableByName(string name)
         {
-            return null;
-        }
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
-        public virtual object GetVariable(string name, bool localOnly = false)
-        {
             this.EnsureVariablesInitialized();
 
             Variable variable = null;
             if (this.variableByName.TryGetValue(name, out variable))
-                return variable.GetValue();
+                return variable;
 
-            if (!localOnly)
+            return null;
+        }
+
+        public virtual bool TryGetVariable(string name, out object value)
+        {
+            value = null;
+
+            Variable variable = this.FindVariableByName(name);
+            if(variable != null)
             {
-                if (this.Parent != null)
-                    return this.Parent.GetVariable(name);
-
-                return this.ProcessInstance.GetVariable(name);
+                value = variable.GetValue();
+                return true;
             }
 
+            if (this.Parent != null)
+                return this.Parent.TryGetVariable(name, out value);
+
+            variable = this.ProcessInstance.FindVariableByName(name);
+            if(variable != null)
+            {
+                value = variable.GetValue();
+                return true;
+            }
+
+            return false;
+        }
+
+        public virtual object GetVariableLocal(string name)
+            => this.FindVariableByName(name)?.GetValue();
+
+        public virtual object GetVariable(string name)
+        {
+            object value = null;
+            if (this.TryGetVariable(name, out value))
+                return value;
+
             return null;
         }
 
-        public virtual void SetVariable(string name, object value,
-            bool localOnly = false)
+        public virtual void SetVariableLocal(string name, object value)
         {
-            this.EnsureVariablesInitialized();
-
-            Variable variable = null;
-            if (this.variableByName.TryGetValue(name, out variable))
-               variable.SetValue(value);
-
-            if (!localOnly)
+            Variable variable = this.FindVariableByName(name);
+            if (variable != null)
             {
-                if (this.Parent != null)
-                    this.Parent.SetVariable(name, value);
-
-                this.ProcessInstance.SetVariable(name, value);
+                variable.SetValue(value);
             }
             else
             {
                 //add new variable object.
                 this.AddVariable(name, value);
-
-                if (this.ActivityInstance != null)
-                    this.ActivityInstance.SetVariable(name, value);
             }
+
+            //Update historic-variable.
+            if (this.ActivityInstance != null)
+                this.ActivityInstance.SetVariable(name, value);
+        }
+
+        public virtual void SetVariable(string name, object value)
+        {
+            this.EnsureVariablesInitialized();
+
+            Variable variable = null;
+            if (this.variableByName.TryGetValue(name, out variable))
+            {
+                variable.SetValue(value);
+                return;
+            }
+
+            if (this.Parent != null)
+            {
+                this.Parent.SetVariable(name, value);
+                return;
+            }
+
+            this.ProcessInstance.SetVariable(name, value);
         }
 
         protected virtual Variable AddVariable(string name, object value,

@@ -373,6 +373,10 @@ namespace Bpmtk.Engine.Runtime
             //Clear related information.
             this.token.Node = null;
             this.token.ActivityInstance = null;
+            this.token.IsActive = true;
+            this.token.IsMIRoot = false;
+            this.token.Clear();
+
             this.JoinedTokens = null;
 
             //Set outgoing transition.
@@ -386,27 +390,54 @@ namespace Bpmtk.Engine.Runtime
             await this.EnterNodeAsync(targetNode);
         }
 
-        public virtual object GetVariable(string name, bool localOnly = false)
-            => this.token.GetVariable(name, localOnly);
+        public virtual bool TryGetVariable(string name, out object value)
+            => this.token.TryGetVariable(name, out value);
 
-        public virtual TValue GetVariable<TValue>(string name, bool localOnly = false)
+        public virtual object GetVariable(string name)
+            => this.token.GetVariable(name);
+
+        public virtual object GetVariableLocal(string name)
+            => this.token.GetVariableLocal(name);
+
+        public virtual TValue GetVariable<TValue>(string name)
         {
-            var value = this.GetVariable(name, localOnly);
+            var value = this.GetVariable(name);
             if (value != null)
                 return (TValue)value;
 
             return default(TValue);
         }
 
-        public virtual ExecutionContext SetVariable(string name, object value, bool localOnly = false)
+        public virtual TValue GetVariableLocal<TValue>(string name)
         {
-            this.token.SetVariable(name, value, localOnly);
+            var value = this.GetVariableLocal(name);
+            if (value != null)
+                return (TValue)value;
+
+            return default(TValue);
+        }
+
+        public virtual ExecutionContext SetVariable(string name, object value)
+        {
+            this.token.SetVariable(name, value);
 
             return this;
         }
 
-        IExecutionContext IExecutionContext.SetVariable(string name, object value, bool localOnly)
-            => this.SetVariable(name, value, localOnly);
+        public virtual IProcessEngine Engine => this.Context.Engine;
+
+        public virtual ExecutionContext SetVariableLocal(string name, object value)
+        {
+            this.token.SetVariableLocal(name, value);
+
+            return this;
+        }
+
+        IExecutionContext IExecutionContext.SetVariable(string name, object value)
+            => this.SetVariable(name, value);
+
+        IExecutionContext IExecutionContext.SetVariableLocal(string name, object value)
+            => this.SetVariableLocal(name, value);
 
         public virtual IEvaluator GetEvaluator(string scriptFormat = null)
             => new Internal.JavascriptEvalutor(this);

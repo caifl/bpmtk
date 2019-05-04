@@ -108,16 +108,32 @@ namespace Bpmtk.Engine.Models
             this.AddVariable(name,  value);
         }
 
-        public override object GetVariable(string name)
+        public virtual bool HasVariable(string name)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            this.EnsureVariablesInitialized();
+
+            return this.variableByName.ContainsKey(name);
+        }
+
+        public virtual Variable FindVariableByName(string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
             this.EnsureVariablesInitialized();
 
             Variable variable = null;
             if (this.variableByName.TryGetValue(name, out variable))
-                return variable.GetValue();
+                return variable;
 
             return null;
         }
+
+        public override object GetVariable(string name)
+            => this.FindVariableByName(name)?.GetValue();
 
         protected virtual Variable AddVariable(string name, object value,
             IVariableType type = null)

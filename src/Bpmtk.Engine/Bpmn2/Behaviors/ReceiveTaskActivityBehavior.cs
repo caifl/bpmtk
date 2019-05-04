@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Runtime;
 
@@ -31,12 +32,20 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                     object value = null;
                     if (signalData.TryGetValue(dataOutput.Id, out value))
                     {
-                        executionContext.SetVariable(dataOutput.Id, value, true);
+                        executionContext.SetVariableLocal(dataOutput.Id, value);
                     }
                 }
             }
 
             return base.LeaveAsync(executionContext);
+        }
+
+        public override System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
+        {
+            //Waiting for signal.
+
+            //return base.ExecuteAsync(executionContext);
+            return System.Threading.Tasks.Task.CompletedTask;
         }
     }
 }

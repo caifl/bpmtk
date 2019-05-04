@@ -22,20 +22,20 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
             var miHandler = new MultiInstanceLoopCharacteristicsHandler();
             var stdHandler = new StandardLoopCharacteristicsHandler();
 
-            this.handlers.Add("loopCharacteristics", new ParseHandlerAction<Activity>((p, c, x) =>
+            var loopHandler = new ParseHandlerAction<Activity>((p, c, x) =>
             {
                 var activityBehavior = p.Tag as ActivityBehavior;
 
                 LoopCharacteristics loopCharacteristics = null;
                 var localName = Helper.GetRealLocalName(x);
-                if (localName == "multiInstanceLoopCharacteristics")
+                if (localName != "multiInstanceLoopCharacteristics")
                 {
-                    loopCharacteristics = (LoopCharacteristics)miHandler.Create(p, c, x);
+                    loopCharacteristics = (LoopCharacteristics)stdHandler.Create(p, c, x);
                     activityBehavior = new StandardLoopActivityBehavior(activityBehavior, (StandardLoopCharacteristics)loopCharacteristics);
                 }
                 else
                 {
-                    loopCharacteristics = (LoopCharacteristics)stdHandler.Create(p, c, x);
+                    loopCharacteristics = (LoopCharacteristics)miHandler.Create(p, c, x);
                     var mi = loopCharacteristics as MultiInstanceLoopCharacteristics;
                     if (mi.IsSequential)
                         activityBehavior = new SequentialMultiInstanceActivityBehavior(activityBehavior, mi);
@@ -46,10 +46,11 @@ namespace Bpmtk.Engine.Bpmn2.Parser.Handlers
                 p.Tag = activityBehavior;
 
                 loopCharacteristics.Activity = p;
-            }));
+            });
 
-            this.handlers.Add("multiInstanceLoopCharacteristics", miHandler);
-            this.handlers.Add("standardLoopCharacteristics", stdHandler);
+            this.handlers.Add("loopCharacteristics", loopHandler);
+            this.handlers.Add("multiInstanceLoopCharacteristics", loopHandler);
+            this.handlers.Add("standardLoopCharacteristics", loopHandler);
 
             var handler = new ResourceRoleParseHandler();
             foreach (var key in ResourceRoleParseHandler.Keys)

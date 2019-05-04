@@ -29,6 +29,8 @@ namespace Bpmtk.Engine
 
         IContext CreateContext();
 
+        bool TryGetValue(string name, out object value);
+
         object GetValue(string name, object defaultValue = null);
 
         TValue GetValue<TValue>(string name, TValue defaultValue = default(TValue));
