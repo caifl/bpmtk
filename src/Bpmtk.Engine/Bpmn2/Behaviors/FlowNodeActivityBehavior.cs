@@ -62,7 +62,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 {
                     var condition = outgoing.ConditionExpression;
                     if (condition == null || string.IsNullOrEmpty(condition.Text)
-                        || !evaluator.Evalute<bool>(condition.Text))
+                        || !evaluator.Evaluate<bool>(condition.Text))
                         continue;
 
                     transitions.Add(outgoing);
@@ -105,7 +105,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 {
                     var condition = outgoing.ConditionExpression;
                     if (condition == null || string.IsNullOrEmpty(condition.Text)
-                        || !evaluator.Evalute<bool>(condition.Text))
+                        || !evaluator.Evaluate<bool>(condition.Text))
                         continue;
 
                     transition = outgoing;

@@ -61,15 +61,20 @@ namespace Bpmtk.Engine.History
             //this.Parent = parent;
             //this.variableInstances = new List<ActivityVariable>();
             var node = executionContext.Node;
-
-            if(token.Parent != null && token.Parent.IsMIRoot)
+            var parentToken = token.Parent;
+            if(parentToken != null && parentToken.IsMIRoot)
             {
-                act.Parent = token.Parent.ActivityInstance;
+                act.Parent = parentToken.ActivityInstance;
             }      
             else if(node.Container is Bpmtk.Bpmn2.SubProcess)//Check if nested.
             {
                 //find parent activity-instance.
-                var scope = executionContext.Token.ResolveScope();
+                var scope = token.ResolveScope();
+                if(scope == null)
+                {
+
+                }
+
                 act.Parent = scope.ActivityInstance;
             }
 

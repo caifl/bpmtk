@@ -52,14 +52,14 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
                     case TaskName:
                         {
-                            taskName = evaluator.Evalute<string>(value);
+                            taskName = evaluator.Evaluate<string>(value);
                             if(taskName != null)
                                 builder.SetName(taskName);
                             break;
                         }
 
                     case Assignee:
-                        string userName = evaluator.Evalute<string>(value);
+                        string userName = evaluator.Evaluate<string>(value);
                         var assignee = await identityManager.FindUserByNameAsync(userName);
                         if(assignee != null)
                             builder.SetAssignee(assignee);

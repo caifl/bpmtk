@@ -206,7 +206,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 token.Remove();
 
                 //exit multi-instance loop activity.
-                parentToken.IsMIRoot = false;
+                //parentToken.IsMIRoot = false;
                 parentToken.Activate();
 
                 await executionContext.Context.DbSession.FlushAsync();
@@ -218,6 +218,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             {
                 //Reset token data.
                 //token.Clear();
+                token.IsMIRoot = false;
+                token.IsScope = false;
+                token.TransitionId = null;
                 token.ActivityInstance = null;
 
                 executionContext.SetVariableLocal("loopCounter", loopCounter);

@@ -15,15 +15,15 @@ namespace Bpmtk.Engine.Runtime.Internal
             scope = engine.CreateScope(new ScriptingContext(executionContext));
         }
 
-        public virtual object Evalute(string script)
+        public virtual object Evaluate(string script)
         {
             script = StringHelper.ExtractExpression(script);
             return engine.Execute(script, scope);
         }
 
-        public virtual TValue Evalute<TValue>(string script)
+        public virtual TValue Evaluate<TValue>(string script)
         {
-            var result = this.Evalute(script);
+            var result = this.Evaluate(script);
             if (result != null)
                 return (TValue)result;
 

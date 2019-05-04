@@ -101,7 +101,7 @@ namespace Bpmtk.Engine.Events
                 {
                     var evaluator = executionContext.GetEvaluator();
                     foreach (var item in list)
-                        evaluator.Evalute(item.Text);
+                        evaluator.Evaluate(item.Text);
                 }
             }
         }

@@ -115,18 +115,18 @@ namespace Bpmtk.Engine.Runtime
 
                     var subProcess = container as Bpmtk.Bpmn2.SubProcess;
 
-                    //删除并发Token
-                    var p = parentToken;
-                    while (!p.Node.Equals(subProcess))
-                    {
-                        if (p.Children.Count > 0) //还有未完成的并发执行
-                            return;
+                    //Try
+                    //var p = parentToken;
+                    //while (!p.Node.Equals(subProcess))
+                    //{
+                    //    if (p.Children.Count > 0) //还有未完成的并发执行
+                    //        return;
 
-                        p.Remove();
-                        p = p.Parent;
-                    }
+                    //    p.Remove();
+                    //    p = p.Parent;
+                    //}
 
-                    var subProcessContext = ExecutionContext.Create(this.Context, p);
+                    var subProcessContext = ExecutionContext.Create(this.Context, parentToken);
                     var behavior = subProcess.Tag as IFlowNodeActivityBehavior;
                     await behavior.LeaveAsync(subProcessContext);
                     return;
@@ -196,7 +196,9 @@ namespace Bpmtk.Engine.Runtime
             var oldToken = this.token;
 
             this.token = token;
+
             this.token.Node = oldToken.Node;
+            this.token.TransitionId = oldToken.TransitionId;
             this.token.ActivityInstance = oldToken.ActivityInstance;
 
             //re-activate.
@@ -284,6 +286,9 @@ namespace Bpmtk.Engine.Runtime
 
             if (transitions.Count() > 1)
             {
+                //Set current token inactive.
+                this.token.Inactivate();
+
                 var outgoingExecutions = new List<OutgoingExecution>();
                 foreach (var transition in transitions)
                 {
@@ -323,39 +328,39 @@ namespace Bpmtk.Engine.Runtime
 
             var scopeToken = this.token.ResolveScope();
 
-            //保留当前token.
+            //Exclude current token.
             joinedTokens.Remove(token);
 
-            //保留rootToken.
+            //Exclude scope token.
             if(scopeToken != null)
                 joinedTokens.Remove(scopeToken);
 
-            //删除其他完成的分支
+            //Try to remove the others branch.
             Token current = null;
             foreach (var pToken in joinedTokens)
             {
                 current = pToken;
                 current.Remove();
 
-                //往上遍历
+                //Traverse token tree up.
                 current = current.Parent;
-                while (current.Parent != null
-                    && current.Parent.Children.Count == 1)
+                while ( current.Parent != scopeToken && current.Children.Count == 0)
                 {
                     current.Remove();
                     current = current.Parent;
                 }
             }
 
-            var parentToken = token.Parent;
-
-            //尝试删除当前分支
-            current = token;
-            while (current.Parent != null
-                && current.Parent.Children.Count == 1)
+            //Try to remove current branch.
+            var parent = token.Parent;
+            if (parent != scopeToken && parent.Children.Count == 1)
             {
-                current.Remove();
-                current = current.Parent;
+                current = token;
+                while (current.Parent != scopeToken && current.Children.Count == 0)
+                {
+                    current.Remove();
+                    current = current.Parent;
+                }
             }
 
             if (!current.Equals(token))
