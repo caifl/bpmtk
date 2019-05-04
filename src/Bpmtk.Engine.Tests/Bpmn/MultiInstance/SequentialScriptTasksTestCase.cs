@@ -51,22 +51,6 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             //trigger
             await this.runtimeManager.TriggerAsync(tokens[0].Id);
 
-            //var query = this.taskService.CreateQuery().SetState(TaskState.Active);
-
-            //var tasks = query.List();
-            //while(tasks.Count > 0)
-            //{
-            //    this.taskService.Complete(tasks[0].Id);
-            //    tasks = query.List();
-            //}
-            //Assert.True(tasks.Count == 1);
-
-            ////get variable from task-instance.
-            //myVar = tasks[0].GetVariable("myVar");
-            //Assert.True("test123".Equals(myVar));
-
-            //this.taskService.Complete(tasks[0].Id);
-
             this.AssertProcessEnded(pi.Id);
 
             this.Commit();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bpmtk.Engine.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,45 +29,29 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
             var myVar = pi.GetVariable("sum");
             Assert.True(5 == Convert.ToInt32(myVar));
 
-            var actInsts = this.context.HistoryManager.ActivityInstances.ToList();
+            var list = await this.context.HistoryManager.CreateActivityQuery()
+                .SetProcessInstanceId(pi.Id)
+                .SetIsMIRoot(false)
+                .SetActivityType("ScriptTask")
+                .ListAsync();
 
-            //var list = actInsts.Where(x => x.ActivityType == "ScriptTask")
-            //    .ToList();
-            //Assert.True(list.Count == 5);
+            Assert.True(list.Count == 5);
 
-            //foreach(var item in list)
-            //{
-            //    Assert.True(item.StartTime != null);
-            //    Assert.True(item.State == Runtime.ExecutionState.Completed);
-            //}
+            foreach (var item in list)
+            {
+                Assert.True(item.StartTime != null);
+                Assert.True(item.State == ExecutionState.Completed);
+            }
 
-            //var tokenQuery = this.runtimeManager.CreateTokenQuery();
-            //tokenQuery.SetProcessInstanceId(pi.Id);
+            var tokens = await this.runtimeManager.GetActiveTokensAsync(pi.Id);
 
-            //var tokens = tokenQuery.List();
-
-            //Assert.True(tokens.Count == 1);
+            //
+            Assert.True(tokens.Count == 1);
 
             //trigger
-            //this.runtimeService.Trigger(tokens[0].Id);
+            await this.runtimeManager.TriggerAsync(tokens[0].Id);
 
-            //var query = this.taskService.CreateQuery().SetState(TaskState.Active);
-
-            //var tasks = query.List();
-            //while(tasks.Count > 0)
-            //{
-            //    this.taskService.Complete(tasks[0].Id);
-            //    tasks = query.List();
-            //}
-            //Assert.True(tasks.Count == 1);
-
-            ////get variable from task-instance.
-            //myVar = tasks[0].GetVariable("myVar");
-            //Assert.True("test123".Equals(myVar));
-
-            //this.taskService.Complete(tasks[0].Id);
-
-            //this.AssertProcessInstanceEnd(pi.Id);
+            this.AssertProcessEnded(pi.Id);
 
             this.Commit();
         }
