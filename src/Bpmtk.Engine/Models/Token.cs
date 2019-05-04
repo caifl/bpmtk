@@ -307,6 +307,12 @@ namespace Bpmtk.Engine.Models
 
             if (this.Parent != null)
             {
+                if(this.Parent.IsMIRoot) //Prevent from multiInstanceActivity.
+                {
+                    this.SetVariableLocal(name, value);
+                    return;
+                }
+
                 this.Parent.SetVariable(name, value);
                 return;
             }

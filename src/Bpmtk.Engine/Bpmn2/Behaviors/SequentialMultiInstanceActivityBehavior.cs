@@ -78,7 +78,6 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             var context = executionContext.Context;
             var token = executionContext.Token;
 
-            token.IsMIRoot = true;
             token.Inactivate();
 
             //var store = executionContext.Context.GetService<IInstanceStore>();

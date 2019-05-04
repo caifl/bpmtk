@@ -92,6 +92,8 @@ namespace Bpmtk.Engine.Tests
             using (var ms = new MemoryStream())
             {
                 var stream = this.GetType().Assembly.GetManifestResourceStream(resourceName);
+                Assert.NotNull(stream);
+
                 stream.CopyTo(ms);
                 stream.Close();
 

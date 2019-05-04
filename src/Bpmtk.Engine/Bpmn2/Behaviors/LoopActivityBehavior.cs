@@ -15,6 +15,15 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             this.innerActivityBehavior.LoopActivityBehavior = this;
         }
 
+        public override Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
+        {
+            //Mark mi-root.
+            var token = executionContext.Token;
+            token.IsMIRoot = true;
+
+            return base.EvaluatePreConditionsAsync(executionContext);
+        }
+
         protected abstract Task<int> CreateInstancesAsync(ExecutionContext executionContext);
 
         public override async Task ExecuteAsync(ExecutionContext executionContext)

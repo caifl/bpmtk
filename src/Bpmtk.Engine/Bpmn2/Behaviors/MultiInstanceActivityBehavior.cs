@@ -16,18 +16,18 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             this.loopCharacteristics = loopCharacteristics;
         }
 
-        public override Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
-        {
-            //
-            var instances = this.ResolveNumberOfInstances(executionContext);
-            if(instances > 0)
-            {
-                var token = executionContext.Token;
-                token.IsMIRoot = true;
-            }
+        //public override Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
+        //{
+        //    //
+        //    var instances = this.ResolveNumberOfInstances(executionContext);
+        //    if(instances > 0)
+        //    {
+        //        var token = executionContext.Token;
+        //        token.IsMIRoot = true;
+        //    }
 
-            return base.EvaluatePreConditionsAsync(executionContext);
-        }
+        //    return base.EvaluatePreConditionsAsync(executionContext);
+        //}
 
         protected virtual bool IsCompleted(ExecutionContext executionContext)
         {

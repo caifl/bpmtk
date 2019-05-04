@@ -70,10 +70,8 @@ namespace Bpmtk.Engine.History
             {
                 //find parent activity-instance.
                 var scope = token.ResolveScope();
-                if(scope == null)
-                {
-
-                }
+                if (scope == null)
+                    throw new RuntimeException("Can't resolve scope token.");
 
                 act.Parent = scope.ActivityInstance;
             }

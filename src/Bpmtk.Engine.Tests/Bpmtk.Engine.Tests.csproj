@@ -22,6 +22,7 @@
     <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcess.bpmn20.xml" />
     <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcessCompletionCondition.bpmn20.xml" />
     <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialSubprocessEmptyCollection.bpmn20.xml" />
+    <None Remove="Resources\MultiInstance\MultiInstanceTest.testSequentialUserTasksEmptyCollection.bpmn20.xml" />
     <None Remove="Resources\ScriptTask\JavascriptTest.testSetVariableThroughExecutionInScript.bpmn20.xml" />
     <None Remove="Resources\sequential_flow.bpmn.xml" />
     <None Remove="Resources\SubProcess\SubProcessTest.testDataObjectScope.bpmn20.xml" />
@@ -42,6 +43,7 @@
     <EmbeddedResource Include="Resources\Gateway\ParallelGatewayTest.testNestedForkJoin.svg" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasks.bpmn20.xml" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialScriptTasksCompletionCondition.bpmn20.xml" />
+    <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialUserTasksEmptyCollection.bpmn20.xml" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcessCompletionCondition.bpmn20.xml" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialSubprocessEmptyCollection.bpmn20.xml" />
     <EmbeddedResource Include="Resources\MultiInstance\MultiInstanceTest.testSequentialSubProcess.bpmn20.xml" />
