@@ -269,5 +269,26 @@ namespace Bpmtk.Engine.Tasks
 
             return this.session.QueryMultipleAsync(query);
         }
+
+        async Task<ITaskInstance> ITaskQuery.SingleAsync()
+            => await this.SingleAsync();
+
+        async Task<IList<ITaskInstance>> ITaskQuery.ListAsync()
+        {
+            var list = await this.ListAsync();
+            return list.ToList<ITaskInstance>();
+        }
+
+        async Task<IList<ITaskInstance>> ITaskQuery.ListAsync(int count)
+        {
+            var list = await this.ListAsync(count);
+            return list.ToList<ITaskInstance>();
+        }
+
+        async Task<IList<ITaskInstance>> ITaskQuery.ListAsync(int page, int pageSize)
+        {
+            var list = await this.ListAsync(page, pageSize);
+            return list.ToList<ITaskInstance>();
+        }
     }
 }

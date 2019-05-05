@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bpmtk.Engine.Identity;
+using Bpmtk.Engine.Tasks;
+using Bpmtk.Engine.Variables;
 
 namespace Bpmtk.Engine.Models
 {
-    public class TaskInstance //: ITaskInstance
+    public class TaskInstance : ITaskInstance
     {
         protected ProcessInstance processInstance;
         protected ActivityInstance activityInstance;
@@ -59,6 +62,12 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        public virtual long? ActivityInstanceId
+        {
+            get;
+            set;
+        }
+
         public virtual ActivityInstance ActivityInstance
         {
             get;
@@ -72,6 +81,12 @@ namespace Bpmtk.Engine.Models
         }
 
         public virtual DateTime LastStateTime
+        {
+            get;
+            set;
+        }
+
+        public virtual long? TokenId
         {
             get;
             set;
@@ -204,38 +219,109 @@ namespace Bpmtk.Engine.Models
                 this.variableByName = this.Variables.ToDictionary(x => x.Name);
         }
 
-        public virtual object GetVariable(string name, bool localOnly = false)
+        public virtual Variable FindVariableByName(string name)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
             this.EnsureVariablesInitialized();
 
             Variable variable = null;
-            if(this.variableByName.TryGetValue(name, out variable))
-                return variable.GetValue();
-
-            if (!localOnly)
-            {
-                if (this.Token != null)
-                    return this.Token.GetVariable(name);
-                else if (this.ActivityInstance != null)
-                    return this.ActivityInstance.GetVariable(name);
-                else if (this.ProcessInstance != null)
-                    return this.ProcessInstance.GetVariable(name);
-            }
+            if (this.variableByName.TryGetValue(name, out variable))
+                return variable;
 
             return null;
         }
-    }
 
-    public enum TaskState
-    {
-        Ready = 0,
+        public virtual object GetVariableLocal(string name)
+            => this.FindVariableByName(name)?.GetValue();
 
-        Active = 1,
+        public virtual object GetVariable(string name)
+        {
+            Variable variable = this.FindVariableByName(name);
+            if (variable != null)
+                return variable.GetValue();
 
-        Suspended = 2,
+            if (this.Token != null)
+                return this.Token.GetVariable(name);
+            else if (this.ActivityInstance != null)
+                return this.ActivityInstance.GetVariable(name);
+            else if (this.ProcessInstance != null)
+                return this.ProcessInstance.GetVariable(name);
 
-        Completed = 4,
+            return null;
+        }
 
-        Terminated = 8
+        public virtual void SetVariable(string name, object value)
+        {
+            Variable variable = this.FindVariableByName(name);
+            if (variable != null)
+            {
+                variable.SetValue(value);
+                return;
+            }
+
+            if (this.Token != null)
+                this.Token.SetVariable(name, value);
+            else if (this.ActivityInstance != null)
+                this.ActivityInstance.SetVariable(name, value);
+            else if (this.ProcessInstance != null)
+                this.ProcessInstance.SetVariable(name, value);
+        }
+
+        public virtual void SetVariableLocal(string name, object value)
+        {
+            Variable variable = this.FindVariableByName(name);
+            if (variable != null)
+            {
+                variable.SetValue(value);
+            }
+            else
+            {
+                //add new variable object.
+                this.AddVariable(name, value);
+            }
+        }
+
+        protected virtual Variable AddVariable(string name, object value,
+            IVariableType type = null)
+        {
+            if (value == null)
+                return null;
+
+            if (type == null)
+                type = VariableType.Resolve(value);
+
+            var variable = new Variable();
+    
+            variable.Name = name;
+            variable.Type = type.Name;
+
+            type.SetValue(variable, value);
+
+            this.Variables.Add(variable);
+            this.variableByName.Add(name, variable);
+
+            return variable;
+        }
+
+        IUser ITaskInstance.Assignee => this.Assignee;
+
+        IDictionary<string, object> ITaskInstance.ProcessVariables
+        {
+            get
+            {
+                var map = new Dictionary<string, object>();
+
+                if (this.ProcessInstance != null)
+                {
+                    var items = this.ProcessInstance.Variables;
+                    foreach (var item in items)
+                        map.Add(item.Name, item.GetValue());
+                }
+
+                return map;
+            }
+        }
     }
 }

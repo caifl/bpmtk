@@ -31,10 +31,12 @@ namespace Bpmtk.Engine.Runtime
             get => this.context;
         }
 
-        public virtual IProcessInstanceQuery CreateInstanceQuery()
+        public virtual ProcessInstanceQuery CreateInstanceQuery()
         {
             return new ProcessInstanceQuery(this.session);
         }
+
+        IProcessInstanceQuery IRuntimeManager.CreateInstanceQuery() => this.CreateInstanceQuery();
 
         public virtual async Task<IList<string>> GetActiveActivityIdsAsync(long processInstanceId)
         {
@@ -62,21 +64,6 @@ namespace Bpmtk.Engine.Runtime
 
             var executionContext = ExecutionContext.Create(this.context, token);
             await executionContext.SignalAsync(null, variables);
-        }
-
-        public virtual async Task<ProcessInstance> StartProcessByKeyAsync(string processDefinitionKey,
-            IDictionary<string, object> variables)
-        {
-            var processDefinition = await this.deploymentManager.FindProcessDefinitionByKeyAsync(processDefinitionKey);
-            if (processDefinition == null)
-                throw new ObjectNotFoundException(nameof(ProcessDefinition));
-
-            var builder = this.CreateInstanceBuilder()
-                .SetInitiator(context.UserId)
-                .SetProcessDefinition(processDefinition)
-                .SetVariables(variables);
-
-            return await this.StartProcessAsync(builder);
         }
 
         #region IdentityLinks Management
@@ -178,7 +165,7 @@ namespace Bpmtk.Engine.Runtime
             var items = await this.session.QueryMultipleAsync(query);
             if (items.Count > 0)
             {
-                await this.session.RemoveRangeAsync(items);
+                this.session.RemoveRange(items);
                 await this.session.FlushAsync();
             }
         }
@@ -186,6 +173,32 @@ namespace Bpmtk.Engine.Runtime
         #endregion
 
         #region Start new ProcessInstance APIs
+
+        async Task<IProcessInstance> IRuntimeManager.StartProcessAsync(IProcessInstanceBuilder builder)
+            => await this.StartProcessAsync(builder);
+
+        async Task<IProcessInstance> IRuntimeManager.StartProcessByMessageAsync(string messageName,
+            IDictionary<string, object> messageData)
+            => await this.StartProcessByMessageAsync(messageName, messageData);
+
+        async Task<IProcessInstance> IRuntimeManager.StartProcessByKeyAsync(string messageName,
+            IDictionary<string, object> variables)
+            => await this.StartProcessByKeyAsync(messageName, variables);
+
+        public virtual async Task<ProcessInstance> StartProcessByKeyAsync(string processDefinitionKey,
+            IDictionary<string, object> variables)
+        {
+            var processDefinition = await this.deploymentManager.FindProcessDefinitionByKeyAsync(processDefinitionKey);
+            if (processDefinition == null)
+                throw new ObjectNotFoundException(nameof(ProcessDefinition));
+
+            var builder = this.CreateInstanceBuilder()
+                .SetInitiator(context.UserId)
+                .SetProcessDefinition(processDefinition)
+                .SetVariables(variables);
+
+            return await this.StartProcessAsync(builder);
+        }
 
         public virtual async Task<ProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder)
         {
@@ -225,7 +238,7 @@ namespace Bpmtk.Engine.Runtime
             var executionContext = ExecutionContext.Create(this.context, token);
 
             //fire processStartEvent.
-            await this.context.Engine.ProcessEventListener.ProcessStartAsync(executionContext);
+            await this.context.ProcessEventListener.ProcessStartAsync(executionContext);
 
             await executionContext.StartAsync();
             //}
@@ -254,7 +267,7 @@ namespace Bpmtk.Engine.Runtime
                     eventSubscr, 
                     messageData);
 
-                return procInst;
+                return (ProcessInstance)procInst;
             }
 
             return null;
@@ -285,6 +298,9 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual Task<ProcessInstance> FindAsync(long processInstanceId)
             => this.session.FindAsync<ProcessInstance>(processInstanceId);
+
+        async Task<IProcessInstance> IRuntimeManager.FindAsync(long processInstanceId) 
+            => await this.FindAsync(processInstanceId);
 
         #region Variables Management
 
@@ -318,7 +334,7 @@ namespace Bpmtk.Engine.Runtime
             if (variables.Count == 0)
                 return;
 
-            var processInstance = await this.CreateInstanceQuery()
+            var processInstance = (ProcessInstance)await this.CreateInstanceQuery()
                 .FetchVariables()
                 .SetId(processInstanceId)
                 .SingleAsync();
@@ -425,7 +441,7 @@ namespace Bpmtk.Engine.Runtime
             if (item == null)
                 throw new ObjectNotFoundException(nameof(Comment));
 
-            await this.session.RemoveAsync(item);
+            this.session.Remove(item);
             await this.session.FlushAsync();
         }
 

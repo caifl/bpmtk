@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.Runtime
 {
@@ -41,12 +40,12 @@ namespace Bpmtk.Engine.Runtime
 
         //IProcessInstanceQuery SetReadOnly();
 
-        Task<ProcessInstance> SingleAsync();
+        Task<IProcessInstance> SingleAsync();
 
         Task<int> CountAsync();
 
-        Task<IList<ProcessInstance>> ListAsync(int page = 1, int pageSize = 20);
+        Task<IList<IProcessInstance>> ListAsync(int page = 1, int pageSize = 20);
 
-        Task<IList<ProcessInstance>> ListAsync();
+        Task<IList<IProcessInstance>> ListAsync();
     }
 }

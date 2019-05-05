@@ -26,7 +26,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.UserTask
             var tasks = await query.ListAsync();
             Assert.True(tasks.Count == 1);
 
-            Assert.True(tasks[0].AssigneeId == this.context.UserId);
+            Assert.True(tasks[0].Assignee?.Id == this.context.UserId);
 
             await this.taskManager.CompleteAsync(tasks[0].Id);
 

@@ -23,3 +23,4 @@
 /src/Bpmtk.Engine.EntityFrameworkCore/obj
 /src/ConsoleApp/bin/Debug/netcoreapp2.1
 /src/ConsoleApp/obj
+/src/Bpmtk.Engine.Hibernate/.vs/Bpmtk.Engine.Hibernate

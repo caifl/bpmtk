@@ -25,11 +25,12 @@ namespace Bpmtk.Engine.WebApi.Controllers
         {
             var result = new PagedResult<DeploymentModel>();
             
-            var query = this.deploymentManager.CreateQuery();
+            var query = this.deploymentManager.CreateDeploymentQuery();
 
             var list = await query.ListAsync(filter.Page, filter.PageSize);
-            var count = await query.CountAsync();
-
+            result.Count = await query.CountAsync();
+            result.Page = filter.Page;
+            result.PageSize = filter.PageSize;
             result.Items = list.Select(x => DeploymentModel.Create(x))
                 .ToList();
 

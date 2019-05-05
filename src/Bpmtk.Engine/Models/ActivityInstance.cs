@@ -215,6 +215,7 @@ namespace Bpmtk.Engine.Models
         //    else
         //        this.AddVariable(name, value);
         //}
+        public override IReadOnlyList<IVariable> VariableInstances => this.Variables.ToList();
 
         protected virtual ActivityVariable AddVariable(string name, object value,
             IVariableType type = null)

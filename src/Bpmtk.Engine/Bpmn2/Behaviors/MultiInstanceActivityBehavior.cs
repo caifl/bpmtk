@@ -19,10 +19,10 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
         protected virtual async System.Threading.Tasks.Task ExecuteOriginalBehaviorAsync(ExecutionContext executionContext, int loopCounter)
         {
-            var engine = executionContext.Engine;
+            var context = executionContext.Context;
 
             //fire activityReadEvent.
-            await engine.ProcessEventListener.ActivityReadyAsync(executionContext);
+            await context.ProcessEventListener.ActivityReadyAsync(executionContext);
 
             var map = new Dictionary<string, object>();
             //map.Add("loopCounter", loopCounter);
@@ -61,7 +61,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             //}
 
             //fire activityStartEvent.
-            await engine.ProcessEventListener.ActivityStartAsync(executionContext);
+            await context.ProcessEventListener.ActivityStartAsync(executionContext);
 
             await this.innerActivityBehavior.ExecuteAsync(executionContext);
         }

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Bpmtk.Engine.Models;
+using Bpmtk.Engine.Repository;
 
 namespace Bpmtk.Engine.WebApi.Models
 {
@@ -89,7 +86,7 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public static ProcessDefinitionModel Create(ProcessDefinition definition)
+        public static ProcessDefinitionModel Create(IProcessDefinition definition)
         {
             var model = new ProcessDefinitionModel();
 

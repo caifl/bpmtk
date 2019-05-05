@@ -12,25 +12,24 @@ namespace Bpmtk.Engine.WebApi.Controllers
     /// </summary>
     [Route("api/tasks")]
     [ApiController]
-    public class TaskController : ControllerBase
+    public class TaskInstanceController : ControllerBase
     {
         private readonly IContext context;
         private readonly ITaskManager taskManager;
 
-        public TaskController(IContext context)
+        public TaskInstanceController(IContext context)
         {
             this.context = context;
             this.taskManager = context.TaskManager;
         }
 
-        /// <summary>
-        /// Filter Tasks
-        /// </summary>
-        /// <returns></returns>
         [HttpGet]
-        public virtual async Task<ActionResult<PagedResult<TaskModel>>> Get(TaskFilter filter)
+        public virtual async Task<ActionResult<PagedResult<TaskInstanceModel>>> Get([FromBody] TaskInstanceFilter filter)
         {
-            var result = new PagedResult<TaskModel>();
+            var result = new PagedResult<TaskInstanceModel>();
+
+            if (filter == null)
+                filter = new TaskInstanceFilter();
 
             var query = this.taskManager.CreateQuery()
                 .FetchAssignee();
@@ -41,7 +40,7 @@ namespace Bpmtk.Engine.WebApi.Controllers
             var list = await query.ListAsync(filter.Page, filter.PageSize);
 
             result.Count = await query.CountAsync();
-            result.Items = list.Select(x => TaskModel.Create(x)).ToList();
+            result.Items = list.Select(x => TaskInstanceModel.Create(x)).ToList();
             result.Page = filter.Page;
             result.PageSize = filter.PageSize;
 
@@ -54,14 +53,14 @@ namespace Bpmtk.Engine.WebApi.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<TaskModel>> Get(int id)
+        public async Task<ActionResult<TaskInstanceModel>> Get(int id)
         {
             var item = await this.taskManager.CreateQuery()
                 .FetchAssignee()
                 .SetId(id)
                 .SingleAsync();
             if (item != null)
-                return TaskModel.Create(item);
+                return TaskInstanceModel.Create(item);
 
             return this.NotFound();
         }

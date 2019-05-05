@@ -1,12 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Bpmtk.Engine.WebApi.Models
 {
-    public class TaskFilter
+    public class TaskInstanceFilter
     {
+        public TaskInstanceFilter()
+        {
+            this.Page = 1;
+            this.PageSize = 20;
+        }
+
         public virtual int? AssigneeId
         {
             get;

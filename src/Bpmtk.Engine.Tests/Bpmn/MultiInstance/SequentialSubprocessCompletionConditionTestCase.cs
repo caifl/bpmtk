@@ -1,10 +1,10 @@
-﻿using Bpmtk.Engine.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using Bpmtk.Engine.Tasks;
 
 namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
 {

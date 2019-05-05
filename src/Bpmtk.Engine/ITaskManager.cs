@@ -11,10 +11,10 @@ namespace Bpmtk.Engine
     {
         ITaskInstanceBuilder CreateBuilder();
 
-        IQueryable<TaskInstance> Tasks
-        {
-            get;
-        }
+        //IQueryable<TaskInstance> Tasks
+        //{
+        //    get;
+        //}
 
         ITaskQuery CreateQuery();
 
@@ -40,8 +40,8 @@ namespace Bpmtk.Engine
 
         //Task RemoveAsync(long taskId);
 
-        //IReadOnlyList<AssignmentStrategyEntry> GetAssignmentStrategyEntries();
+        IReadOnlyList<AssignmentStrategyEntry> GetAssignmentStrategyEntries();
 
-        //IAssignmentStrategy GetAssignmentStrategy(string key);
+        IAssignmentStrategy GetAssignmentStrategy(string key);
     }
 }

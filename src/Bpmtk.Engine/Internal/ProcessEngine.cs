@@ -1,9 +1,5 @@
-﻿using Bpmtk.Engine.Events;
-using Bpmtk.Engine.Tasks;
+﻿using System;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
 
 namespace Bpmtk.Engine.Internal
 {
@@ -12,10 +8,9 @@ namespace Bpmtk.Engine.Internal
         private static ProcessEngine instance = null;
         protected readonly static object syncRoot = new object();
 
-        private readonly ProcessEngineBuilder builder;
-
-        //process-engine properties.
-        private readonly ConcurrentDictionary<string, object> props = new ConcurrentDictionary<string, object>();
+        private readonly ProcessEngineOptions options;
+        protected readonly IContextFactory contextFactory;
+        protected readonly ILoggerFactory loggerFactory;
 
         public static ProcessEngine GetInstance()
         {
@@ -28,16 +23,26 @@ namespace Bpmtk.Engine.Internal
             }
         }
 
-        public ProcessEngine(ProcessEngineBuilder builder)
+        public ProcessEngine(IContextFactory contextFactory, 
+            ILoggerFactory loggerFactory,
+            ProcessEngineOptions options)
         {
-            lock(syncRoot)
+            if (contextFactory == null)
+                throw new ArgumentNullException(nameof(contextFactory));
+
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            lock (syncRoot)
                 instance = this;
 
-            this.builder = builder;
+            this.contextFactory = contextFactory;
+            this.loggerFactory = loggerFactory;
+            this.options = options;
 
             //init
-            this.ProcessEventListener = new CompositeProcessEventListener(builder.ProcessEventListeners);
-            this.TaskEventListener = new CompositeTaskEventListener(builder.TaskEventListeners);
+            //this.ProcessEventListener = new CompositeProcessEventListener(builder.ProcessEventListeners);
+            //this.TaskEventListener = new CompositeTaskEventListener(builder.TaskEventListeners);
 
             //initialize process-engine props.
             // ...
@@ -48,7 +53,7 @@ namespace Bpmtk.Engine.Internal
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            return this.props.TryGetValue(name, out value);
+            return this.options.Properties.TryGetValue(name, out value);
         }
 
         public virtual object GetValue(string name, object defaultValue = null)
@@ -76,31 +81,27 @@ namespace Bpmtk.Engine.Internal
 
         public virtual ProcessEngine SetValue(string name, object value)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
-
-            this.props.AddOrUpdate(name, value, (k, v) => value);
+            this.options.SetProperty(name, value);
 
             return this;
         }
 
+        public virtual ProcessEngineOptions Options => this.options;
+
         public virtual IContext CreateContext()
-        {
-            var contextFactory = builder.ContextFactory;
-            return contextFactory.Create(this);
-        }
+            => contextFactory.Create(this);
 
-        public virtual ILoggerFactory LoggerFactory => this.builder.LoggerFactory;
+        public virtual ILoggerFactory LoggerFactory => this.loggerFactory;
 
-        public virtual IProcessEventListener ProcessEventListener
-        {
-            get;
-        }
+        //public virtual IProcessEventListener ProcessEventListener
+        //{
+        //    get;
+        //}
 
-        public virtual ITaskEventListener TaskEventListener
-        {
-            get;
-        }
+        //public virtual ITaskEventListener TaskEventListener
+        //{
+        //    get;
+        //}
 
         #region IDisposable Support
         private bool isDisposed = false; // To detect redundant calls
@@ -139,21 +140,7 @@ namespace Bpmtk.Engine.Internal
 
         //public virtual bool IsActivityRecorderDisabled => this.builder.IsActivityRecorderDisabled;
 
-        public virtual IAssignmentStrategy GetTaskAssignmentStrategy(string key)
-        {
-            AssignmentStrategyEntry item = null;
-
-            if (this.builder.AssignmentStrategyEntries.TryGetValue(key, out item))
-                return item.AssignmentStrategy;
-
-            return null;
-        }
-
-        public virtual IReadOnlyList<AssignmentStrategyEntry> GetTaskAssignmentStrategyEntries()
-        {
-            var list = new List<AssignmentStrategyEntry>(this.builder.AssignmentStrategyEntries.Values);
-            return list.AsReadOnly();
-        }
+        
 
         #endregion
     }

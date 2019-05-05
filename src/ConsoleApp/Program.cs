@@ -7,6 +7,8 @@ using System.IO;
 using Bpmtk.Engine;
 using Bpmtk.Engine.Models;
 using System.Threading.Tasks;
+using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Tasks;
 
 namespace ConsoleApp
 {
@@ -17,7 +19,7 @@ namespace ConsoleApp
             //Setup LoggerFactory.
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddConsole(
-                LogLevel.Information //Warning  //filter logger level.
+                //LogLevel.Debug //Warning  //filter logger level.
                 );
 
             //Create Bpmtk-Context Factory, and configure database.
@@ -38,6 +40,10 @@ namespace ConsoleApp
                 .SetContextFactory(conextFactory)
                 .SetLoggerFactory(loggerFactory)
                 .AddProcessEventListener(processEventListener)
+                //.Configure(options =>
+                //{
+                //    options.SetValue("isActivityRecorderDisabled", false);
+                //})
                 .Build();
 
             //init process-engine props. (optional)
@@ -47,7 +53,7 @@ namespace ConsoleApp
             var context = engine.CreateContext();
 
             //Start db transaction.
-            var transaction = context.BeginTransaction(); 
+            var transaction = context.DbSession.BeginTransaction(); 
 
             //Register current context. (optional)
             Context.SetCurrent(context);
@@ -67,6 +73,15 @@ namespace ConsoleApp
             context.SetAuthenticatedUser(user.Id);
 
             var deploymentManager = context.DeploymentManager;
+
+            //var q = deploymentManager.CreateDefinitionQuery()
+            //    .FetchLatestVersionOnly()
+            //    .FetchDeployment()
+            //    .FetchIdentityLinks()
+            //    .SetName("Script")
+            //    .ListAsync().Result;
+
+            //var rx = x.ToList();
 
             //Deploy BPMN 2.0 Model.
             var modelContent = GetBpmnModelContentFromResource("ConsoleApp.resources.ParallelGatewayTest.testNestedForkJoin.bpmn20.xml");
@@ -110,7 +125,7 @@ namespace ConsoleApp
             Console.ReadKey();
         }
 
-        protected static async Task HumanTasksInteraction(IContext context, ProcessInstance pi)
+        protected static async Task HumanTasksInteraction(IContext context, IProcessInstance pi)
         {
             //Create taskQuery.
             var taskManager = context.TaskManager;

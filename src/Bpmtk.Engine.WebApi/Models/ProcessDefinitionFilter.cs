@@ -1,23 +1,23 @@
 ﻿using System;
-using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Repository;
 
 namespace Bpmtk.Engine.WebApi.Models
 {
-    public class ProcessInstanceFilter
+    public class ProcessDefinitionFilter
     {
-        public ProcessInstanceFilter()
+        public ProcessDefinitionFilter()
         {
             this.Page = 1;
             this.PageSize = 20;
         }
 
-        public virtual ExecutionState? State
+        public virtual ProcessDefinitionState? State
         {
             get;
             set;
         }
 
-        public virtual ExecutionState[] AnyStates
+        public virtual ProcessDefinitionState[] AnyStates
         {
             get;
             set;

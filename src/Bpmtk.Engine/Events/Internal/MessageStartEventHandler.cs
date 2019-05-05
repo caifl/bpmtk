@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Models;
+using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Events
 {
     class MessageStartEventHandler : IMessageStartEventHandler
     {
-        public async Task<ProcessInstance> ExecuteAsync(IContext context,
+        public async Task<IProcessInstance> ExecuteAsync(IContext context,
             EventSubscription eventSubscription, 
             IDictionary<string, object> messageData)
         {

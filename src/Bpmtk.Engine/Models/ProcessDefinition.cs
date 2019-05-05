@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bpmtk.Engine.Repository;
 using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Models
 {
-    public class ProcessDefinition
+    public class ProcessDefinition : IProcessDefinition
     {
         public ProcessDefinition()
         {
@@ -184,12 +185,5 @@ namespace Bpmtk.Engine.Models
             get;
             set;
         }
-    }
-
-    public enum ProcessDefinitionState : int
-    {
-        Inactive = 0,
-
-        Active = 1
     }
 }

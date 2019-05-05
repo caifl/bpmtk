@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.Tasks
 {
@@ -51,14 +50,14 @@ namespace Bpmtk.Engine.Tasks
 
         //IList<TaskInstance> List(int pageIndex, int pageSize);
 
-        Task<TaskInstance> SingleAsync();
+        Task<ITaskInstance> SingleAsync();
 
         Task<int> CountAsync();
 
-        Task<IList<TaskInstance>> ListAsync();
+        Task<IList<ITaskInstance>> ListAsync();
 
-        Task<IList<TaskInstance>> ListAsync(int count);
+        Task<IList<ITaskInstance>> ListAsync(int count);
 
-        Task<IList<TaskInstance>> ListAsync(int page, int pageSize = 20);
+        Task<IList<ITaskInstance>> ListAsync(int page, int pageSize);
     }
 }

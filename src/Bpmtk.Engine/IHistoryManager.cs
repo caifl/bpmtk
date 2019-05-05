@@ -10,10 +10,10 @@ namespace Bpmtk.Engine
 {
     public interface IHistoryManager
     {
-        IQueryable<ActivityInstance> ActivityInstances
-        {
-            get;
-        }
+        //IQueryable<ActivityInstance> ActivityInstances
+        //{
+        //    get;
+        //}
 
         IActivityInstanceQuery CreateActivityQuery();
 

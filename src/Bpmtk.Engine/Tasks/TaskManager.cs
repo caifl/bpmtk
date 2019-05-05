@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
@@ -113,17 +112,32 @@ namespace Bpmtk.Engine.Tasks
         public virtual ITaskInstanceBuilder CreateBuilder()
             => new TaskInstanceBuilder(this.context);
 
-        public virtual ITaskQuery CreateQuery()
+        public virtual TaskQuery CreateQuery()
             => new TaskQuery(this.session);
+
+        ITaskQuery ITaskManager.CreateQuery() => this.CreateQuery();
 
         public virtual Task<TaskInstance> FindAsync(long taskId)
         {
             return this.session.FindAsync<TaskInstance>(taskId);
         }
 
-        public virtual Task<IList<AssignmentStrategyEntry>> GetAssignmentStrategyEntries()
+        public virtual IAssignmentStrategy GetAssignmentStrategy(string key)
         {
-            throw new NotImplementedException();
+            var engineOptions = this.context.Engine.Options;
+            AssignmentStrategyEntry item = null;
+
+            if (engineOptions.AssignmentStrategyEntries.TryGetValue(key, out item))
+                return item.AssignmentStrategy;
+
+            return null;
+        }
+
+        public virtual IReadOnlyList<AssignmentStrategyEntry> GetAssignmentStrategyEntries()
+        {
+            var engineOptions = this.context.Engine.Options;
+            var list = new List<AssignmentStrategyEntry>(engineOptions.AssignmentStrategyEntries.Values);
+            return list.AsReadOnly();
         }
 
         //public virtual IAssignmentStrategy GetAssignmentStrategy(string key)

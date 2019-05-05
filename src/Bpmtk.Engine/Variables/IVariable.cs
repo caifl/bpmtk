@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Bpmtk.Engine.Models
+namespace Bpmtk.Engine.Variables
 {
     public interface IVariable
     {

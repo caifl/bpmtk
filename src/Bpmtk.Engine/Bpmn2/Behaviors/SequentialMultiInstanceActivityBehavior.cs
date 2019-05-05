@@ -64,8 +64,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
             //fire inner activityEndEvent.
             token.Inactivate();
-            var engine = executionContext.Engine;
-            await engine.ProcessEventListener.ActivityEndAsync(executionContext);
+            await context.ProcessEventListener.ActivityEndAsync(executionContext);
 
             //Get parent-context.
             var parentExecution = ExecutionContext.Create(context, parentToken);

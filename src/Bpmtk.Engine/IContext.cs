@@ -54,7 +54,5 @@ namespace Bpmtk.Engine
         }
 
         IContext SetAuthenticatedUser(int userId);
-
-        ITransaction BeginTransaction();
     }
 }

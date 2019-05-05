@@ -20,12 +20,15 @@ namespace Bpmtk.Engine.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<ProcessInstanceModel>>> Get(ProcessInstanceFilter filter)
+        public async Task<ActionResult<PagedResult<ProcessInstanceModel>>> Get([FromBody] ProcessInstanceFilter filter)
         {
             var result = new PagedResult<ProcessInstanceModel>();
 
             var query = this.runtimeManager.CreateInstanceQuery()
                 .FetchInitiator();
+
+            if (filter == null)
+                filter = new ProcessInstanceFilter();
 
             if (filter.AnyStates != null
                 && filter.AnyStates.Length > 0)

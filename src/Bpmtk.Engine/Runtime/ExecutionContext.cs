@@ -117,7 +117,7 @@ namespace Bpmtk.Engine.Runtime
             this.token.IsEnded = true;
 
             //fire activityEndEvent.
-            var eventListener = this.Context.Engine.ProcessEventListener;
+            var eventListener = this.Context.ProcessEventListener;
             await eventListener.ActivityEndAsync(this);
 
             var parentToken = this.token.Parent;
@@ -169,7 +169,7 @@ namespace Bpmtk.Engine.Runtime
             await this.Context.DbSession.FlushAsync();
 
             //fire processEndEvent.
-            await this.Context.Engine.ProcessEventListener.ProcessEndAsync(this);
+            await this.Context.ProcessEventListener.ProcessEndAsync(this);
 
             var superToken = procInst.Super;
             if(superToken != null)
@@ -255,7 +255,7 @@ namespace Bpmtk.Engine.Runtime
                 var historyManager = this.Context.HistoryManager;
 
                 //fire activityReadyEvent.
-                var eventListener = this.Context.Engine.ProcessEventListener;
+                var eventListener = this.Context.ProcessEventListener;
                 await eventListener.ActivityReadyAsync(this);
 
                 var isPreConditionsSatisfied = await behavior.EvaluatePreConditionsAsync(this);
@@ -266,7 +266,7 @@ namespace Bpmtk.Engine.Runtime
                     this.TransitionSource = null;
 
                     //fire activityStartEvent.
-                    eventListener = this.Context.Engine.ProcessEventListener;
+                    eventListener = this.Context.ProcessEventListener;
                     await eventListener.ActivityStartAsync(this);
 
                     await behavior.ExecuteAsync(this);
@@ -288,7 +288,7 @@ namespace Bpmtk.Engine.Runtime
                 throw new ArgumentNullException(nameof(transition));
 
             //fire activityEndEvent.
-            var eventListener = this.Context.Engine.ProcessEventListener;
+            var eventListener = this.Context.ProcessEventListener;
             await eventListener.ActivityEndAsync(this);
 
             await this.TakeAsync(transition);
@@ -300,7 +300,7 @@ namespace Bpmtk.Engine.Runtime
                 throw new ArgumentNullException(nameof(transitions));
 
             //fire activityEndEvent.
-            var eventListener = this.Context.Engine.ProcessEventListener;
+            var eventListener = this.Context.ProcessEventListener;
             await eventListener.ActivityEndAsync(this);
 
             if (transitions.Count() > 1)
@@ -407,7 +407,7 @@ namespace Bpmtk.Engine.Runtime
             this.Transition = transition;
 
             //fire transitionTakenEvent.
-            var eventListener = this.Context.Engine.ProcessEventListener;
+            var eventListener = this.Context.ProcessEventListener;
             await eventListener.TakeTransitionAsync(this);
 
             var targetNode = transition.TargetRef;

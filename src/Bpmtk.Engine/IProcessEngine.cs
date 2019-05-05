@@ -1,31 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Bpmtk.Engine.Tasks;
-using Bpmtk.Engine.Events;
 
 namespace Bpmtk.Engine
 {
     public interface IProcessEngine
     {
+        ProcessEngineOptions Options
+        {
+            get;
+        }
+
         ILoggerFactory LoggerFactory
         {
             get;
         }
 
-        IProcessEventListener ProcessEventListener
-        {
-            get;
-        }
+        //IProcessEventListener ProcessEventListener
+        //{
+        //    get;
+        //}
 
-        ITaskEventListener TaskEventListener
-        {
-            get;
-        }
+        //ITaskEventListener TaskEventListener
+        //{
+        //    get;
+        //}
 
-        IAssignmentStrategy GetTaskAssignmentStrategy(string key);
+        //IAssignmentStrategy GetTaskAssignmentStrategy(string key);
 
-        IReadOnlyList<AssignmentStrategyEntry> GetTaskAssignmentStrategyEntries();
+        //IReadOnlyList<AssignmentStrategyEntry> GetTaskAssignmentStrategyEntries();
 
         IContext CreateContext();
 

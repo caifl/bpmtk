@@ -9,15 +9,15 @@ namespace Bpmtk.Engine
 {
     public interface IRuntimeManager
     {
-        IQueryable<ProcessInstance> ProcessInstances
-        {
-            get;
-        }
+        //IQueryable<ProcessInstance> ProcessInstances
+        //{
+        //    get;
+        //}
 
-        IQueryable<Token> Tokens
-        {
-            get;
-        }
+        //IQueryable<Token> Tokens
+        //{
+        //    get;
+        //}
         
         /// <summary>
         /// Create process-instance query.
@@ -36,17 +36,17 @@ namespace Bpmtk.Engine
         /// <summary>
         /// Start new process-instance by builder.
         /// </summary>
-        Task<ProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder);
+        Task<IProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder);
 
         /// <summary>
         /// Start new process-instance by Key of process-definition. 
         /// </summary>
         /// <param name="processDefintionKey">The Key of process-definition</param>
         /// <param name="variables">Initial Variables</param>
-        Task<ProcessInstance> StartProcessByKeyAsync(string processDefintionKey,
+        Task<IProcessInstance> StartProcessByKeyAsync(string processDefintionKey,
             IDictionary<string, object> variables = null);
 
-        Task<ProcessInstance> StartProcessByMessageAsync(string messageName,
+        Task<IProcessInstance> StartProcessByMessageAsync(string messageName,
             IDictionary<string, object> messageData = null);
 
         Task<IList<string>> GetActiveActivityIdsAsync(long processInstanceId);
@@ -57,7 +57,7 @@ namespace Bpmtk.Engine
 
         Task<int> GetActiveTaskCountAsync(long tokenId);
 
-        Task<ProcessInstance> FindAsync(long processInstanceId);
+        Task<IProcessInstance> FindAsync(long processInstanceId);
 
         Task<IDictionary<string, object>> GetVariablesAsync(long processInstanceId,
             string[] variableNames = null);

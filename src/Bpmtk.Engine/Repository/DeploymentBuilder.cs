@@ -164,19 +164,19 @@ namespace Bpmtk.Engine.Repository
                 //remove event subs.
                 var items = await this.deploymentManager.GetEventSubscriptionsAsync(procDefId);
                 if (items.Count > 0)
-                    await this.session.RemoveRangeAsync(items);
+                    this.session.RemoveRange(items);
 
                 //remove timer jobs.
                 var jobs = await this.deploymentManager.GetScheduledJobsAsync(procDefId);
                 if (jobs.Count > 0)
-                    await this.session.RemoveRangeAsync(jobs.ToArray());
+                    this.session.RemoveRange(jobs);
             }
 
             if (eventSubs.Count > 0)
-                await this.session.SaveAsync(eventSubs.ToArray());
+                await this.session.SaveRangeAsync(eventSubs);
 
             if (timerJobs.Count > 0)
-                await this.session.SaveAsync(timerJobs.ToArray());
+                await this.session.SaveRangeAsync(timerJobs);
         }
 
         #region Create signal/message/timer event handler.

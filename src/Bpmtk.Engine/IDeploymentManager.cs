@@ -10,12 +10,14 @@ namespace Bpmtk.Engine
 {
     public interface IDeploymentManager
     {
-        IQueryable<Deployment> Deployments
-        {
-            get;
-        }
+        //IQueryable<Deployment> Deployments
+        //{
+        //    get;
+        //}
 
-        IDeploymentQuery CreateQuery();
+        IDeploymentQuery CreateDeploymentQuery();
+
+        IProcessDefinitionQuery CreateDefinitionQuery();
 
         IQueryable<ProcessDefinition> ProcessDefinitions
         {

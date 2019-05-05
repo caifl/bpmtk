@@ -67,7 +67,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                         break;
 
                     case AssignmentStrategy:
-                        assignmentStrategry = context.Engine.GetTaskAssignmentStrategy(value);
+                        assignmentStrategry = taskManager.GetAssignmentStrategy(value);
                         break;
                 }              
             }

@@ -64,6 +64,8 @@ namespace Bpmtk.Engine.Storage
             get;
         }
 
+        IQueryable<TEntity> Query<TEntity>(string sql, params object[] parameters) where TEntity : class;
+
         IQueryable<TEntity> Query<TEntity>() where TEntity : class;
 
         IQueryable<TEntity> Fetch<TEntity, TProperty>(IQueryable<TEntity> query,
@@ -79,18 +81,27 @@ namespace Bpmtk.Engine.Storage
         Task<TEntity> FindAsync<TEntity>(params object[] keyValues)
             where TEntity : class;
 
+        TEntity Find<TEntity>(params object[] keyValues) where TEntity : class;
 
-        Task UpdateAsync(object entity);
+        void Update(object entity);
+
+        void Save(object entity);
+
+        void SaveRange(IEnumerable<object> items);
 
         Task SaveAsync(object entity);
 
         Task SaveRangeAsync(IEnumerable<object> items);
 
-        Task RemoveAsync(object entity);
+        void Remove(object entity);
 
-        Task RemoveRangeAsync(IEnumerable<object> items);
+        void RemoveRange(IEnumerable<object> items);
 
         ITransaction BeginTransaction();
+
+        ITransaction BeginTransaction(System.Data.IsolationLevel isolationLevel);
+
+        void Flush();
 
         Task FlushAsync();
     }

@@ -1,9 +1,13 @@
-﻿using System;
+﻿
+using System;
+using System.Linq;
 using System.Collections.Generic;
+using Bpmtk.Engine.Repository;
+using Bpmtk.Engine.Identity;
 
 namespace Bpmtk.Engine.Models
 {
-    public class Deployment
+    public class Deployment : IDeployment
     {
         public Deployment()
         {
@@ -64,6 +68,12 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        public virtual int? PackageId
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// Gets or sets the source package.
         /// </summary>
@@ -77,6 +87,13 @@ namespace Bpmtk.Engine.Models
         {
             get;
         }
+
+        IReadOnlyList<IProcessDefinition> IDeployment.ProcessDefinitions
+        {
+            get => this.ProcessDefinitions.ToList();
+        }
+
+        IUser IDeployment.User => this.User;
 
         public virtual string Memo
         {

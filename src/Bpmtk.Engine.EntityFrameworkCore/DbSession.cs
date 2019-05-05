@@ -17,6 +17,14 @@ namespace Bpmtk.Engine.Storage
             this.context = context;
         }
 
+        public virtual IQueryable<TEntity> Query<TEntity>(string sql, params object[] parameters) where TEntity : class
+        {
+            if (sql == null)
+                throw new ArgumentNullException(nameof(sql));
+
+            return this.context.Set<TEntity>().FromSql(new RawSqlString(sql), parameters);
+        }
+
         public virtual IQueryable<ProcessDefinition> ProcessDefinitions => this.context.ProcessDefinitions;
 
         public virtual IQueryable<EventSubscription> EventSubscriptions => this.context.EventSubscriptions;
@@ -42,6 +50,12 @@ namespace Bpmtk.Engine.Storage
         public virtual ITransaction BeginTransaction()
         {
             var tx = this.context.Database.BeginTransaction();
+            return new ContextTransaction(tx);
+        }
+
+        public virtual ITransaction BeginTransaction(System.Data.IsolationLevel isolationLevel)
+        {
+            var tx = this.context.Database.BeginTransaction(isolationLevel);
             return new ContextTransaction(tx);
         }
 
@@ -78,12 +92,8 @@ namespace Bpmtk.Engine.Storage
             return Task.CompletedTask;
         }
 
-        public virtual Task RemoveRangeAsync(IEnumerable<object> items)
-        {
-            //this.context.AttachRange(items);
-            this.context.RemoveRange(items);
-            return Task.CompletedTask;
-        }
+        public virtual void RemoveRange(IEnumerable<object> items)
+            => this.context.RemoveRange(items);
 
         public virtual async Task SaveAsync(object entity)
         {
@@ -97,14 +107,24 @@ namespace Bpmtk.Engine.Storage
             //await this.context.SaveChangesAsync();
         }
 
-        public virtual Task UpdateAsync(object entity)
-        {
-            this.context.Update(entity);
-
-            return Task.CompletedTask;
-        }
-
         public virtual IQueryable<TEntity> Query<TEntity>() where TEntity : class
             => this.context.Set<TEntity>();
+
+        public virtual TEntity Find<TEntity>(params object[] keyValues) where TEntity : class
+            => this.context.Find<TEntity>(keyValues);
+
+        public virtual void Update(object entity)
+            => this.context.Update(entity);
+
+        public virtual void Save(object entity)
+            => this.context.Add(entity);
+
+        public virtual void SaveRange(IEnumerable<object> items)
+            => this.context.AddRange(items);
+
+        public virtual void Remove(object entity)
+            => this.context.Remove(entity);
+
+        public virtual void Flush() => this.context.SaveChanges();
     }
 }

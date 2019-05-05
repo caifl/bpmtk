@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bpmtk.Engine.Identity;
 
 namespace Bpmtk.Engine.Models
 {
-    public class User
+    public class User : IUser
     {
         public virtual int Id
         {

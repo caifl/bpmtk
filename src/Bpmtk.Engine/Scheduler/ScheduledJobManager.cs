@@ -6,7 +6,7 @@ using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.Scheduler
 {
-    class ScheduledJobManager : IScheduledJobManager
+    public class ScheduledJobManager : IScheduledJobManager
     {
         private readonly Context context;
 

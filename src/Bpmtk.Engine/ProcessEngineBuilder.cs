@@ -12,34 +12,21 @@ namespace Bpmtk.Engine
 {
     public class ProcessEngineBuilder : IProcessEngineBuilder
     {
-        protected readonly Dictionary<string, AssignmentStrategyEntry> assignmentStrategyEntries 
-            = new Dictionary<string, AssignmentStrategyEntry>();
-
-        protected readonly List<IProcessEventListener> processEventListeners = new List<IProcessEventListener>();
-        protected readonly List<ITaskEventListener> taskEventListeners = new List<ITaskEventListener>();
-
-        public virtual IReadOnlyList<ITaskEventListener> TaskEventListeners
-        {
-            get => this.taskEventListeners.AsReadOnly();
-        }
-
-        public virtual IReadOnlyList<IProcessEventListener> ProcessEventListeners
-        {
-            get => this.processEventListeners.AsReadOnly();
-        }
-
-        public virtual IReadOnlyDictionary<string, AssignmentStrategyEntry> AssignmentStrategyEntries
-        {
-            get => this.assignmentStrategyEntries;
-        }
+        protected ProcessEngineOptions options = new ProcessEngineOptions();
+        protected IContextFactory contextFactory;
+        protected ILoggerFactory loggerFactory;
+        protected Action<ProcessEngineOptions> optionsAction;
 
         public virtual IProcessEngine Build()
         {
-            return new ProcessEngine(this);
-        }
+            var options = new ProcessEngineOptions();
 
-        protected IContextFactory contextFactory;
-        protected ILoggerFactory loggerFactory;
+            //Configure engine.
+            if (this.optionsAction != null)
+                this.optionsAction.Invoke(options);
+
+            return new ProcessEngine(this.contextFactory, this.loggerFactory, options);
+        }
 
         public virtual IContextFactory ContextFactory
         {
@@ -49,12 +36,6 @@ namespace Bpmtk.Engine
         public virtual ILoggerFactory LoggerFactory
         {
             get => this.loggerFactory;
-        }
-
-        public virtual bool IsActivityRecorderDisabled
-        {
-            get;
-            protected set;
         }
 
         public virtual IProcessEngineBuilder SetContextFactory(IContextFactory contextFactory)
@@ -76,8 +57,7 @@ namespace Bpmtk.Engine
             if (processEventListener == null)
                 throw new ArgumentNullException(nameof(processEventListener));
 
-            if (!this.processEventListeners.Contains(processEventListener))
-                this.processEventListeners.Add(processEventListener);
+            this.options.AddProcessEventListener(processEventListener);
 
             return this;
         }
@@ -87,8 +67,7 @@ namespace Bpmtk.Engine
             if (taskEventListener == null)
                 throw new ArgumentNullException(nameof(taskEventListener));
 
-            if (!this.taskEventListeners.Contains(taskEventListener))
-                this.taskEventListeners.Add(taskEventListener);
+            this.options.AddTaskEventListener(taskEventListener);
 
             return this;
         }
@@ -102,15 +81,21 @@ namespace Bpmtk.Engine
             if (assignmentStrategy == null)
                 throw new ArgumentNullException(nameof(assignmentStrategy));
 
-            var entry = new AssignmentStrategyEntry(key, name, assignmentStrategy);
-            this.assignmentStrategyEntries.Add(key, entry);
+            this.options.AddTaskAssignmentStrategy(key, name, assignmentStrategy);
 
             return this;
         }
 
-        public virtual IProcessEngineBuilder DisableActivityRecorder()
+        //public virtual IProcessEngineBuilder DisableActivityRecorder()
+        //{
+        //    this.IsActivityRecorderDisabled = true;
+
+        //    return this;
+        //}
+
+        public virtual IProcessEngineBuilder Configure(Action<ProcessEngineOptions> optionsAction)
         {
-            this.IsActivityRecorderDisabled = true;
+            this.optionsAction = optionsAction;
 
             return this;
         }

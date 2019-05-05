@@ -73,7 +73,7 @@ namespace Bpmtk.Engine.Repository
             return this;
         }
 
-        public virtual Task<IList<Deployment>> ListAsync(int page = 1, int pageSize = 20)
+        public virtual Task<IList<Deployment>> ListAsync(int page, int pageSize)
         {
             if (page < 1)
                 page = 1;
@@ -86,9 +86,43 @@ namespace Bpmtk.Engine.Repository
             return this.Session.QueryMultipleAsync(query);
         }
 
+        public virtual Task<IList<Deployment>> ListAsync(int count)
+        {
+            IQueryable<Deployment> query = this.CreateNativeQuery()
+                .OrderByDescending(x =>x.Created);
+
+            if (count > 0)
+                query = query.Take(count);
+
+            return this.Session.QueryMultipleAsync(query);
+        }
+
         public virtual Task<IList<Deployment>> ListAsync()
         {
             return this.Session.QueryMultipleAsync(this.CreateNativeQuery());
+        }
+
+        async Task<IList<IDeployment>> IDeploymentQuery.ListAsync()
+        {
+            var list = await this.ListAsync();
+            return list.ToList<IDeployment>();
+        }
+
+        async Task<IList<IDeployment>> IDeploymentQuery.ListAsync(int count)
+        {
+            var list = await this.ListAsync(count);
+            return list.ToList<IDeployment>();
+        }
+
+        async Task<IDeployment> IDeploymentQuery.SingleAsync()
+        {
+            return await this.SingleAsync();
+        }
+
+        async Task<IList<IDeployment>> IDeploymentQuery.ListAsync(int page, int pageSize)
+        {
+            var list = await this.ListAsync(page, pageSize);
+            return list.ToList<IDeployment>();
         }
 
         public virtual IDeploymentQuery SetCategory(string category)

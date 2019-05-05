@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Variables;
 
 namespace Bpmtk.Engine.Models
 {
-    public abstract class ExecutionObject
+    public abstract class ExecutionObject : IExecutionObject
     {
         public virtual long Id
         {
@@ -48,6 +49,10 @@ namespace Bpmtk.Engine.Models
         //{
         //    return null;
         //}
+        public abstract IReadOnlyList<IVariable> VariableInstances
+        {
+            get;
+        }
 
         public abstract object GetVariable(string name);
 
@@ -89,6 +94,22 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        IDictionary<string, object> IExecutionObject.Variables
+        {
+            get
+            {
+                var map = new Dictionary<string, object>();
+
+                var items = this.VariableInstances;
+                foreach(var item in items)
+                {
+                    map.Add(item.Name, item.GetValue());
+                }
+
+                return map;
+            }
+        }
+
         //public virtual void Suspend()
         //{
 
@@ -102,18 +123,5 @@ namespace Bpmtk.Engine.Models
         //public abstract void Terminate(IContext context, string endReason = null);
     }
 
-    public enum ExecutionState : int
-    {
-        Ready = 0,
-
-        Active = 1,
-
-        Suspended = 2,
-
-        Completed = 4,
-
-        Aborted = 8,
-
-        Terminated = 16
-    }
+    
 }

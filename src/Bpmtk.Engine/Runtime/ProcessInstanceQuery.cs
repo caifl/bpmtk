@@ -219,5 +219,26 @@ namespace Bpmtk.Engine.Runtime
         {
             return this.Session.QuerySingleAsync(this.CreateNativeQuery());
         }
+
+        async Task<IProcessInstance> IProcessInstanceQuery.SingleAsync()
+            => await this.SingleAsync();
+
+        async Task<IList<IProcessInstance>> IProcessInstanceQuery.ListAsync()
+        {
+            var list = await this.ListAsync();
+            return list.ToList<IProcessInstance>();
+        }
+
+        //async Task<IList<IProcessInstance>> IProcessInstanceQuery.ListAsync(int count)
+        //{
+        //    var list = await this.ListAsync(count);
+        //    return list.ToList<IProcessInstance>();
+        //}
+
+        async Task<IList<IProcessInstance>> IProcessInstanceQuery.ListAsync(int page, int pageSize)
+        {
+            var list = await this.ListAsync(page, pageSize);
+            return list.ToList<IProcessInstance>();
+        }
     }
 }

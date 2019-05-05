@@ -28,27 +28,22 @@ namespace Bpmtk.Engine.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public ActionResult<IEnumerable<ProcessDefinitionModel>> Get()
+        public async Task<ActionResult<PagedResult<ProcessDefinitionModel>>> Get(
+            [FromQuery] ProcessDefinitionFilter filter)
         {
-            var query = this.context.DeploymentManager.ProcessDefinitions;
-            var q = query.GroupBy(x => x.Key)
-                .Select(x => new
-                {
-                    key = x.Key,
-                    version = x.Max(y => y.Version)
-                });
+            PagedResult<ProcessDefinitionModel> result = new PagedResult<ProcessDefinitionModel>();
 
-            var q2 = from item in query
-                     join b in q on new
-                     {
-                         key = item.Key,
-                         version = item.Version
-                     } equals b
-                     select item;
+            var query = this.deploymentManager.CreateDefinitionQuery()
+                .FetchLatestVersionOnly();
 
-            var data = q2.Select(x => ProcessDefinitionModel.Create(x)).ToArray();
+            result.Count = await query.CountAsync();
+            var items = await query.ListAsync(filter.Page, filter.PageSize);
 
-            return data;
+            result.Items = items.Select(x => ProcessDefinitionModel.Create(x)).ToList();
+            result.Page = filter.Page;
+            result.PageSize = filter.PageSize;
+
+            return result;
         }
 
         /// <summary>

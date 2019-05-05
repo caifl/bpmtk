@@ -1,9 +1,9 @@
 ﻿using System;
-using Bpmtk.Engine.Models;
+using Bpmtk.Engine.Tasks;
 
 namespace Bpmtk.Engine.WebApi.Models
 {
-    public class TaskModel
+    public class TaskInstanceModel
     {
         public virtual long Id
         {
@@ -65,7 +65,7 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public virtual string Assignee
+        public virtual string AssigneeName
         {
             get;
             set;
@@ -77,9 +77,9 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public static TaskModel Create(TaskInstance task)
+        public static TaskInstanceModel Create(ITaskInstance task)
         {
-            var model = new TaskModel();
+            var model = new TaskInstanceModel();
 
             model.Id = task.Id;
             model.Name = task.Name;
@@ -87,6 +87,8 @@ namespace Bpmtk.Engine.WebApi.Models
             model.State = (int)task.State;
             model.StateName = task.State.ToString();
             model.Priority = task.Priority;
+            model.AssigneeId = task.Assignee?.Id;
+            model.AssigneeName = task.Assignee?.Name;
             model.ProcessInstanceId = task.ProcessInstanceId;
             //model.ActivityInstanceId = task.ActivityInstance?.Id;
             

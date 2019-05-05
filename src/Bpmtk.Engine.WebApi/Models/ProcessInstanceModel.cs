@@ -1,5 +1,5 @@
 ﻿using System;
-using Bpmtk.Engine.Models;
+using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.WebApi.Models
 {
@@ -44,7 +44,7 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public virtual string Initiator
+        public virtual string InitiatorName
         {
             get;
             set;
@@ -68,7 +68,7 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
        
-        public static ProcessInstanceModel Create(ProcessInstance instance)
+        public static ProcessInstanceModel Create(IProcessInstance instance)
         {
             var model = new ProcessInstanceModel();
 
@@ -78,7 +78,7 @@ namespace Bpmtk.Engine.WebApi.Models
             model.State = (int)instance.State;
             model.StateName = instance.State.ToString();
             model.InitiatorId = instance.Initiator?.Id;
-            model.Initiator = instance.Initiator?.UserName;
+            model.InitiatorName = instance.Initiator?.UserName;
             model.StartTime = instance.StartTime;
             model.LastStateTime = instance.LastStateTime;
             model.Description = instance.Description;

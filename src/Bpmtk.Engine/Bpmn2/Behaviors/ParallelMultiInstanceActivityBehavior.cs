@@ -77,8 +77,8 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
             //fire inner activityEndEvent.
             token.Inactivate();
-            var engine = executionContext.Engine;
-            await engine.ProcessEventListener.ActivityEndAsync(executionContext);
+
+            await context.ProcessEventListener.ActivityEndAsync(executionContext);
 
             var loopDataOutputRef = this.loopCharacteristics.LoopDataOutputRef;
             var outputDataItem = this.loopCharacteristics.OutputDataItem;

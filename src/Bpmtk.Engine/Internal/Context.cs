@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Threading;
-using Bpmtk.Engine.Internal;
 using Bpmtk.Engine.Tasks;
 using Bpmtk.Engine.Repository;
 using Bpmtk.Engine.Runtime;
-using Bpmtk.Engine.Models;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Bpmtk.Engine.Scheduler;
 using Bpmtk.Engine.Identity;
 using Bpmtk.Engine.Storage;
 using Bpmtk.Engine.History;
+using Bpmtk.Engine.Events;
 
 namespace Bpmtk.Engine
 {
@@ -30,11 +27,19 @@ namespace Bpmtk.Engine
             get;
         }
 
-        public static IContext Current => current.Value;
+        public static IContext Current
+        {
+            get
+            {
+                var context = current.Value;
+                if(context != null)
+                    return context;
+
+                throw new ContextNotBindException("Current context was not binded.");
+            }
+        }
 
         public virtual IProcessEngine Engine => this.engine;
-
-        IProcessEngine IContext.Engine => this.engine;
 
         public virtual int UserId
         {
@@ -42,23 +47,51 @@ namespace Bpmtk.Engine
             protected set;
         }
 
-        public virtual ITaskManager TaskManager
+        public virtual TaskManager TaskManager => new TaskManager(this);
+
+        public virtual DeploymentManager DeploymentManager => new DeploymentManager(this);
+
+        public virtual HistoryManager HistoryManager => new HistoryManager(this);
+
+        public virtual RuntimeManager RuntimeManager => new RuntimeManager(this);
+
+        public virtual IdentityManager IdentityManager => new IdentityManager(this);
+
+        public virtual ScheduledJobManager ScheduledJobManager => new ScheduledJobManager(this);
+
+        ITaskManager IContext.TaskManager => this.TaskManager;
+
+        IHistoryManager IContext.HistoryManager => this.HistoryManager;
+
+        IDeploymentManager IContext.DeploymentManager => this.DeploymentManager;
+
+        IRuntimeManager IContext.RuntimeManager => this.RuntimeManager;
+
+        IIdentityManager IContext.IdentityManager => this.IdentityManager;
+
+        IScheduledJobManager IContext.ScheduledJobManager => this.ScheduledJobManager;
+
+        public virtual IProcessEventListener ProcessEventListener
         {
-            get => new TaskManager(this);
+            get
+            {
+                var options = this.engine.Options;
+
+                var eventListener = new CompositeProcessEventListener(options.ProcessEventListeners);
+                return eventListener;
+            }
         }
 
-        public virtual IDeploymentManager DeploymentManager
+        public virtual ITaskEventListener TaskEventListener
         {
-            get => new DeploymentManager(this);
+            get
+            {
+                var options = this.engine.Options;
+
+                var eventListener = new CompositeTaskEventListener(options.TaskEventListeners);
+                return eventListener;
+            }
         }
-
-        public virtual IHistoryManager HistoryManager => new HistoryManager(this);
-
-        public virtual IRuntimeManager RuntimeManager => new RuntimeManager(this);
-
-        public virtual IIdentityManager IdentityManager => new IdentityManager(this);
-
-        public virtual IScheduledJobManager ScheduledJobManager => new ScheduledJobManager(this);
 
         public static void SetCurrent(IContext context)
         {
@@ -111,26 +144,6 @@ namespace Bpmtk.Engine
             this.UserId = userId;
 
             return this;
-        }
-
-        public virtual Task<ProcessInstance> StartProcessByMessageAsync(string messageName,
-            IDictionary<string, object> messageData = null)
-        {
-            //var eventSubscr = this.eventSubscriptions.FindByName(messageName, "message");
-            //if (eventSubscr == null)
-            //    throw new RuntimeException($"The message '{messageName}' event handler does not exists.");
-
-            //if (eventSubscr.ProcessDefinition != null
-            //    && eventSubscr.ActivityId != null)
-            //{
-            //    IMessageStartEventHandler handler = new MessageStartEventHandler(this.deploymentManager,
-            //        this.instances);
-
-            //    var task = handler.Execute(eventSubscr, messageData);
-
-            //    return task.Result;
-            //}
-            throw new NotImplementedException();
         }
 
         public virtual ITransaction BeginTransaction()

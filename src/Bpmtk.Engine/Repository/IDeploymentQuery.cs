@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.Repository
 {
@@ -25,12 +24,14 @@ namespace Bpmtk.Engine.Repository
 
         IDeploymentQuery FetchModel();
 
-        Task<Deployment> SingleAsync();
+        Task<IDeployment> SingleAsync();
 
         Task<int> CountAsync();
 
-        Task<IList<Deployment>> ListAsync(int page = 1, int pageSize = 20);
+        Task<IList<IDeployment>> ListAsync(int page, int pageSize);
 
-        Task<IList<Deployment>> ListAsync();
+        Task<IList<IDeployment>> ListAsync(int count);
+
+        Task<IList<IDeployment>> ListAsync();
     }
 }

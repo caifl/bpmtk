@@ -2,10 +2,12 @@
 using System.Linq;
 using System.Collections.Generic;
 using Bpmtk.Engine.Variables;
+using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Identity;
 
 namespace Bpmtk.Engine.Models
 {
-    public class ProcessInstance : ExecutionObject
+    public class ProcessInstance : ExecutionObject, IProcessInstance
     {
         private IDictionary<string, Variable> variableByName;
 
@@ -35,6 +37,8 @@ namespace Bpmtk.Engine.Models
             get;
             set;
         }
+
+        public override IReadOnlyList<IVariable> VariableInstances => this.Variables.ToList();
 
         public virtual ICollection<Variable> Variables
         {
@@ -184,6 +188,8 @@ namespace Bpmtk.Engine.Models
 
             return list;
         }
+
+        IUser IProcessInstance.Initiator => this.Initiator;
 
         //public virtual void Start(IContext context,
         //    FlowNode initialNode)

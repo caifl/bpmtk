@@ -8,6 +8,7 @@ using Xunit.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Bpmtk.Engine.Models;
+using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Storage;
 
 namespace Bpmtk.Engine.Tests
@@ -40,12 +41,12 @@ namespace Bpmtk.Engine.Tests
             this.taskManager = context.TaskManager;
             this.identityManager = context.IdentityManager;
 
-            this.transaction = context.BeginTransaction();
+            this.transaction = context.DbSession.BeginTransaction();
 
             var user = this.identityManager.FindUserByNameAsync("felix").Result;
             if (user == null)
             {
-                user = new Models.User() { Name = "felix", UserName = "felix" };
+                user = new User() { Name = "felix", UserName = "felix" };
                 this.identityManager.CreateUserAsync(user).GetAwaiter().GetResult();
             }
 

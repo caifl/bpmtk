@@ -116,13 +116,15 @@ namespace Bpmtk.Engine.Repository
                 var query = this.session.IdentityLinks.Where(x => identityLinkIds.Contains(x.Id));
                 var items = await this.session.QueryMultipleAsync(query);
 
-                await this.session.RemoveRangeAsync(items);
+                this.session.RemoveRange(items);
 
                 await this.session.FlushAsync();
             }
         }
 
-        public virtual IDeploymentQuery CreateQuery() => new DeploymentQuery(this.session);
+        public virtual DeploymentQuery CreateDeploymentQuery() => new DeploymentQuery(this.session);
+
+        public virtual ProcessDefinitionQuery CreateDefinitionQuery() => new ProcessDefinitionQuery(this.context);
 
         public virtual async Task InactivateProcessDefinitionAsync(int processDefinitionId, 
             string comment = null)
@@ -172,5 +174,11 @@ namespace Bpmtk.Engine.Repository
 
             return this.session.QueryMultipleAsync(query);
         }
+
+        IProcessDefinitionQuery IDeploymentManager.CreateDefinitionQuery()
+            => this.CreateDefinitionQuery();
+
+        IDeploymentQuery IDeploymentManager.CreateDeploymentQuery()
+            => this.CreateDeploymentQuery();
     }
 }
