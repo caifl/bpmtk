@@ -9,19 +9,21 @@ namespace Bpmtk.Engine.Events
 {
     class MessageStartEventHandler : IMessageStartEventHandler
     {
-        public async Task<IProcessInstance> ExecuteAsync(IContext context,
+        public virtual IProcessInstance Execute(IContext context,
             EventSubscription eventSubscription, 
             IDictionary<string, object> messageData)
         {
+            var runtimeManager = context.RuntimeManager;
+
             var processDefinition = eventSubscription.ProcessDefinition;
-            var model = await context.DeploymentManager.GetBpmnModelAsync(processDefinition.DeploymentId);
-            var flowNode = model.GetFlowElement(eventSubscription.ActivityId) 
+            var model = context.DeploymentManager.GetBpmnModel(processDefinition.DeploymentId);
+            var flowNode = model.GetFlowElement(eventSubscription.ActivityId)
                 as FlowNode;
 
-            var builder = context.RuntimeManager.CreateInstanceBuilder();
-            builder.SetProcessDefinition(processDefinition);
+            var builder = runtimeManager.CreateInstanceBuilder();
+            //builder.SetProcessDefinition(processDefinition);
 
-            var pi = await context.RuntimeManager.StartProcessAsync(builder);
+            var pi = runtimeManager.StartProcess(builder);
 
             return pi;
         }

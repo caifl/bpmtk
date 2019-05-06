@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     class SubProcessActivityBehavior : ActivityBehavior
     {
-        public override async Task ExecuteAsync(ExecutionContext executionContext)
+        public override void Execute(ExecutionContext executionContext)
         {
             var subProcess = executionContext.Node as Bpmtk.Bpmn2.SubProcess;
 
@@ -19,7 +18,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             if (startEvent == null)
                 throw new RuntimeException($"No initial activity found for subProcess '{subProcess.Id}'.");
 
-            await executionContext.StartSubProcessAsync(startEvent, null);
+            executionContext.StartSubProcessAsync(startEvent, null);
         }
     }
 }

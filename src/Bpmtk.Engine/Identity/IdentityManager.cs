@@ -46,42 +46,42 @@ namespace Bpmtk.Engine.Identity
             throw new NotImplementedException();
         }
 
-        public virtual Task<Group> FindGroupByIdAsync(int groupId)
-            => this.session.FindAsync<Group>(groupId);
+        public virtual Group FindGroupById(string groupId)
+            => this.session.Find<Group>(groupId);
 
-        public virtual async Task<Group> FindGroupByNameAsync(string name)
-        {
-            var q = this.Groups.Where(x => x.Name == name);
+        //public virtual async Task<Group> FindGroupByNameAsync(string name)
+        //{
+        //    var q = this.Groups.Where(x => x.Name == name);
 
-            return await this.session.QuerySingleAsync(q);
-        }
+        //    return this.session.QuerySingleAsync(q);
+        //}
 
-        public virtual Task<User> FindUserByIdAsync(int userId)
-            => this.session.FindAsync<User>(userId);
+        public virtual User FindUserById(string userId)
+            => this.session.Find<User>(userId);
 
-        public virtual Task<User> FindUserByNameAsync(string name)
-        {
-            var query = this.session.Users.Where(x => x.UserName == name);
+        //public virtual Task<User> FindUserByNameAsync(string name)
+        //{
+        //    var query = this.session.Users.Where(x => x.UserName == name);
 
-            return this.session.QuerySingleAsync(query);
-        }
+        //    return this.session.QuerySingleAsync(query);
+        //}
 
-        public virtual Task<IList<User>> GetUsersAsync(params int[] userIds)
+        public virtual IList<User> GetUsers(params string[] userIds)
         {
             var query = this.session.Users
                 .Where(x => userIds.Contains(x.Id))
                 .Distinct();
 
-            return this.session.QueryMultipleAsync(query);
+            return query.ToList(); //this.session.QueryMultipleAsync(query);
         }
 
-        public virtual Task<IList<Group>> GetGroupsAsync(params int[] groupIds)
+        public virtual IList<Group> GetGroups(params string[] groupIds)
         {
             var query = this.session.Groups
                 .Where(x => groupIds.Contains(x.Id))
                 .Distinct();
 
-            return this.session.QueryMultipleAsync(query);
+            return query.ToList(); //this.session.QueryMultipleAsync(query);
         }
 
         public Task UpdateGroupAsync(Group group)
@@ -92,6 +92,18 @@ namespace Bpmtk.Engine.Identity
         public Task UpdateUserAsync(User user)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual void CreateUser(User user)
+        {
+            this.session.Save(user);
+            this.session.Flush();
+        }
+
+        public virtual void CreateGroup(Group group)
+        {
+            this.session.Save(group);
+            this.session.Flush();
         }
     }
 }

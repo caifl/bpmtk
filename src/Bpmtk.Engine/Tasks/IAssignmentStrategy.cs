@@ -10,12 +10,14 @@ namespace Bpmtk.Engine.Tasks
 
     public class DefaultAssignmentStrategy : IAssignmentStrategy
     {
-        public virtual async Task ExecuteAsync(ITaskInstanceBuilder builder)
+        public virtual Task ExecuteAsync(ITaskInstanceBuilder builder)
         {
             var context = builder.Context;
-            var user = await context.IdentityManager.FindUserByNameAsync("felix");
+            //var user = context.IdentityManager.FindUserByNameAsync("felix");
 
-            builder.SetAssignee(user);
+            builder.SetAssignee("felix");
+
+            return Task.CompletedTask;
         }
     }
 }

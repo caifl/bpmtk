@@ -28,11 +28,12 @@ namespace Bpmtk.Engine.Cfg
                .HasForeignKey("ProcessInstanceId")
                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(x => x.Initiator)
-                .WithMany()
-                .HasForeignKey("InitiatorId")
-                .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired(false);
+            builder.Property(x => x.Initiator).HasMaxLength(32);
+            //builder.HasOne(x => x.Initiator)
+            //    .WithMany()
+            //    .HasForeignKey("InitiatorId")
+            //    .OnDelete(DeleteBehavior.Restrict)
+            //    .IsRequired(false);
 
             //builder.Property(x => x.De).HasColumnName("department_id");
             builder.Property(x => x.TenantId);

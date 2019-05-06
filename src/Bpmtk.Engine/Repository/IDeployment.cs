@@ -46,9 +46,9 @@ namespace Bpmtk.Engine.Repository
         }
 
         /// <summary>
-        /// Gets the user
+        /// Gets the user identifier.
         /// </summary>
-        IUser User
+        string UserId
         {
             get;
         }

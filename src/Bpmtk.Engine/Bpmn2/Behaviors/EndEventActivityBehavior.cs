@@ -7,7 +7,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public class EndEventActivityBehavior : FlowNodeActivityBehavior
     {
-        public override async System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
+        public override void Execute(ExecutionContext executionContext)
         {
             var context = executionContext.Context;
             var endEvent = executionContext.Node as EndEvent;
@@ -29,13 +29,13 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                     if (item is TerminateEventDefinition)
                     {
                         var terminateEvent = item as TerminateEventDefinition;
-                        await executionContext.EndAsync(); // context, false);
+                        executionContext.End(); // context, false);
                         return;
                     }
                 }
             }
 
-            await executionContext.EndAsync(); //context, true);
+            executionContext.End(); //context, true);
         }
     }
 }

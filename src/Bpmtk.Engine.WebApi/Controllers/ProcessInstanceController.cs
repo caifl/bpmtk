@@ -24,8 +24,7 @@ namespace Bpmtk.Engine.WebApi.Controllers
         {
             var result = new PagedResult<ProcessInstanceModel>();
 
-            var query = this.runtimeManager.CreateInstanceQuery()
-                .FetchInitiator();
+            var query = this.runtimeManager.CreateInstanceQuery();
 
             if (filter == null)
                 filter = new ProcessInstanceFilter();
@@ -53,7 +52,6 @@ namespace Bpmtk.Engine.WebApi.Controllers
         {
             var item = await this.runtimeManager.CreateInstanceQuery()
                 .SetId(id)
-                .FetchInitiator()
                 .SingleAsync();
 
             if(item != null)

@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bpmtk.Engine.Identity;
 
 namespace Bpmtk.Engine.Models
 {
-    public class User : IUser
+    public class User
     {
-        public virtual int Id
+        public virtual string Id
         {
             get;
             set;
         }
 
         public virtual string Name
-        {
-            get;
-            set;
-        }
-
-        public virtual string UserName
         {
             get;
             set;

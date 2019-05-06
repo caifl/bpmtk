@@ -6,6 +6,6 @@ namespace Bpmtk.Engine.Scheduler
 {
     public interface IScheduledJobHandler
     {
-        Task ExecuteAsync(IContext context, ScheduledJob job);
+        Task Execute(IContext context, ScheduledJob job);
     }
 }

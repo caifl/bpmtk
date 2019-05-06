@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Storage;
 using Bpmtk.Engine.Utils;
@@ -13,25 +12,24 @@ namespace Bpmtk.Engine.Tasks
         protected string activityId;
         protected string name;
         protected short? priority;
-        protected User assignee;
+        protected string assignee;
         protected DateTime? dueDate;
+        protected IDbSession session;
 
         public TaskInstanceBuilder(Context context)
         {
             Context = context;
-            this.DbSession = context.DbSession;
+            this.session = context.DbSession;
         }
 
         public virtual Context Context { get; }
 
-        public virtual IDbSession DbSession
-        {
-            get;
-        }
 
         IContext ITaskInstanceBuilder.Context => this.Context;
 
-        public virtual async Task<TaskInstance> BuildAsync()
+        ITaskInstance ITaskInstanceBuilder.Build() => this.Build();
+
+        public virtual TaskInstance Build()
         {
             var date = Clock.Now;
 
@@ -62,8 +60,8 @@ namespace Bpmtk.Engine.Tasks
                 task.Token = this.token;
             }
 
-            await this.DbSession.SaveAsync(task);
-            await this.DbSession.FlushAsync();
+            this.session.Save(task);
+            this.session.Flush();
 
             return task;
         }
@@ -75,7 +73,7 @@ namespace Bpmtk.Engine.Tasks
             return this;
         }
 
-        public virtual ITaskInstanceBuilder SetAssignee(User assignee)
+        public virtual ITaskInstanceBuilder SetAssignee(string assignee)
         {
             this.assignee = assignee;
 

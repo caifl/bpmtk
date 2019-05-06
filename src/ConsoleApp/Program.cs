@@ -29,7 +29,7 @@ namespace ConsoleApp
                 builder.EnableSensitiveDataLogging();
                 builder.UseLoggerFactory(loggerFactory);
                 builder.UseLazyLoadingProxies(true);
-                builder.UseMySql("server=localhost;uid=root;pwd=123456;database=bpmtk2");
+                builder.UseMySql("server=localhost;uid=root;pwd=123456;database=bpmtk3");
             });
 
             //Create custom ProcessEventListener.
@@ -62,11 +62,11 @@ namespace ConsoleApp
             var identityManager = context.IdentityManager;
 
             //Check if test user exists.
-            var user = identityManager.FindUserByNameAsync("test").Result;
+            var user = identityManager.FindUserById("test");
             if (user == null)
             {
-                user = new User() { Name = "Test", UserName = "test" };
-                identityManager.CreateUserAsync(user).GetAwaiter().GetResult();
+                user = new User() { Id = "test", Name = "Test" };
+                identityManager.CreateUser(user);
             }
 
             //Set current authenticated user id.
@@ -79,7 +79,7 @@ namespace ConsoleApp
             //    .FetchDeployment()
             //    .FetchIdentityLinks()
             //    .SetName("Script")
-            //    .ListAsync().Result;
+            //    .List().Result;
 
             //var rx = x.ToList();
 
@@ -92,8 +92,7 @@ namespace ConsoleApp
                 .SetName("Demo deployment")
                 .SetMemo("A simple process demo for BPMTK.")
                 .SetBpmnModel(modelContent)
-                .BuildAsync()
-                .Result;
+                .Build();
 
             var processDefinitions = deployment.ProcessDefinitions;
             foreach(var procDef in processDefinitions)
@@ -105,14 +104,12 @@ namespace ConsoleApp
 
             //Start new process-instance.
             var runtimeManager = context.RuntimeManager;
-            var pi = runtimeManager.StartProcessByKeyAsync(processId).Result;
+            var pi = runtimeManager.StartProcessByKey(processId);
 
-            HumanTasksInteraction(context, pi)
-                .GetAwaiter()
-                .GetResult();
+            HumanTasksInteraction(context, pi);
 
             //Verify Process Completed.
-            pi = runtimeManager.FindAsync(pi.Id).Result;
+            pi = runtimeManager.Find(pi.Id);
             Assert.True(pi.State == ExecutionState.Completed);
 
             //Commit db transaction.
@@ -125,7 +122,7 @@ namespace ConsoleApp
             Console.ReadKey();
         }
 
-        protected static async Task HumanTasksInteraction(IContext context, IProcessInstance pi)
+        protected static void HumanTasksInteraction(IContext context, IProcessInstance pi)
         {
             //Create taskQuery.
             var taskManager = context.TaskManager;
@@ -134,26 +131,26 @@ namespace ConsoleApp
                             .SetState(TaskState.Active); //only fetch active-tasks.
 
             // After process start, only task 0 should be active
-            var tasks = await query.ListAsync();
+            var tasks = query.List();
             Assert.True(tasks.Count == 1);
             Assert.True(tasks[0].Name == "Task 0");
 
             // Completing task 0 will create Task A and B
-            await taskManager.CompleteAsync(tasks[0].Id);
-            tasks = await query.ListAsync();
+            taskManager.Complete(tasks[0].Id);
+            tasks = query.List();
             Assert.True(2 == tasks.Count);
             Assert.True("Task A" == tasks[0].Name);
             Assert.True("Task B" == tasks[1].Name);
 
             // Completing task A should not trigger any new tasks
-            await taskManager.CompleteAsync(tasks[0].Id);
-            tasks = await query.ListAsync();
+            taskManager.Complete(tasks[0].Id);
+            tasks = query.List();
             Assert.True(1 == tasks.Count);
             Assert.True("Task B" == tasks[0].Name);
 
             // Completing task B creates tasks B1 and B2
-            await taskManager.CompleteAsync(tasks[0].Id);
-            tasks = await query.ListAsync();
+            taskManager.Complete(tasks[0].Id);
+            tasks = query.List();
             Assert.True(2 == tasks.Count);
             Assert.True("Task B1" == tasks[0].Name);
             Assert.True("Task B2" == tasks[1].Name);
@@ -162,15 +159,15 @@ namespace ConsoleApp
 
             // Completing B1 and B2 will activate both joins, and process reaches
             // task C
-            await taskManager.CompleteAsync(tasks[0].Id);
-            await taskManager.CompleteAsync(tasks[1].Id);
-            tasks = await query.ListAsync();
+            taskManager.Complete(tasks[0].Id);
+            taskManager.Complete(tasks[1].Id);
+            tasks = query.List();
             Assert.True(1 == tasks.Count);
             Assert.True("Task C" == tasks[0].Name);
 
             // Completing Task C will finish the process.
-            await taskManager.CompleteAsync(tasks[0].Id);
-            tasks = await query.ListAsync();
+            taskManager.Complete(tasks[0].Id);
+            tasks = query.List();
             Assert.True(0 == tasks.Count); //all tasks completed.
         }
 

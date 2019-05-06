@@ -2,11 +2,12 @@
 using System.Linq;
 using System.Collections.Generic;
 using Bpmtk.Bpmn2;
+using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Variables;
 
 namespace Bpmtk.Engine.Models
 {
-    public class Token
+    public class Token : IToken
     {
         protected FlowNode node;
         private IDictionary<string, Variable> variableByName;

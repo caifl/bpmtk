@@ -20,7 +20,7 @@ namespace Bpmtk.Engine.Tasks
         protected short? priority;
         protected short? minPriority;
         protected short? maxPriority;
-        protected int? assigneeId;
+        protected string assignee;
         protected long? processInstanceId;
         protected int? processDefinitionId;
         protected string processDefinitionKey;
@@ -44,8 +44,8 @@ namespace Bpmtk.Engine.Tasks
             if (this.id != null)
                 return query = query.Where(x => x.Id == this.id);
 
-            if (this.assigneeId != null)
-                query = query.Where(x => x.Assignee.Id == this.assigneeId);
+            if (this.assignee != null)
+                query = query.Where(x => x.Assignee == this.assignee);
 
             if (this.state != null)
                 query = query.Where(x => x.State == this.state);
@@ -135,9 +135,9 @@ namespace Bpmtk.Engine.Tasks
             return this;
         }
 
-        public virtual ITaskQuery SetAssignee(int assigneeId)
+        public virtual ITaskQuery SetAssignee(string assignee)
         {
-            this.assigneeId = assigneeId;
+            this.assignee = assignee;
 
             return this;
         }
@@ -254,6 +254,8 @@ namespace Bpmtk.Engine.Tasks
             return this.session.QueryMultipleAsync(query);
         }
 
+        public virtual IList<TaskInstance> List() => this.CreateNativeQuery().ToList();
+
         public virtual Task<IList<TaskInstance>> ListAsync(int page, int pageSize)
         {
             if (page < 1)
@@ -269,6 +271,8 @@ namespace Bpmtk.Engine.Tasks
 
             return this.session.QueryMultipleAsync(query);
         }
+
+        IList<ITaskInstance> ITaskQuery.List() => this.List().ToList<ITaskInstance>();
 
         async Task<ITaskInstance> ITaskQuery.SingleAsync()
             => await this.SingleAsync();

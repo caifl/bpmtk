@@ -41,7 +41,7 @@ namespace Bpmtk.Engine
 
         public virtual IProcessEngine Engine => this.engine;
 
-        public virtual int UserId
+        public virtual string UserId
         {
             get;
             protected set;
@@ -71,27 +71,27 @@ namespace Bpmtk.Engine
 
         IScheduledJobManager IContext.ScheduledJobManager => this.ScheduledJobManager;
 
-        public virtual IProcessEventListener ProcessEventListener
-        {
-            get
-            {
-                var options = this.engine.Options;
+        //public virtual IProcessEventListener ProcessEventListener
+        //{
+        //    get
+        //    {
+        //        var options = this.engine.Options;
 
-                var eventListener = new CompositeProcessEventListener(options.ProcessEventListeners);
-                return eventListener;
-            }
-        }
+        //        var eventListener = new CompositeProcessEventListener(options.ProcessEventListeners);
+        //        return eventListener;
+        //    }
+        //}
 
-        public virtual ITaskEventListener TaskEventListener
-        {
-            get
-            {
-                var options = this.engine.Options;
+        //public virtual ITaskEventListener TaskEventListener
+        //{
+        //    get
+        //    {
+        //        var options = this.engine.Options;
 
-                var eventListener = new CompositeTaskEventListener(options.TaskEventListeners);
-                return eventListener;
-            }
-        }
+        //        var eventListener = new CompositeTaskEventListener(options.TaskEventListeners);
+        //        return eventListener;
+        //    }
+        //}
 
         public static void SetCurrent(IContext context)
         {
@@ -139,7 +139,7 @@ namespace Bpmtk.Engine
             // GC.SuppressFinalize(this);
         }
 
-        public virtual IContext SetAuthenticatedUser(int userId)
+        public virtual IContext SetAuthenticatedUser(string userId)
         {
             this.UserId = userId;
 

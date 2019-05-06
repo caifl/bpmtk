@@ -14,7 +14,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         {
         }
 
-        protected override async Task<int> CreateInstancesAsync(ExecutionContext executionContext)
+        protected override int CreateInstances(ExecutionContext executionContext)
         {
             var numberOfInstances = this.ResolveNumberOfInstances(executionContext);
             if (numberOfInstances == 0)
@@ -39,7 +39,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             executionContext.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
             executionContext.SetVariableLocal("numberOfActiveInstances", numberOfActiveInstances);
 
-            var innerExecutions = await executionContext.CreateInnerExecutions(numberOfInstances);            
+            var innerExecutions = executionContext.CreateInnerExecutions(numberOfInstances);            
 
             for(var i = 0; i < numberOfInstances; i ++)
             {
@@ -49,14 +49,14 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 if (!innerToken.IsEnded && !token.IsEnded)
                 {
                     innerExecution.SetVariableLocal("loopCounter", i);
-                    await this.ExecuteOriginalBehaviorAsync(innerExecution, i);
+                    this.ExecuteOriginalBehavior(innerExecution, i);
                 }
             }
 
             return numberOfInstances;
         }
 
-        public override async System.Threading.Tasks.Task LeaveAsync(ExecutionContext executionContext)
+        public override void Leave(ExecutionContext executionContext)
         {
             var context = executionContext.Context;
             var token = executionContext.Token;
@@ -75,10 +75,13 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             parentExecution.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
             parentExecution.SetVariableLocal("numberOfActiveInstances", numberOfActiveInstances);
 
-            //fire inner activityEndEvent.
+            
             token.Inactivate();
 
-            await context.ProcessEventListener.ActivityEndAsync(executionContext);
+            //fire inner activityEndEvent.
+            var runtimeManager = context.RuntimeManager;
+            var eventListener = runtimeManager.GetCompositeProcessEventListener();
+            eventListener.ActivityEnd(executionContext);
 
             var loopDataOutputRef = this.loopCharacteristics.LoopDataOutputRef;
             var outputDataItem = this.loopCharacteristics.OutputDataItem;
@@ -129,10 +132,10 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 //exit multi-instance loop activity.
                 parentToken.Activate();
 
-                await executionContext.Context.DbSession.FlushAsync();
+                executionContext.Context.DbSession.Flush();
 
                 //leave without check loop.
-                await base.LeaveAsync(parentExecution);
+                base.Leave(parentExecution);
             }
         }
     }

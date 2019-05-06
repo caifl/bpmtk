@@ -10,13 +10,13 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual User User
+        public virtual string UserId
         {
             get;
             set;
         }
 
-        public virtual Group Group
+        public virtual string GroupId
         {
             get;
             set;

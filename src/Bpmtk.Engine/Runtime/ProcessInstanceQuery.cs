@@ -10,7 +10,6 @@ namespace Bpmtk.Engine.Runtime
     public class ProcessInstanceQuery : IProcessInstanceQuery
     {
         protected bool fetchVariables;
-        protected bool fetchInitiator;
         protected bool fetchProcessDefinition;
         protected bool fetchIdentityLinks;
 
@@ -20,7 +19,7 @@ namespace Bpmtk.Engine.Runtime
         protected string key;
         protected string processDefinitionKey;
         protected int? processDefinitionId;
-        protected int? initiatorId;
+        protected string initiator;
         protected int? deploymentId;
         protected ExecutionState? state;
         protected ExecutionState[] anyStates;
@@ -35,9 +34,6 @@ namespace Bpmtk.Engine.Runtime
         protected IQueryable<ProcessInstance> CreateNativeQuery()
         {
             var query = this.Session.ProcessInstances;
-
-            if (this.fetchInitiator)
-                query = this.Session.Fetch(query, x => x.Initiator);
 
             if (this.fetchVariables)
                 query = this.Session.Fetch(query, x => x.Variables);
@@ -61,8 +57,8 @@ namespace Bpmtk.Engine.Runtime
                 query = query.Where(x => this.anyStates.Contains(x.State));
             }
 
-            if (this.initiatorId != null)
-                query = query.Where(x => x.Initiator.Id == this.initiatorId);
+            if (this.initiator != null)
+                query = query.Where(x => x.Initiator == this.initiator);
 
             if (this.processDefinitionId != null)
                 query = query.Where(x => x.ProcessDefinition.Id == this.processDefinitionId);
@@ -92,13 +88,6 @@ namespace Bpmtk.Engine.Runtime
         public virtual IProcessInstanceQuery FetchIdentityLinks()
         {
             this.fetchIdentityLinks = true;
-
-            return this;
-        }
-
-        public virtual IProcessInstanceQuery FetchInitiator()
-        {
-            this.fetchInitiator = true;
 
             return this;
         }
@@ -149,9 +138,9 @@ namespace Bpmtk.Engine.Runtime
             return this;
         }
 
-        public virtual IProcessInstanceQuery SetInitiator(int initiatorId)
+        public virtual IProcessInstanceQuery SetInitiator(string initiator)
         {
-            this.initiatorId = initiatorId;
+            this.initiator = initiator;
 
             return this;
         }
@@ -215,10 +204,18 @@ namespace Bpmtk.Engine.Runtime
             return this;
         }
 
+        public virtual ProcessInstance Single()
+        {
+            return this.CreateNativeQuery().SingleOrDefault();
+        }
+
         public virtual Task<ProcessInstance> SingleAsync()
         {
             return this.Session.QuerySingleAsync(this.CreateNativeQuery());
         }
+
+        IProcessInstance IProcessInstanceQuery.Single()
+            => this.Single();
 
         async Task<IProcessInstance> IProcessInstanceQuery.SingleAsync()
             => await this.SingleAsync();
@@ -231,7 +228,7 @@ namespace Bpmtk.Engine.Runtime
 
         //async Task<IList<IProcessInstance>> IProcessInstanceQuery.ListAsync(int count)
         //{
-        //    var list = await this.ListAsync(count);
+        //    var list = this.ListAsync(count);
         //    return list.ToList<IProcessInstance>();
         //}
 

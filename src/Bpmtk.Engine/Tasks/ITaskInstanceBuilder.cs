@@ -20,10 +20,10 @@ namespace Bpmtk.Engine.Tasks
 
         ITaskInstanceBuilder SetName(string name);
 
-        ITaskInstanceBuilder SetAssignee(User assignee);
+        ITaskInstanceBuilder SetAssignee(string assignee);
 
         ITaskInstanceBuilder SetDueDate(DateTime dueDate);
 
-        Task<TaskInstance> BuildAsync();
+        ITaskInstance Build();
     }
 }

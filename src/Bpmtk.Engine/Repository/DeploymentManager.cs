@@ -26,20 +26,42 @@ namespace Bpmtk.Engine.Repository
             this.session = context.DbSession;
         }
 
-        public virtual IQueryable<Deployment> Deployments => this.session.Deployments;
+        //public virtual IQueryable<Deployment> Deployments => this.session.Deployments;
 
-        public virtual IQueryable<ProcessDefinition> ProcessDefinitions => this.session.ProcessDefinitions;
+        //public virtual IQueryable<ProcessDefinition> ProcessDefinitions => this.session.ProcessDefinitions;
 
         public virtual IDeploymentBuilder CreateDeploymentBuilder()
         {
             return new DeploymentBuilder(context, this);
         }
 
-        public virtual Task<Deployment> FindAsync(int deploymentId)
-            => this.session.FindAsync<Deployment>(deploymentId);
+        public virtual Deployment Find(int deploymentId)
+            => this.session.Find<Deployment>(deploymentId);
+
+        IDeployment IDeploymentManager.Find(int deploymentId)
+            => this.Find(deploymentId);
+
+        IProcessDefinition IDeploymentManager.FindProcessDefinitionById(int processDefinitionId)
+            => this.FindProcessDefinitionById(processDefinitionId);
+
+        IProcessDefinition IDeploymentManager.FindProcessDefinitionByKey(string processDefinitionKey)
+            => this.FindProcessDefinitionByKey(processDefinitionKey);
+
+        public virtual ProcessDefinition FindProcessDefinitionById(int processDefinitionId)
+            => this.session.Find<ProcessDefinition>(processDefinitionId);
 
         public virtual Task<ProcessDefinition> FindProcessDefinitionByIdAsync(int processDefinitionId)
             => this.session.FindAsync<ProcessDefinition>(processDefinitionId);
+
+        public virtual ProcessDefinition FindProcessDefinitionByKey(string processDefinitionKey)
+        {
+            var query = this.session.ProcessDefinitions
+                .Where(x => x.Key == processDefinitionKey)
+                .OrderByDescending(x => x.Version)
+                .Take(1);
+
+            return query.SingleOrDefault();
+        }
 
         public virtual Task<ProcessDefinition> FindProcessDefinitionByKeyAsync(string processDefinitionKey)
         {
@@ -51,23 +73,36 @@ namespace Bpmtk.Engine.Repository
             return this.session.QuerySingleAsync(query);
         }
 
-        public virtual Task<IList<EventSubscription>> GetEventSubscriptionsAsync(int processDefintionId)
+        public virtual IList<EventSubscription> GetEventSubscriptions(int processDefintionId)
         {
             var query = this.session.EventSubscriptions
                 .Where(x => x.ProcessDefinition.Id == processDefintionId);
 
-            return this.session.QueryMultipleAsync(query);
+            return query.ToList();
         }
 
-        public virtual Task<IList<ScheduledJob>> GetScheduledJobsAsync(int processDefintionId)
+        public virtual EventSubscription FindEventSubscriptionByMessage(string messageName)
+        {
+            if (string.IsNullOrEmpty(messageName))
+                throw new ArgumentException("message", nameof(messageName));
+
+            var query = this.session.EventSubscriptions
+                .Where(x => x.EventType == "message"
+                    && x.EventName == messageName
+                  );
+
+            return query.SingleOrDefault();
+        }
+
+        public virtual IList<ScheduledJob> GetScheduledJobs(int processDefintionId)
         {
             var query = this.session.ScheduledJobs
                 .Where(x => x.ProcessDefinition.Id == processDefintionId);
 
-            return this.session.QueryMultipleAsync(query);
+            return query.ToList();
         }
 
-        public virtual async Task<BpmnModel> GetBpmnModelAsync(int deploymentId)
+        public virtual BpmnModel GetBpmnModel(int deploymentId)
         {
             BpmnModel model = null;
             if (!modelCache.ContainsKey(deploymentId))
@@ -75,7 +110,7 @@ namespace Bpmtk.Engine.Repository
                 var query = this.session.Deployments.Where(x => x.Id == deploymentId)
                     .Select(x => x.Model.Value);
 
-                var bytes = await session.QuerySingleAsync(query);
+                var bytes = query.SingleOrDefault();
                 model = BpmnModel.FromBytes(bytes);
             }
 
@@ -102,11 +137,11 @@ namespace Bpmtk.Engine.Repository
             }
         }
 
-        public virtual async Task<IList<IdentityLink>> GetIdentityLinksAsync(int processDefintionId)
+        public virtual Task<IList<IdentityLink>> GetIdentityLinksAsync(int processDefintionId)
         {
             var query = this.session.IdentityLinks.Where(x => x.ProcessDefinition.Id == processDefintionId);
 
-            return await this.session.QueryMultipleAsync(query);
+            return this.session.QueryMultipleAsync(query);
         }
 
         public virtual async Task RemoveIdentityLinksAsync(params long[] identityLinkIds)
@@ -114,7 +149,7 @@ namespace Bpmtk.Engine.Repository
             if(identityLinkIds != null && identityLinkIds.Length > 0)
             {
                 var query = this.session.IdentityLinks.Where(x => identityLinkIds.Contains(x.Id));
-                var items = await this.session.QueryMultipleAsync(query);
+                var items = query.ToList();
 
                 this.session.RemoveRange(items);
 
@@ -126,53 +161,101 @@ namespace Bpmtk.Engine.Repository
 
         public virtual ProcessDefinitionQuery CreateDefinitionQuery() => new ProcessDefinitionQuery(this.context);
 
-        public virtual async Task InactivateProcessDefinitionAsync(int processDefinitionId, 
+        public virtual ProcessDefinition InactivateProcessDefinition(int processDefinitionId,
             string comment = null)
         {
-            var procDef = await this.FindProcessDefinitionByIdAsync(processDefinitionId);
-            if (procDef != null)
-            {
-                procDef.State = ProcessDefinitionState.Inactive;
+            var procDef = this.FindProcessDefinitionById(processDefinitionId);
+            if (procDef == null)
+                throw new ObjectNotFoundException(nameof(ProcessDefinition));
 
-                var item = new Comment();
-                item.ProcessDefinition = procDef;
-                item.Body = comment;
-                item.Created = Clock.Now;
-                item.UserId = this.context.UserId;
+            procDef.State = ProcessDefinitionState.Inactive;
 
-                await this.session.SaveAsync(item);
+            var item = new Comment();
+            item.ProcessDefinition = procDef;
+            item.Body = comment;
+            item.Created = Clock.Now;
+            item.UserId = this.context.UserId;
 
-                await this.session.FlushAsync();
-            }
+            this.session.Save(item);
+            this.session.Flush();
+
+            return procDef;
         }
 
-        public virtual async Task ActivateProcessDefinitionAsync(int processDefinitionId, string comment = null)
+        public virtual ProcessDefinition ActivateProcessDefinition(int processDefinitionId, string comment = null)
         {
-            var procDef = await this.FindProcessDefinitionByIdAsync(processDefinitionId);
-            if (procDef != null)
-            {
-                procDef.State = ProcessDefinitionState.Active;
+            var procDef = this.FindProcessDefinitionById(processDefinitionId);
+            if (procDef == null)
+                throw new ObjectNotFoundException(nameof(ProcessDefinition));
 
-                var item = new Comment();
-                item.ProcessDefinition = procDef;
-                item.Body = comment;
-                item.Created = Clock.Now;
-                item.UserId = this.context.UserId;
+            procDef.State = ProcessDefinitionState.Active;
 
-                await this.session.SaveAsync(item);
+            var item = new Comment();
+            item.ProcessDefinition = procDef;
+            item.Body = comment;
+            item.Created = Clock.Now;
+            item.UserId = this.context.UserId;
 
-                await this.session.FlushAsync();
-            }
+            this.session.Save(item);
+            this.session.Flush();
+
+            return procDef;
         }
 
-        public virtual Task<IList<Comment>> GetCommentsForProcessDefinitionAsync(int processDefinitionId)
+        IProcessDefinition IDeploymentManager.ActivateProcessDefinition(int processDefinitionId, string comment)
+            => this.ActivateProcessDefinition(processDefinitionId, comment);
+
+        IProcessDefinition IDeploymentManager.InactivateProcessDefinition(int processDefinitionId, string comment)
+            => this.InactivateProcessDefinition(processDefinitionId, comment);
+
+        public virtual async Task<IProcessDefinition> InactivateProcessDefinitionAsync(int processDefinitionId,
+            string comment = null)
         {
-            var query = this.session.Query<Comment>();
-            query = this.session.Fetch(query, x => x.User)
+            var procDef = this.FindProcessDefinitionById(processDefinitionId);
+            if (procDef == null)
+                throw new ObjectNotFoundException(nameof(ProcessDefinition));
+
+            procDef.State = ProcessDefinitionState.Inactive;
+
+            var item = new Comment();
+            item.ProcessDefinition = procDef;
+            item.Body = comment;
+            item.Created = Clock.Now;
+            item.UserId = this.context.UserId;
+
+            await this.session.SaveAsync(item);
+            await this.session.FlushAsync();
+
+            return procDef;
+        }
+
+        public virtual async Task<IProcessDefinition> ActivateProcessDefinitionAsync(int processDefinitionId, string comment = null)
+        {
+            var procDef = this.FindProcessDefinitionById(processDefinitionId);
+            if (procDef == null)
+                throw new ObjectNotFoundException(nameof(ProcessDefinition));
+
+            procDef.State = ProcessDefinitionState.Active;
+
+            var item = new Comment();
+            item.ProcessDefinition = procDef;
+            item.Body = comment;
+            item.Created = Clock.Now;
+            item.UserId = this.context.UserId;
+
+            await this.session.SaveAsync(item);
+            await this.session.FlushAsync();
+
+            return procDef;
+        }
+
+        public virtual IList<Comment> GetCommentsForProcessDefinition(int processDefinitionId)
+        {
+            var query = this.session.Query<Comment>()
                 .Where(x => x.ProcessDefinition.Id == processDefinitionId)
                 .OrderByDescending(x => x.Created);
 
-            return this.session.QueryMultipleAsync(query);
+            return query.ToList();
         }
 
         IProcessDefinitionQuery IDeploymentManager.CreateDefinitionQuery()
@@ -180,5 +263,13 @@ namespace Bpmtk.Engine.Repository
 
         IDeploymentQuery IDeploymentManager.CreateDeploymentQuery()
             => this.CreateDeploymentQuery();
+
+        public virtual Task<byte[]> GetBpmnModelContentAsync(int deploymentId)
+        {
+            var query = this.session.Deployments.Where(x => x.Id == deploymentId)
+                .Select(x => x.Model.Value);
+
+            return this.session.QuerySingleAsync(query);
+        }
     }
 }

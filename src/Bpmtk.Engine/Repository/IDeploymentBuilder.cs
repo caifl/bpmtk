@@ -16,6 +16,8 @@ namespace Bpmtk.Engine.Repository
 
         IDeploymentBuilder SetPackage(Package package);
 
-        Task<Deployment> BuildAsync();
+        IDeployment Build();
+
+        Task<IDeployment> BuildAsync();
     }
 }

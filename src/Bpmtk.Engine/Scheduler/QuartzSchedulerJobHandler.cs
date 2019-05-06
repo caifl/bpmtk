@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Internal;
 using Quartz;
@@ -30,7 +28,7 @@ namespace Bpmtk.Engine.Scheduler
                         var type = Type.GetType(handerClass, true);
                         var handler = Activator.CreateInstance(type) as IScheduledJobHandler;
                         if (handler != null)
-                            await handler.ExecuteAsync(context, scheduledJob);
+                            await handler.Execute(context, scheduledJob);
                     }
                     catch (Exception ex)
                     {

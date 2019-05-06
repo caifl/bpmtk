@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bpmtk.Engine.Identity;
 
 namespace Bpmtk.Engine.Tasks
 {
@@ -72,7 +71,7 @@ namespace Bpmtk.Engine.Tasks
             get;
         }
 
-        IUser Assignee
+        string Assignee
         {
             get;
         }

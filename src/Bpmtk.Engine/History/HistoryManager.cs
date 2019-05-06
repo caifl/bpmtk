@@ -44,7 +44,7 @@ namespace Bpmtk.Engine.History
         public virtual IActivityInstanceQuery CreateActivityQuery()
             => new ActivityInstanceQuery(this.session);
 
-        public virtual async Task RecordActivityReadyAsync(ExecutionContext executionContext)
+        public virtual void RecordActivityReady(ExecutionContext executionContext)
         {
             if (this.IsActivityRecorderDisabled)
                 return;
@@ -105,14 +105,14 @@ namespace Bpmtk.Engine.History
                 act.SetVariable(variable.Name, variable.GetValue());
             }
 
-            await this.session.SaveAsync(act);
-            await this.session.FlushAsync();
+            this.session.Save(act);
+            this.session.Flush();
 
             //Set current-act-inst.
             executionContext.ActivityInstance = act;
         }
 
-        public virtual async Task RecordActivityEndAsync(ExecutionContext executionContext)
+        public virtual void RecordActivityEnd(ExecutionContext executionContext)
         {
             if (this.IsActivityRecorderDisabled)
                 return;
@@ -143,10 +143,10 @@ namespace Bpmtk.Engine.History
             }
 
             if (hasChanges)
-                await this.session.FlushAsync();
+                this.session.Flush();
         }
 
-        public virtual async Task RecordActivityStartAsync(ExecutionContext executionContext)
+        public virtual void RecordActivityStart(ExecutionContext executionContext)
         {
             if (this.IsActivityRecorderDisabled)
                 return;
@@ -184,13 +184,22 @@ namespace Bpmtk.Engine.History
             }
 
             if(hasChanges)
-                await this.session.FlushAsync();
+                this.session.Flush();
         }
 
-        public Task<IList<ActivityInstance>> GetActivityInstancesAsync(long processInstanceId)
+        public virtual IList<ActivityInstance> GetActivityInstances(long processInstanceId)
         {
-            var q = this.ActivityInstances.Where(x => x.ProcessInstance.Id == processInstanceId);
-            return this.session.QueryMultipleAsync(q);
+            return this.ActivityInstances.Where(x => x.ProcessInstance.Id == processInstanceId)
+                .OrderByDescending(x => x.Created)
+                .ToList();
+        }
+
+        public virtual System.Threading.Tasks.Task<IList<ActivityInstance>> GetActivityInstancesAsync(long processInstanceId)
+        {
+            var query = this.session.ActivityInstances.Where(x => x.ProcessInstance.Id == processInstanceId)
+                .OrderByDescending(x => x.Created);
+
+            return this.session.QueryMultipleAsync(query);
         }
     }
 }

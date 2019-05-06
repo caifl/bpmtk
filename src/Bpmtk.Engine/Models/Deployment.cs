@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Bpmtk.Engine.Repository;
-using Bpmtk.Engine.Identity;
 
 namespace Bpmtk.Engine.Models
 {
@@ -62,7 +61,7 @@ namespace Bpmtk.Engine.Models
         /// <summary>
         /// Gets or sets the user
         /// </summary>
-        public virtual User User
+        public virtual string UserId
         {
             get;
             set;
@@ -92,8 +91,6 @@ namespace Bpmtk.Engine.Models
         {
             get => this.ProcessDefinitions.ToList();
         }
-
-        IUser IDeployment.User => this.User;
 
         public virtual string Memo
         {

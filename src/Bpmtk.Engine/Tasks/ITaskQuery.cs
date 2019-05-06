@@ -28,7 +28,7 @@ namespace Bpmtk.Engine.Tasks
 
         ITaskQuery SetActivityId(string activityId);
 
-        ITaskQuery SetAssignee(int assigneeId);
+        ITaskQuery SetAssignee(string assignee);
 
         //ITaskQuery SetOwner(int ownerId);
 
@@ -53,6 +53,8 @@ namespace Bpmtk.Engine.Tasks
         Task<ITaskInstance> SingleAsync();
 
         Task<int> CountAsync();
+
+        IList<ITaskInstance> List();
 
         Task<IList<ITaskInstance>> ListAsync();
 

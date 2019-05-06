@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Events
 {
     public interface IProcessEventListener
     {
-        Task ProcessStartAsync(IExecutionContext executionContext);
+        void ProcessStart(IExecutionContext executionContext);
 
-        Task ActivityReadyAsync(IExecutionContext executionContext);
+        void ActivityReady(IExecutionContext executionContext);
 
-        Task ActivityStartAsync(IExecutionContext executionContext);
+        void ActivityStart(IExecutionContext executionContext);
 
-        Task ActivityEndAsync(IExecutionContext executionContext);
+        void ActivityEnd(IExecutionContext executionContext);
 
-        Task TakeTransitionAsync(IExecutionContext executionContext);
+        void TakeTransition(IExecutionContext executionContext);
 
-        Task ProcessEndAsync(IExecutionContext executionContext);
+        void ProcessEnd(IExecutionContext executionContext);
     }
 }

@@ -43,7 +43,7 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual User Owner
+        public virtual string OwnerId
         {
             get;
             set;

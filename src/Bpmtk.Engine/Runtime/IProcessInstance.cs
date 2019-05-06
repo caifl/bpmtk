@@ -15,7 +15,7 @@ namespace Bpmtk.Engine.Runtime
             get;
         }
 
-        IUser Initiator
+        string Initiator
         {
             get;
         }

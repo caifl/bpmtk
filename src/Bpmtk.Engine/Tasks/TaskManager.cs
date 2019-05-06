@@ -22,27 +22,27 @@ namespace Bpmtk.Engine.Tasks
 
         public virtual IQueryable<TaskInstance> Tasks => this.session.Tasks;
 
-        public virtual async Task<TaskInstance> ClaimAsync(long taskId, string comment = null)
+        public virtual TaskInstance Claim(long taskId, string comment = null)
         {
-            var task = await this.FindAsync(taskId);
+            var task = this.Find(taskId);
             if (task == null)
                 throw new ObjectNotFoundException(nameof(TaskInstance));
 
             var date = Clock.Now;
 
-            task.AssigneeId = context.UserId;
+            task.Assignee = context.UserId;
             task.ClaimedTime = date;
             task.Modified = date;
 
             if (comment != null)
-                await this.CreateCommentAsync(task, comment);
+                this.CreateComment(task, comment);
 
-            await this.session.FlushAsync();
+            this.session.Flush();
 
             return task;
         }
 
-        async Task<Comment> CreateCommentAsync(TaskInstance task, string comment)
+        Comment CreateComment(TaskInstance task, string comment)
         {
             var item = new Comment();
             item.Task = task;
@@ -50,38 +50,38 @@ namespace Bpmtk.Engine.Tasks
             item.Created = Clock.Now;
             item.Body = comment;
 
-            await this.session.SaveAsync(item);
+            this.session.Save(item);
 
             return item;
         }
 
-        public virtual async Task<TaskInstance> AssignAsync(long taskId, 
-            int assigneeId,
+        public virtual TaskInstance Assign(long taskId, 
+            string assignee,
             string comment = null)
         {
-            var task = await this.FindAsync(taskId);
+            var task = this.Find(taskId);
             if (task == null)
                 throw new ObjectNotFoundException(nameof(TaskInstance));
 
             var date = Clock.Now;
 
-            task.AssigneeId = assigneeId;
+            task.Assignee = assignee;
             task.ClaimedTime = date;
             task.Modified = date;
 
             if (comment != null)
-                await this.CreateCommentAsync(task, comment);
+                this.CreateComment(task, comment);
 
-            await this.session.FlushAsync();
+            this.session.Flush();
 
             return task;
         }
 
-        public virtual async Task CompleteAsync(long taskId, 
+        public virtual TaskInstance Complete(long taskId, 
             IDictionary<string, object> variables = null,
             string comment = null)
         {
-            var task = await this.FindAsync(taskId);
+            var task = this.Find(taskId);
             if (task.State != TaskState.Active)
                 throw new InvalidOperationException("Invalid state transition.");
 
@@ -92,21 +92,50 @@ namespace Bpmtk.Engine.Tasks
             task.Token = null; //Clear token
 
             if (comment != null)
-                await this.CreateCommentAsync(task, comment);
+                this.CreateComment(task, comment);
+
+            this.session.Flush();
+
+            if (theToken != null)
+            {
+                var executionContext = ExecutionContext.Create(context, theToken);
+                executionContext.Trigger(null, null);
+            }
+
+            return task;
+        }
+
+        public virtual async Task<ITaskInstance> CompleteAsync(long taskId,
+            IDictionary<string, object> variables = null,
+            string comment = null)
+        {
+            var task = await this.FindAsync(taskId);
+            if (task.State != TaskState.Active)
+                throw new InvalidOperationException("Invalid state transition.");
+
+            var theToken = task.Token;
+            task.State = TaskState.Completed;
+            task.LastStateTime = Clock.Now;
+            task.Token = null; //Clear token
+
+            if (comment != null)
+                this.CreateComment(task, comment);
 
             await this.session.FlushAsync();
 
             if (theToken != null)
             {
                 var executionContext = ExecutionContext.Create(context, theToken);
-                await executionContext.SignalAsync(null, null);
+                executionContext.Trigger(null, null);
             }
+
+            return task;
         }
 
-        public virtual async Task CreateAsync(TaskInstance task)
+        public virtual void CreateAsync(TaskInstance task)
         {
-            await this.session.SaveAsync(task);
-            await this.session.FlushAsync();
+            this.session.Save(task);
+            this.session.Flush();
         }
 
         public virtual ITaskInstanceBuilder CreateBuilder()
@@ -117,10 +146,17 @@ namespace Bpmtk.Engine.Tasks
 
         ITaskQuery ITaskManager.CreateQuery() => this.CreateQuery();
 
-        public virtual Task<TaskInstance> FindAsync(long taskId)
+        public virtual TaskInstance Find(long taskId)
         {
-            return this.session.FindAsync<TaskInstance>(taskId);
+            return this.session.Find<TaskInstance>(taskId);
         }
+
+        public virtual async Task<TaskInstance> FindAsync(long taskId)
+        {
+            return await this.session.FindAsync<TaskInstance>(taskId);
+        }
+
+        async Task<ITaskInstance> ITaskManager.FindAsync(long taskId) => await this.FindAsync(taskId);
 
         public virtual IAssignmentStrategy GetAssignmentStrategy(string key)
         {
@@ -162,23 +198,76 @@ namespace Bpmtk.Engine.Tasks
             throw new NotImplementedException();
         }
 
-        public virtual async Task SetNameAsync(long taskId, string name)
+        public virtual void SetNameAsync(long taskId, string name)
         {
-            var task = await this.FindAsync(taskId);
+            var task = this.Find(taskId);
             task.Name = name;
 
-            await this.session.FlushAsync();
+            this.session.Flush();
         }
 
-        public virtual async Task SetPriorityAsync(long taskId, short priority)
+        public virtual void SetPriorityAsync(long taskId, short priority)
         {
-            var task = await this.FindAsync(taskId);
+            var task = this.Find(taskId);
             task.Priority = priority;
 
-            await this.session.FlushAsync();
+            this.session.Flush();
         }
 
         public Task<TaskInstance> SuspendAsync(long taskId, string comment = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        ITaskInstanceBuilder ITaskManager.CreateBuilder()
+        {
+            throw new NotImplementedException();
+        }
+
+        ITaskInstance ITaskManager.Find(long taskId)
+        {
+            throw new NotImplementedException();
+        }
+
+        ITaskInstance ITaskManager.Claim(long taskId, string comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        ITaskInstance ITaskManager.Assign(long taskId, string assignee, string comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        ITaskInstance ITaskManager.Suspend(long taskId, string comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        ITaskInstance ITaskManager.Resume(long taskId, string comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        ITaskInstance ITaskManager.Complete(long taskId, IDictionary<string, object> variables, string comment)
+            => this.Complete(taskId, variables, comment);
+
+        ITaskInstance ITaskManager.SetName(long taskId, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        ITaskInstance ITaskManager.SetPriority(long taskId, short priority)
+        {
+            throw new NotImplementedException();
+        }
+
+        IReadOnlyList<AssignmentStrategyEntry> ITaskManager.GetAssignmentStrategyEntries()
+        {
+            throw new NotImplementedException();
+        }
+
+        IAssignmentStrategy ITaskManager.GetAssignmentStrategy(string key)
         {
             throw new NotImplementedException();
         }

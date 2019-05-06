@@ -4,49 +4,67 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Models;
+using Bpmtk.Engine.Repository;
 using Bpmtk.Engine.Utils;
 using Bpmtk.Engine.Variables;
 
 namespace Bpmtk.Engine.Runtime
 {
-    class ProcessInstanceBuilder : IProcessInstanceBuilder
+    public class ProcessInstanceBuilder : IProcessInstanceBuilder
     {
         protected string key;
         protected string name;
         protected string description;
-        protected int? initiatorId;
+        protected string initiator;
         protected Token super;
+        protected int? processDefinitionId;
+        protected string processDefinitionKey;
         protected ProcessDefinition processDefinition;
         protected IDictionary<string, object> variables;
-        private readonly Context context;
+        protected readonly Context context;
 
-        protected List<Bpmtk.Bpmn2.FlowNode> initialNodes = new List<Bpmtk.Bpmn2.FlowNode>();
-
-        public virtual IList<Bpmtk.Bpmn2.FlowNode> InitialNodes => this.initialNodes;
-
-        public ProcessInstanceBuilder(RuntimeManager runtimeManager)
+        /// <summary>
+        /// Gets current process of BPMN-Model.
+        /// </summary>
+        public virtual Bpmtk.Bpmn2.Process Process
         {
-            this.context = runtimeManager.Context;
+            get;
+            protected set;
         }
 
-        public virtual async Task<ProcessInstance> BuildAsync()
+        public ProcessInstanceBuilder(Context context)
         {
+            this.context = context;
+        }
+
+        public virtual ProcessInstance Build()
+        {
+            var deploymentManager = this.context.DeploymentManager;
+
             if (this.processDefinition == null)
-                throw new ArgumentNullException(nameof(processDefinition));
+            {
+                if (this.processDefinitionId != null)
+                    this.processDefinition = deploymentManager.FindProcessDefinitionById(this.processDefinitionId.Value);
+                else if(this.processDefinitionKey != null)
+                    this.processDefinition = deploymentManager.FindProcessDefinitionByKey(this.processDefinitionKey);
+
+                if (this.processDefinition == null)
+                    throw new ArgumentNullException(nameof(processDefinition));
+            }
+
+            if (this.processDefinition.State != ProcessDefinitionState.Active)
+                throw new RuntimeException("The specified process-defintion is not active.");
 
             //Load bpmn-model.
             var deploymentId = this.processDefinition.DeploymentId;
             var processDefinitionKey = this.processDefinition.Key;
 
             var dm = context.DeploymentManager;
-            var model = await dm.GetBpmnModelAsync(deploymentId);
+            var model = dm.GetBpmnModel(deploymentId);
             var process = model.GetProcess(processDefinitionKey);
             var initialNode = process.InitialNode;
             if (initialNode == null)
                 throw new RuntimeException($"The process '{processDefinitionKey}' does not contains any start nodes.");
-
-            this.initialNodes.Clear();
-            this.initialNodes.Add(initialNode);
 
             //init process-instance.
             var pi = new ProcessInstance();
@@ -67,10 +85,7 @@ namespace Bpmtk.Engine.Runtime
             pi.Key = this.key;
             pi.Created = Clock.Now;
             pi.LastStateTime = pi.Created;
-
-            if(this.initiatorId != null)
-                pi.Initiator = await this.context.IdentityManager
-                    .FindUserByIdAsync(this.initiatorId.Value);
+            pi.Initiator = this.initiator;
 
             pi.Description = processDefinition.Description;
 
@@ -88,11 +103,15 @@ namespace Bpmtk.Engine.Runtime
             //initialize context.
             this.InitializeProcessContext(pi, dataObjects);
 
+            var session = this.context.DbSession;
+
             //save.
-            await this.context.DbSession.SaveAsync(pi);
+            session.Save(pi);
 
             //commit changes.
-            await this.context.DbSession.FlushAsync();
+            session.Flush();
+
+            this.Process = process;
 
             return pi;
         }
@@ -127,53 +146,106 @@ namespace Bpmtk.Engine.Runtime
             }
         }
 
-        public virtual IProcessInstanceBuilder SetProcessDefinition(ProcessDefinition processDefinition)
+        public virtual ProcessInstanceBuilder SetProcessDefinitionKey(string processDefinitionKey)
         {
-            this.processDefinition = processDefinition;
+            this.processDefinitionKey = processDefinitionKey;
+            if(this.processDefinitionKey != null)
+            {
+                this.processDefinitionId = null;
+                this.processDefinition = null;
+            }
 
             return this;
         }
 
-        public IProcessInstanceBuilder SetVariables(IDictionary<string, object> variables)
+        public virtual ProcessInstanceBuilder SetProcessDefinitionId(int processDefinitionId)
+        {
+            this.processDefinitionId = processDefinitionId;
+            this.processDefinitionKey = null;
+            this.processDefinition = null;
+
+            return this;
+        }
+
+        public virtual ProcessInstanceBuilder SetProcessDefinition(ProcessDefinition processDefinition)
+        {
+            this.processDefinition = processDefinition;
+            if(this.processDefinition != null)
+            {
+                this.processDefinitionId = null;
+                this.processDefinitionKey = null;
+            }
+
+            return this;
+        }
+
+        public virtual ProcessInstanceBuilder SetVariables(IDictionary<string, object> variables)
         {
             this.variables = variables;
 
             return this;
         }
 
-        public virtual IProcessInstanceBuilder SetName(string name)
+        public virtual ProcessInstanceBuilder SetName(string name)
         {
             this.name = name;
 
             return this;
         }
 
-        public virtual IProcessInstanceBuilder SetKey(string key)
+        public virtual ProcessInstanceBuilder SetKey(string key)
         {
             this.key = key;
 
             return this;
         }
 
-        public virtual IProcessInstanceBuilder SetInitiator(int initiatorId)
+        public virtual ProcessInstanceBuilder SetInitiator(string initiator)
         {
-            this.initiatorId = initiatorId;
+            this.initiator = initiator;
 
             return this;
         }
 
-        public virtual IProcessInstanceBuilder SetDescription(string description)
+        public virtual ProcessInstanceBuilder SetDescription(string description)
         {
             this.description = description;
 
             return this;
         }
 
-        public virtual IProcessInstanceBuilder SetSuper(Token super)
+        public virtual ProcessInstanceBuilder SetSuper(Token super)
         {
             this.super = super;
 
             return this;
         }
+
+        IProcessInstanceBuilder IProcessInstanceBuilder.SetProcessDefinitionKey(string processDefinitionKey)
+            => this.SetProcessDefinitionKey(processDefinitionKey);
+
+        IProcessInstanceBuilder IProcessInstanceBuilder.SetProcessDefinitionId(int processDefinitionId)
+            => this.SetProcessDefinitionId(processDefinitionId);
+
+        IProcessInstanceBuilder IProcessInstanceBuilder.SetVariables(IDictionary<string, object> variables)
+            => this.SetVariables(variables);
+
+        IProcessInstanceBuilder IProcessInstanceBuilder.SetName(string name)
+            => this.SetName(name);
+
+        IProcessInstanceBuilder IProcessInstanceBuilder.SetKey(string key)
+            => this.SetKey(key);
+
+        IProcessInstanceBuilder IProcessInstanceBuilder.SetInitiator(string initiator)
+            => this.SetInitiator(initiator);
+
+        IProcessInstanceBuilder IProcessInstanceBuilder.SetDescription(string description)
+            => this.SetDescription(description);
+
+        IProcessInstanceBuilder IProcessInstanceBuilder.SetSuper(Token super)
+            => this.SetSuper(super);
+
+        IProcessInstance IProcessInstanceBuilder.Build()
+            => this.Build();
     }
 }

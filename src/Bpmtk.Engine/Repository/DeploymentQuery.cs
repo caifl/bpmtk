@@ -18,7 +18,7 @@ namespace Bpmtk.Engine.Repository
         protected string key;
         protected string processDefinitionKey;
         protected int? packageId;
-        protected int? userId;
+        protected string userId;
         protected DateTime? createdFrom;
         protected DateTime? createdTo;
 
@@ -33,8 +33,8 @@ namespace Bpmtk.Engine.Repository
         {
             var query = this.Session.Deployments;
 
-            if (this.fetchUser)
-                query = this.Session.Fetch(query, x => x.User);
+            //if (this.fetchUser)
+            //    query = this.Session.Fetch(query, x => x.User);
 
             if (this.fetchModel)
                 query = this.Session.Fetch(query, x => x.Model);
@@ -43,7 +43,7 @@ namespace Bpmtk.Engine.Repository
                 return query.Where(x => x.Id == this.id);
 
             if (this.userId != null)
-                query = query.Where(x => x.User.Id == this.userId);
+                query = query.Where(x => x.UserId == this.userId);
 
             if (this.packageId != null)
                 query = query.Where(x => x.Package.Id == this.packageId);
@@ -59,19 +59,16 @@ namespace Bpmtk.Engine.Repository
             return this.Session.CountAsync(this.CreateNativeQuery());
         }
 
-        public virtual IDeploymentQuery FetchUser()
-        {
-            this.fetchUser = true;
-
-            return this;
-        }
-
-        public virtual IDeploymentQuery FetchModel()
+        public virtual DeploymentQuery FetchModel()
         {
             this.fetchModel = true;
 
             return this;
         }
+
+        public virtual Deployment Single() => this.CreateNativeQuery().SingleOrDefault();
+
+        public virtual IList<Deployment> List() => this.CreateNativeQuery().ToList();
 
         public virtual Task<IList<Deployment>> ListAsync(int page, int pageSize)
         {
@@ -125,58 +122,90 @@ namespace Bpmtk.Engine.Repository
             return list.ToList<IDeployment>();
         }
 
-        public virtual IDeploymentQuery SetCategory(string category)
+        public virtual DeploymentQuery SetCategory(string category)
         {
             this.category = category;
 
             return this;
         }
 
-        public virtual IDeploymentQuery SetUser(int userId)
+        public virtual DeploymentQuery SetUserId(string userId)
         {
             this.userId = userId;
 
             return this;
         }
 
-        public virtual IDeploymentQuery SetId(int id)
+        public virtual DeploymentQuery SetId(int id)
         {
             this.id = id;
 
             return this;
         }
 
-        public virtual IDeploymentQuery SetName(string name)
+        public virtual DeploymentQuery SetName(string name)
         {
             this.name = name;
 
             return this;
         }
 
-        public virtual IDeploymentQuery SetPackageId(int packageId)
+        public virtual DeploymentQuery SetPackageId(int packageId)
         {
             this.packageId = packageId;
 
             return this;
         }
 
-        public virtual IDeploymentQuery SetCreatedFrom(DateTime fromDate)
+        public virtual DeploymentQuery SetCreatedFrom(DateTime fromDate)
         {
             this.createdFrom = fromDate;
 
             return this;
         }
 
-        public virtual IDeploymentQuery SetCreatedTo(DateTime toDate)
+        public virtual DeploymentQuery SetCreatedTo(DateTime toDate)
         {
             this.createdTo = toDate;
 
             return this;
         }
 
+        public virtual int Count() => this.CreateNativeQuery().Count();
+
         public virtual Task<Deployment> SingleAsync()
         {
             return this.Session.QuerySingleAsync(this.CreateNativeQuery());
         }
+
+        IDeploymentQuery IDeploymentQuery.SetId(int id)
+            => this.SetId(id);
+
+        IDeploymentQuery IDeploymentQuery.SetName(string name)
+            => this.SetName(name);
+
+        IDeploymentQuery IDeploymentQuery.SetCategory(string category)
+            => this.SetCategory(category);
+
+        IDeploymentQuery IDeploymentQuery.SetPackageId(int packageId)
+            => this.SetPackageId(packageId);
+
+        IDeploymentQuery IDeploymentQuery.SetUserId(string userId) => this.SetUserId(userId);
+
+        IDeploymentQuery IDeploymentQuery.SetCreatedFrom(DateTime fromDate)
+            => this.SetCreatedFrom(fromDate);
+
+        IDeploymentQuery IDeploymentQuery.SetCreatedTo(DateTime toDate)
+            => this.SetCreatedTo(toDate);
+
+        IDeploymentQuery IDeploymentQuery.FetchModel() => this.FetchModel();
+
+        Task<int> IDeploymentQuery.CountAsync() => this.CountAsync();
+
+        IDeployment IDeploymentQuery.Single() => this.Single();
+
+        int IDeploymentQuery.Count() => this.Count();
+
+        IList<IDeployment> IDeploymentQuery.List() => this.List().ToList<IDeployment>();
     }
 }

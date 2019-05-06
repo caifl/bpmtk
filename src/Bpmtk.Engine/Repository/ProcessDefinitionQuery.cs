@@ -21,6 +21,7 @@ group by `Key`) x on p.`key` = x.`Key` and p.`Version` = x.`Version`";
         protected string category;
         protected string name;
         protected string key;
+        protected IEnumerable<string> anyKeys;
         protected int? version;
         protected int? deploymentId;
         protected string description;
@@ -128,21 +129,21 @@ group by `Key`) x on p.`key` = x.`Key` and p.`Version` = x.`Version`";
             return this.Session.CountAsync(this.CreateNativeQuery());
         }
 
-        public virtual IProcessDefinitionQuery FetchIdentityLinks()
+        public virtual ProcessDefinitionQuery FetchIdentityLinks()
         {
             this.fetchIdentityLinks = true;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery FetchDeployment()
+        public virtual ProcessDefinitionQuery FetchDeployment()
         {
             this.fetchDeployment = true;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery FetchLatestVersionOnly()
+        public virtual ProcessDefinitionQuery FetchLatestVersionOnly()
         {
             this.fetchLastestVersionOnly = true;
 
@@ -174,86 +175,101 @@ group by `Key`) x on p.`key` = x.`Key` and p.`Version` = x.`Version`";
             return this.Session.QueryMultipleAsync(this.CreateNativeQuery());
         }
 
-        public virtual IProcessDefinitionQuery SetCategory(string category)
+        public virtual ProcessDefinitionQuery SetCategory(string category)
         {
             this.category = category;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery SetDeploymentId(int deploymentId)
+        public virtual ProcessDefinitionQuery SetDeploymentId(int deploymentId)
         {
             this.deploymentId = deploymentId;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery SetId(int id)
+        public virtual ProcessDefinitionQuery SetId(int id)
         {
             this.id = id;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery SetVersion(int version)
+        public virtual ProcessDefinitionQuery SetVersion(int version)
         {
             this.version = version;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery SetKey(string key)
+        public virtual ProcessDefinitionQuery SetKey(string key)
         {
             this.key = key;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery SetName(string name)
+        public virtual ProcessDefinitionQuery SetKeyAny(IEnumerable<string> keys)
+        {
+            this.anyKeys = keys;
+
+            return this;
+        }
+
+        public virtual ProcessDefinitionQuery SetName(string name)
         {
             this.name = name;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery SetStartTimeFrom(DateTime fromDate)
+        public virtual ProcessDefinitionQuery SetStartTimeFrom(DateTime fromDate)
         {
             throw new NotImplementedException();
         }
 
-        public virtual IProcessDefinitionQuery SetStartTimeTo(DateTime toDate)
+        public virtual ProcessDefinitionQuery SetStartTimeTo(DateTime toDate)
         {
             throw new NotImplementedException();
         }
 
-        public virtual IProcessDefinitionQuery SetState(ProcessDefinitionState state)
+        public virtual ProcessDefinitionQuery SetState(ProcessDefinitionState state)
         {
             this.state = state;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery SetStateAny(params ProcessDefinitionState[] stateArray)
+        public virtual ProcessDefinitionQuery SetStateAny(params ProcessDefinitionState[] stateArray)
         {
             this.anyStates = stateArray;
 
             return this;
         }
 
-        public virtual IProcessDefinitionQuery SetDescription(string description)
+        public virtual ProcessDefinitionQuery SetDescription(string description)
         {
             this.description = description;
 
             return this;
         }
 
-        public virtual async Task<ProcessDefinition> SingleAsync()
+        public virtual ProcessDefinition Single()
         {
-            return await this.Session.QuerySingleAsync(this.CreateNativeQuery());
+            return this.CreateNativeQuery().SingleOrDefault();
         }
 
-        async Task<IProcessDefinition> IProcessDefinitionQuery.SingleAsync()
-            => await this.SingleAsync();
+        public virtual IList<ProcessDefinition> List()
+        {
+            return this.CreateNativeQuery().ToList();
+        }
+
+        IProcessDefinition IProcessDefinitionQuery.Single()
+            => this.Single();
+
+        public virtual Task<ProcessDefinition> SingleAsync()
+            => this.Session.QuerySingleAsync(this.CreateNativeQuery());
 
         async Task<IList<IProcessDefinition>> IProcessDefinitionQuery.ListAsync()
         {
@@ -272,5 +288,50 @@ group by `Key`) x on p.`key` = x.`Key` and p.`Version` = x.`Version`";
             var list = await this.ListAsync(page, pageSize);
             return list.ToList<IProcessDefinition>();
         }
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetId(int processDefinitionId)
+            => this.SetId(processDefinitionId);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetDeploymentId(int deploymentId)
+            => this.SetDeploymentId(deploymentId);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetKey(string key)
+            => this.SetKey(key);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetKeyAny(IEnumerable<string> keys)
+            => this.SetKeyAny(keys);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetCategory(string category)
+            => this.SetCategory(category);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetState(ProcessDefinitionState state)
+            => this.SetState(state);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetName(string name)
+            => this.SetName(name);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetVersion(int version)
+            => this.SetVersion(version);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.SetDescription(string description)
+            => this.SetDescription(description);
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.FetchDeployment()
+            => this.FetchDeployment();
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.FetchIdentityLinks()
+            => this.FetchIdentityLinks();
+
+        IProcessDefinitionQuery IProcessDefinitionQuery.FetchLatestVersionOnly()
+            => this.FetchLatestVersionOnly();
+
+        IList<IProcessDefinition> IProcessDefinitionQuery.List()
+            => new List<IProcessDefinition>(this.List());
+
+        async Task<IProcessDefinition> IProcessDefinitionQuery.SingleAsync()
+            => await this.SingleAsync();
+
+        Task<int> IProcessDefinitionQuery.CountAsync()
+            => this.CountAsync();
     }
 }

@@ -40,9 +40,9 @@ namespace Bpmtk.Engine.WebApi.Controllers
         [HttpGet("{id}/bpmn-model/xml")]
         public async Task<ActionResult<string>> GetModelXml(int id)
         {
-            var model = await this.context.DeploymentManager.GetBpmnModelAsync(id);
-            if(model != null)
-                return Encoding.UTF8.GetString(model.Data);
+            var content = await deploymentManager.GetBpmnModelContentAsync(id);
+            if(content != null)
+                return Encoding.UTF8.GetString(content);
 
             return null;
         }

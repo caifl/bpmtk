@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ConsoleApp.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -25,8 +25,7 @@ namespace ConsoleApp.Migrations
                 name: "bpm_group",
                 columns: table => new
                 {
-                    id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<string>(nullable: false),
                     name = table.Column<string>(maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -38,10 +37,8 @@ namespace ConsoleApp.Migrations
                 name: "bpm_user",
                 columns: table => new
                 {
-                    id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(maxLength: 50, nullable: true),
-                    user_name = table.Column<string>(maxLength: 100, nullable: true)
+                    id = table.Column<string>(nullable: false),
+                    name = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -56,7 +53,7 @@ namespace ConsoleApp.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     tenant_id = table.Column<string>(nullable: true),
                     category = table.Column<string>(nullable: true),
-                    owner_id = table.Column<int>(nullable: true),
+                    owner_id = table.Column<string>(nullable: true),
                     name = table.Column<string>(nullable: true),
                     description = table.Column<string>(nullable: true),
                     version = table.Column<int>(nullable: false),
@@ -69,12 +66,6 @@ namespace ConsoleApp.Migrations
                 {
                     table.PrimaryKey("PK_bpm_package", x => x.id);
                     table.ForeignKey(
-                        name: "FK_bpm_package_bpm_user_owner_id",
-                        column: x => x.owner_id,
-                        principalTable: "bpm_user",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_bpm_package_bpm_byte_array_source_id",
                         column: x => x.source_id,
                         principalTable: "bpm_byte_array",
@@ -86,8 +77,8 @@ namespace ConsoleApp.Migrations
                 name: "bpm_user_group",
                 columns: table => new
                 {
-                    user_id = table.Column<int>(nullable: false),
-                    group_id = table.Column<int>(nullable: false)
+                    user_id = table.Column<string>(nullable: false),
+                    group_id = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -117,7 +108,7 @@ namespace ConsoleApp.Migrations
                     category = table.Column<string>(maxLength: 64, nullable: true),
                     model_id = table.Column<long>(nullable: true),
                     created = table.Column<DateTime>(nullable: false),
-                    user_id = table.Column<int>(nullable: true),
+                    user_id = table.Column<string>(maxLength: 32, nullable: true),
                     package_id = table.Column<int>(nullable: true),
                     memo = table.Column<string>(maxLength: 255, nullable: true)
                 },
@@ -134,12 +125,6 @@ namespace ConsoleApp.Migrations
                         name: "FK_bpm_deployment_bpm_package_package_id",
                         column: x => x.package_id,
                         principalTable: "bpm_package",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_bpm_deployment_bpm_user_user_id",
-                        column: x => x.user_id,
-                        principalTable: "bpm_user",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -209,36 +194,24 @@ namespace ConsoleApp.Migrations
                 {
                     id = table.Column<long>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    user_id = table.Column<int>(nullable: true),
-                    group_id = table.Column<int>(nullable: true),
+                    user_id = table.Column<string>(nullable: true),
+                    group_id = table.Column<string>(nullable: true),
                     type = table.Column<string>(maxLength: 50, nullable: true),
                     created = table.Column<DateTime>(nullable: false),
-                    act_inst_id = table.Column<long>(nullable: true),
                     proc_def_id = table.Column<int>(nullable: true),
                     proc_inst_id = table.Column<long>(nullable: true),
-                    task_id = table.Column<long>(nullable: true)
+                    task_id = table.Column<long>(nullable: true),
+                    act_inst_id = table.Column<long>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_bpm_identity_link", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_bpm_identity_link_bpm_group_group_id",
-                        column: x => x.group_id,
-                        principalTable: "bpm_group",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_bpm_identity_link_bpm_proc_def_proc_def_id",
                         column: x => x.proc_def_id,
                         principalTable: "bpm_proc_def",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_bpm_identity_link_bpm_user_user_id",
-                        column: x => x.user_id,
-                        principalTable: "bpm_user",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -256,7 +229,7 @@ namespace ConsoleApp.Migrations
                     concurrency_stamp = table.Column<string>(nullable: true),
                     tenant_id = table.Column<string>(nullable: true),
                     key = table.Column<string>(maxLength: 32, nullable: true),
-                    initiator_id = table.Column<int>(nullable: true),
+                    initiator = table.Column<string>(maxLength: 32, nullable: true),
                     end_reason = table.Column<string>(maxLength: 255, nullable: true),
                     super_id = table.Column<long>(nullable: true),
                     proc_def_id = table.Column<int>(nullable: false),
@@ -265,12 +238,6 @@ namespace ConsoleApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_bpm_proc_inst", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_bpm_proc_inst_bpm_user_initiator_id",
-                        column: x => x.initiator_id,
-                        principalTable: "bpm_user",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_bpm_proc_inst_bpm_proc_def_proc_def_id",
                         column: x => x.proc_def_id,
@@ -329,7 +296,7 @@ namespace ConsoleApp.Migrations
                 {
                     id = table.Column<long>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    activity_id = table.Column<string>(maxLength: 64, nullable: false),
+                    activity_id = table.Column<string>(maxLength: 64, nullable: true),
                     parent_id = table.Column<long>(nullable: true),
                     is_scope = table.Column<bool>(nullable: false),
                     is_active = table.Column<bool>(nullable: false),
@@ -468,7 +435,7 @@ namespace ConsoleApp.Migrations
                     activity_id = table.Column<string>(maxLength: 64, nullable: true),
                     created = table.Column<DateTime>(nullable: false),
                     claimed_time = table.Column<DateTime>(nullable: true),
-                    assignee_id = table.Column<int>(nullable: true),
+                    assignee = table.Column<string>(maxLength: 32, nullable: true),
                     due_date = table.Column<DateTime>(nullable: true),
                     modified = table.Column<DateTime>(nullable: false),
                     concurrency_stamp = table.Column<string>(nullable: true),
@@ -484,12 +451,6 @@ namespace ConsoleApp.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_bpm_task_bpm_user_assignee_id",
-                        column: x => x.assignee_id,
-                        principalTable: "bpm_user",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_bpm_task_bpm_proc_inst_proc_inst_id",
                         column: x => x.proc_inst_id,
                         principalTable: "bpm_proc_inst",
@@ -504,9 +465,46 @@ namespace ConsoleApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "bpm_comment",
+                columns: table => new
+                {
+                    id = table.Column<long>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    user_id = table.Column<string>(maxLength: 32, nullable: true),
+                    created = table.Column<DateTime>(nullable: false),
+                    body = table.Column<string>(maxLength: 512, nullable: false),
+                    proc_def_id = table.Column<int>(nullable: true),
+                    proc_inst_id = table.Column<long>(nullable: true),
+                    task_id = table.Column<long>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_bpm_comment", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_bpm_comment_bpm_proc_def_proc_def_id",
+                        column: x => x.proc_def_id,
+                        principalTable: "bpm_proc_def",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_bpm_comment_bpm_proc_inst_proc_inst_id",
+                        column: x => x.proc_inst_id,
+                        principalTable: "bpm_proc_inst",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_bpm_comment_bpm_task_task_id",
+                        column: x => x.task_id,
+                        principalTable: "bpm_task",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "bpm_proc_data",
                 columns: table => new
                 {
+                    proc_inst_id = table.Column<long>(nullable: true),
                     id = table.Column<long>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     name = table.Column<string>(maxLength: 64, nullable: false),
@@ -516,7 +514,6 @@ namespace ConsoleApp.Migrations
                     text2 = table.Column<string>(maxLength: 4000, nullable: true),
                     long_val = table.Column<long>(nullable: true),
                     double_val = table.Column<double>(nullable: true),
-                    proc_inst_id = table.Column<long>(nullable: true),
                     task_id = table.Column<long>(nullable: true),
                     token_id = table.Column<long>(nullable: true)
                 },
@@ -575,6 +572,21 @@ namespace ConsoleApp.Migrations
                 column: "sub_proc_inst_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_bpm_comment_proc_def_id",
+                table: "bpm_comment",
+                column: "proc_def_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bpm_comment_proc_inst_id",
+                table: "bpm_comment",
+                column: "proc_inst_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bpm_comment_task_id",
+                table: "bpm_comment",
+                column: "task_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_bpm_deployment_model_id",
                 table: "bpm_deployment",
                 column: "model_id");
@@ -583,11 +595,6 @@ namespace ConsoleApp.Migrations
                 name: "IX_bpm_deployment_package_id",
                 table: "bpm_deployment",
                 column: "package_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_bpm_deployment_user_id",
-                table: "bpm_deployment",
-                column: "user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_bpm_event_subscr_proc_def_id",
@@ -610,11 +617,6 @@ namespace ConsoleApp.Migrations
                 column: "act_inst_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_bpm_identity_link_group_id",
-                table: "bpm_identity_link",
-                column: "group_id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_bpm_identity_link_proc_def_id",
                 table: "bpm_identity_link",
                 column: "proc_def_id");
@@ -628,16 +630,6 @@ namespace ConsoleApp.Migrations
                 name: "IX_bpm_identity_link_task_id",
                 table: "bpm_identity_link",
                 column: "task_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_bpm_identity_link_user_id",
-                table: "bpm_identity_link",
-                column: "user_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_bpm_package_owner_id",
-                table: "bpm_package",
-                column: "owner_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_bpm_package_source_id",
@@ -681,11 +673,6 @@ namespace ConsoleApp.Migrations
                 column: "caller_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_bpm_proc_inst_initiator_id",
-                table: "bpm_proc_inst",
-                column: "initiator_id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_bpm_proc_inst_proc_def_id",
                 table: "bpm_proc_inst",
                 column: "proc_def_id");
@@ -714,11 +701,6 @@ namespace ConsoleApp.Migrations
                 name: "IX_bpm_task_act_inst_id",
                 table: "bpm_task",
                 column: "act_inst_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_bpm_task_assignee_id",
-                table: "bpm_task",
-                column: "assignee_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_bpm_task_proc_inst_id",
@@ -834,6 +816,9 @@ namespace ConsoleApp.Migrations
                 name: "bpm_act_data");
 
             migrationBuilder.DropTable(
+                name: "bpm_comment");
+
+            migrationBuilder.DropTable(
                 name: "bpm_event_subscr");
 
             migrationBuilder.DropTable(
@@ -855,6 +840,9 @@ namespace ConsoleApp.Migrations
                 name: "bpm_group");
 
             migrationBuilder.DropTable(
+                name: "bpm_user");
+
+            migrationBuilder.DropTable(
                 name: "bpm_act_inst");
 
             migrationBuilder.DropTable(
@@ -874,9 +862,6 @@ namespace ConsoleApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "bpm_package");
-
-            migrationBuilder.DropTable(
-                name: "bpm_user");
         }
     }
 }

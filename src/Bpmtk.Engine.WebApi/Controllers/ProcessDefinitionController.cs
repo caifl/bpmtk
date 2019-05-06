@@ -54,7 +54,10 @@ namespace Bpmtk.Engine.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ProcessDefinitionModel>> Get(int id)
         {
-            var item = await this.context.DeploymentManager.FindProcessDefinitionByIdAsync(id);
+            var item = await this.deploymentManager.CreateDefinitionQuery()
+                .SetId(id)
+                .SingleAsync();
+
             if (item != null)
                 return ProcessDefinitionModel.Create(item);
 
@@ -73,10 +76,8 @@ namespace Bpmtk.Engine.WebApi.Controllers
                 .Select(x => new IdentityLinkModel
                 {
                     Id = x.Id,
-                    UserId = x.User.Id,
-                    UserName = x.User.UserName,
-                    GroupId = x.Group.Id,
-                    GroupName = x.Group.Name,
+                    UserId = x.UserId,
+                    GroupId = x.GroupId,
                     Type = x.Type
                 }).ToArray();
             
@@ -97,7 +98,7 @@ namespace Bpmtk.Engine.WebApi.Controllers
         public async Task<ActionResult> Activate(int id,
             ProcessDefinitionActionModel model)
         {
-            await this.deploymentManager.ActivateProcessDefinitionAsync(id, 
+            var procDef = await this.deploymentManager.ActivateProcessDefinitionAsync(id, 
                 model?.Comment);
 
             return this.Ok();

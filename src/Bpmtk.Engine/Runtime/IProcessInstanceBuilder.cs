@@ -7,12 +7,9 @@ namespace Bpmtk.Engine.Runtime
 {
     public interface IProcessInstanceBuilder
     {
-        IList<Bpmtk.Bpmn2.FlowNode> InitialNodes
-        {
-            get;
-        }
+        IProcessInstanceBuilder SetProcessDefinitionId(int processDefinitionId);
 
-        IProcessInstanceBuilder SetProcessDefinition(ProcessDefinition processDefinition);
+        IProcessInstanceBuilder SetProcessDefinitionKey(string processDefinitionKey);
 
         IProcessInstanceBuilder SetVariables(IDictionary<string, object> variables);
 
@@ -20,14 +17,12 @@ namespace Bpmtk.Engine.Runtime
 
         IProcessInstanceBuilder SetKey(string key);
 
-        IProcessInstanceBuilder SetInitiator(int initiatorId);
+        IProcessInstanceBuilder SetInitiator(string initiator);
 
         IProcessInstanceBuilder SetDescription(string description);
 
         IProcessInstanceBuilder SetSuper(Token super);
 
-        //IProcessInstanceBuilder SetCaller(ActivityInstance caller);
-
-        Task<ProcessInstance> BuildAsync();
+        IProcessInstance Build();
     }
 }

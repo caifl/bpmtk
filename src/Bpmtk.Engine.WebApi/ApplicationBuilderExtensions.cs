@@ -17,7 +17,7 @@ namespace Bpmtk.Engine.WebApi
                 //Set current context.
                 Context.SetCurrent(bpmContext);
 
-                bpmContext.SetAuthenticatedUser(100);
+                bpmContext.SetAuthenticatedUser("test");
                 //session.SetAuthenticatedUser(4);
                 // Do work that doesn't write to the Response.
                 //if (context.User.Identity.IsAuthenticated)

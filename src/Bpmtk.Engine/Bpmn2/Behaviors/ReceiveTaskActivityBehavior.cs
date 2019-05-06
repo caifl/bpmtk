@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Runtime;
 
@@ -16,7 +15,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         /// Message arrives, the data in the Data Output of the Receive Task is assigned from the data in the Message,
         /// and Receive Task completes.
         /// </summary>
-        public System.Threading.Tasks.Task SignalAsync(ExecutionContext executionContext, 
+        public virtual void Signal(ExecutionContext executionContext, 
             string signalEvent, 
             IDictionary<string, object> signalData)
         {
@@ -37,15 +36,14 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 }
             }
 
-            return base.LeaveAsync(executionContext);
+            base.Leave(executionContext);
         }
 
-        public override System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
+        public override void Execute(ExecutionContext executionContext)
         {
             //Waiting for signal.
 
             //return base.ExecuteAsync(executionContext);
-            return System.Threading.Tasks.Task.CompletedTask;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Bpmtk.Engine.Models
 {
     public class UserGroup
     {
-        public virtual int UserId
+        public virtual string UserId
         {
             get;
             set;
@@ -18,7 +18,7 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual int GroupId
+        public virtual string GroupId
         {
             get;
             set;

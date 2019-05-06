@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.WebApi.Models
 {
@@ -14,25 +10,13 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public virtual int? UserId
+        public virtual string UserId
         {
             get;
             set;
         }
 
-        public virtual string UserName
-        {
-            get;
-            set;
-        }
-
-        public virtual int? GroupId
-        {
-            get;
-            set;
-        }
-
-        public virtual string GroupName
+        public virtual string GroupId
         {
             get;
             set;

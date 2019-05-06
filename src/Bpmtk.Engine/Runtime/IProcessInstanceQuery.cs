@@ -24,13 +24,13 @@ namespace Bpmtk.Engine.Runtime
 
         IProcessInstanceQuery SetProcessDefinitionKey(string processDefinitionKey);
 
-        IProcessInstanceQuery SetInitiator(int initiatorId);
+        IProcessInstanceQuery SetInitiator(string initiator);
 
         IProcessInstanceQuery SetStartTimeFrom(DateTime fromDate);
 
         IProcessInstanceQuery SetStartTimeTo(DateTime toDate);
 
-        IProcessInstanceQuery FetchInitiator();
+        //IProcessInstanceQuery FetchInitiator();
 
         IProcessInstanceQuery FetchProcessDefinition();
 
@@ -39,6 +39,8 @@ namespace Bpmtk.Engine.Runtime
         IProcessInstanceQuery FetchIdentityLinks();
 
         //IProcessInstanceQuery SetReadOnly();
+
+        IProcessInstance Single();
 
         Task<IProcessInstance> SingleAsync();
 

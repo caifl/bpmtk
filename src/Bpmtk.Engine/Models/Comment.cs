@@ -10,13 +10,7 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual int UserId
-        {
-            get;
-            set;
-        }
-
-        public virtual User User
+        public virtual string UserId
         {
             get;
             set;

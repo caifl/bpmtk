@@ -17,14 +17,13 @@ namespace Bpmtk.Engine.Tests.Deploy
       
         [Fact] public async Task Execute()
         {
-            var user = await this.identityManager.FindUserByNameAsync("felix");
-            var group = await this.identityManager.FindGroupByNameAsync("tests");
-
+            //var user = await this.identityManager.FindUserByNameAsync("felix");
+            //var group = await this.identityManager.FindGroupByNameAsync("tests");
 
             var identityLinks = new IdentityLink[]
             {
-                new IdentityLink() { User = user, Type = "starter" },
-                new IdentityLink() { Group = group, Type = "tests" }
+                new IdentityLink() { UserId = "test", Type = "starter" },
+                new IdentityLink() { GroupId = "tests", Type = "tests" }
             };
 
             var procDefId = 1;

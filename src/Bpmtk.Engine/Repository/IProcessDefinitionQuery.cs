@@ -12,6 +12,8 @@ namespace Bpmtk.Engine.Repository
 
         IProcessDefinitionQuery SetKey(string key);
 
+        IProcessDefinitionQuery SetKeyAny(IEnumerable<string> keys);
+
         IProcessDefinitionQuery SetCategory(string category);
 
         IProcessDefinitionQuery SetState(ProcessDefinitionState state);
@@ -28,7 +30,11 @@ namespace Bpmtk.Engine.Repository
 
         IProcessDefinitionQuery FetchLatestVersionOnly();
 
+        IProcessDefinition Single();
+
         Task<IProcessDefinition> SingleAsync();
+
+        IList<IProcessDefinition> List();
 
         Task<int> CountAsync();
 

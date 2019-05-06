@@ -6,7 +6,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public class ScriptTaskActivityBehavior : TaskActivityBehavior
     {
-        public override async System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
+        public override void Execute(ExecutionContext executionContext)
         {
             var scriptTask = executionContext.Node as ScriptTask;
             if (scriptTask == null)
@@ -19,7 +19,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 evaluator.Evaluate(script);
             }
 
-            await base.LeaveAsync(executionContext);
+            base.Leave(executionContext);
         }
     }
 }

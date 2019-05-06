@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 
@@ -8,31 +7,17 @@ namespace Bpmtk.Engine
 {
     public interface IIdentityManager
     {
-        IQueryable<User> Users
-        {
-            get;
-        }
+        IList<User> GetUsers(params string[] userIds);
 
-        IQueryable<Group> Groups
-        {
-            get;
-        }
+        IList<Group> GetGroups(params string[] groupIds);
 
-        Task<IList<User>> GetUsersAsync(params int[] userIds);
+        void CreateUser(User user);
 
-        Task<IList<Group>> GetGroupsAsync(params int[] groupIds);
+        User FindUserById(string userId);
 
-        Task CreateUserAsync(User user);
+        void CreateGroup(Group group);
 
-        Task<User> FindUserByIdAsync(int userId);
-
-        Task<User> FindUserByNameAsync(string name);
-
-        Task CreateGroupAsync(Group group);
-
-        Task<Group> FindGroupByIdAsync(int groupId);
-
-        Task<Group> FindGroupByNameAsync(string name);
+        Group FindGroupById(string groupId);
 
         Task UpdateGroupAsync(Group group);
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Bpmn2;
 using Bpmtk.Engine.Models;
@@ -10,21 +9,20 @@ namespace Bpmtk.Engine
 {
     public interface IDeploymentManager
     {
-        //IQueryable<Deployment> Deployments
-        //{
-        //    get;
-        //}
-
+        /// <summary>
+        /// Create deployment query.
+        /// </summary>
         IDeploymentQuery CreateDeploymentQuery();
 
+        /// <summary>
+        /// Create process definition query.
+        /// </summary>
         IProcessDefinitionQuery CreateDefinitionQuery();
 
-        IQueryable<ProcessDefinition> ProcessDefinitions
-        {
-            get;
-        }
-
-        Task<Deployment> FindAsync(int deploymentId);
+        /// <summary>
+        /// Find the specified deployment.
+        /// </summary>
+        IDeployment Find(int deploymentId);
 
         Task AddIdentityLinksAsync(int processDefinitionId, params IdentityLink[] identityLinks);
 
@@ -32,23 +30,31 @@ namespace Bpmtk.Engine
 
         Task RemoveIdentityLinksAsync(params long[] identityLinkIds);
 
-        Task<ProcessDefinition> FindProcessDefinitionByIdAsync(int processDefinitionId);
+        IProcessDefinition FindProcessDefinitionById(int processDefinitionId);
 
-        Task<ProcessDefinition> FindProcessDefinitionByKeyAsync(string processDefinitionKey);
+        IProcessDefinition FindProcessDefinitionByKey(string processDefinitionKey);
 
-        Task InactivateProcessDefinitionAsync(int processDefinitionId, 
+        IProcessDefinition InactivateProcessDefinition(int processDefinitionId, 
             string comment = null);
 
-        Task ActivateProcessDefinitionAsync(int processDefinitionId,
+        IProcessDefinition ActivateProcessDefinition(int processDefinitionId,
             string comment = null);
 
-        Task<IList<Comment>> GetCommentsForProcessDefinitionAsync(int processDefinitionId);
+        Task<IProcessDefinition> InactivateProcessDefinitionAsync(int processDefinitionId,
+            string comment = null);
 
-        Task<IList<EventSubscription>> GetEventSubscriptionsAsync(int processDefintionId);
+        Task<IProcessDefinition> ActivateProcessDefinitionAsync(int processDefinitionId,
+            string comment = null);
 
-        Task<IList<ScheduledJob>> GetScheduledJobsAsync(int processDefintionId);
+        IList<Comment> GetCommentsForProcessDefinition(int processDefinitionId);
 
-        Task<BpmnModel> GetBpmnModelAsync(int deploymentId);
+        IList<EventSubscription> GetEventSubscriptions(int processDefintionId);
+
+        IList<ScheduledJob> GetScheduledJobs(int processDefintionId);
+
+        BpmnModel GetBpmnModel(int deploymentId);
+
+        Task<Byte[]> GetBpmnModelContentAsync(int deploymentId);
 
         IDeploymentBuilder CreateDeploymentBuilder();
     }

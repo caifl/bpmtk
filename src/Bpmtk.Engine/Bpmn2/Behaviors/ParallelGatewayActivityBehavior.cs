@@ -12,11 +12,11 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         protected override SequenceFlow GetDefaultOutgoing(ExecutionContext executionContext)
             => null;
 
-        public override System.Threading.Tasks.Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
+        public override bool EvaluatePreConditions(ExecutionContext executionContext)
         {
             var node = executionContext.Node;
             if (node.Incomings.Count <= 1)
-                return System.Threading.Tasks.Task.FromResult(true);
+                return true;
 
             var token = executionContext.Token;
             token.Inactivate();
@@ -48,25 +48,25 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             var logger = executionContext.Logger;
             logger.LogInformation($"There are '{count} of {expectedTokenCount}' tokens joined at parallelGateway '{activityId}'.");
 
-            return System.Threading.Tasks.Task.FromResult(result);
+            return result;
         }
 
-        public override async System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
+        public override void Execute(ExecutionContext executionContext)
         {
             //Join tokens.
             var joinedTokens = executionContext.JoinedTokens;
             if (joinedTokens != null && joinedTokens.Count > 0)
-                await executionContext.JoinAsync();
+                executionContext.Join();
 
             var node = executionContext.Node;
             if (node.Outgoings.Count <= 1)
             {
-                await base.ExecuteAsync(executionContext);
+                base.Execute(executionContext);
                 return;
             }
 
             //leave and ignore outgoing conditions.
-            await base.LeaveAsync(executionContext, true);
+            base.LeaveAsync(executionContext, true);
         }
     }
 }

@@ -26,11 +26,12 @@ namespace Bpmtk.Engine.Cfg
                 .HasForeignKey(x => x.DeploymentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey("UserId")
-                .OnDelete(DeleteBehavior.Restrict);
+            //builder.HasOne(x => x.User)
+            //    .WithMany()
+            //    .HasForeignKey("UserId")
+            //    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Property(x => x.UserId).HasMaxLength(32);
             builder.Property(x => x.Memo).HasMaxLength(255);
             builder.Property(x => x.Category).HasMaxLength(64);
             builder.Property(x => x.Name).HasMaxLength(50);

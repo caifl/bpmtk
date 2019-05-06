@@ -35,27 +35,59 @@ namespace Bpmtk.Engine.Repository
             this.deploymentManager = deploymentManager;
         }
 
-        protected virtual async Task<IDictionary<string, ProcessDefinition>> GetLatestVersionsAsync(params string[] processDefinitionKeys)
+        //protected virtual async Task<IDictionary<string, ProcessDefinition>> GetLatestVersionsAsync(params string[] processDefinitionKeys)
+        //{
+        //    var keys = processDefinitionKeys;
+        //    var query = this.session.ProcessDefinitions
+        //        .Where(x => keys.Contains(x.Key))
+        //        .GroupBy(x => x.Key)
+        //        .Select(x => new
+        //        {
+        //            Key = x.Key,
+        //            Version = x.OrderByDescending(y => y.Version).FirstOrDefault()
+        //        });
+
+        //    var results = this.session.QueryMultipleAsync(query);
+
+        //    Dictionary<string, ProcessDefinition> map = new Dictionary<string, ProcessDefinition>();
+        //    foreach (var item in results)
+        //    {
+        //        map.Add(item.Key, item.Version);
+        //    }
+
+        //    return map;
+        //}
+
+        //protected virtual async Task<IDictionary<string, ProcessDefinition>> GetLatestVersionsAsync(params string[] processDefinitionKeys)
+        //{
+        //    var keys = processDefinitionKeys;
+        //    var query = this.session.ProcessDefinitions
+        //        .Where(x => keys.Contains(x.Key))
+        //        .GroupBy(x => x.Key)
+        //        .Select(x => new
+        //        {
+        //            Key = x.Key,
+        //            Version = x.OrderByDescending(y => y.Version).FirstOrDefault()
+        //        });
+
+        //    var results = this.session.QueryMultipleAsync(query);
+
+        //    Dictionary<string, ProcessDefinition> map = new Dictionary<string, ProcessDefinition>();
+        //    foreach (var item in results)
+        //    {
+        //        map.Add(item.Key, item.Version);
+        //    }
+
+        //    return map;
+        //}
+
+        IDeployment IDeploymentBuilder.Build() => this.Build();
+
+        async Task<IDeployment> IDeploymentBuilder.BuildAsync() => await this.BuildAsync();
+
+        public virtual Deployment Build()
         {
-            var keys = processDefinitionKeys;
-            var query = this.session.ProcessDefinitions
-                .Where(x => keys.Contains(x.Key))
-                .GroupBy(x => x.Key)
-                .Select(x => new
-                {
-                    Key = x.Key,
-                    Version = x.OrderByDescending(y => y.Version).FirstOrDefault()
-                });
-
-            var results = await this.session.QueryMultipleAsync(query);
-
-            Dictionary<string, ProcessDefinition> map = new Dictionary<string, ProcessDefinition>();
-            foreach (var item in results)
-            {
-                map.Add(item.Key, item.Version);
-            }
-
-            return map;
+            return this.BuildAsync().Result;
         }
 
         public virtual async Task<Deployment> BuildAsync()
@@ -65,8 +97,14 @@ namespace Bpmtk.Engine.Repository
             if (processes.Count == 0)
                 throw new DeploymentException("The BPMN model does not contains any processes.");
 
-            var keys = processes.Select(x => x.Id).ToArray();
-            var prevProcessDefinitions = await this.GetLatestVersionsAsync(keys);
+            var keys = processes.Select(x => x.Id);
+
+            var prevProcessDefinitions = await this.deploymentManager.CreateDefinitionQuery()
+                .FetchLatestVersionOnly()
+                .SetKeyAny(keys)
+                .ListAsync();
+
+            var prevProcessDefinitionMap = prevProcessDefinitions.ToDictionary(x => x.Key);
 
             //New deployment.
             var deployment = new Deployment();
@@ -86,15 +124,15 @@ namespace Bpmtk.Engine.Repository
                     throw new DeploymentException($"The process '{bpmnProcess.Id}' is not executabe.");
 
                 prevProcessDefinition = null;
-                if(prevProcessDefinitions.Count > 0)
-                    prevProcessDefinitions.TryGetValue(bpmnProcess.Id, out prevProcessDefinition);
+                if(prevProcessDefinitionMap.Count > 0)
+                    prevProcessDefinitionMap.TryGetValue(bpmnProcess.Id, out prevProcessDefinition);
 
                 var procDef = this.CreateProcessDefinition(deployment, bpmnProcess, prevProcessDefinition);
                 procDef.HasDiagram = model.HasDiagram(bpmnProcess.Id);
 
                 deployment.ProcessDefinitions.Add(procDef);
 
-                await this.InitializeEventsAndScheduledJobs(procDef, bpmnProcess, prevProcessDefinition);
+                this.InitializeEventsAndScheduledJobs(procDef, bpmnProcess, prevProcessDefinition);
             }
 
             await this.session.SaveAsync(deployment);
@@ -103,7 +141,7 @@ namespace Bpmtk.Engine.Repository
             return deployment;
         }
 
-        protected virtual async System.Threading.Tasks.Task InitializeEventsAndScheduledJobs(
+        protected virtual void InitializeEventsAndScheduledJobs(
             ProcessDefinition processDefinition,
             Process bpmnProcess,
             ProcessDefinition prevProcessDefinition)
@@ -162,21 +200,21 @@ namespace Bpmtk.Engine.Repository
                 var procDefId = prevProcessDefinition.Id;
 
                 //remove event subs.
-                var items = await this.deploymentManager.GetEventSubscriptionsAsync(procDefId);
+                var items = this.deploymentManager.GetEventSubscriptions(procDefId);
                 if (items.Count > 0)
                     this.session.RemoveRange(items);
 
                 //remove timer jobs.
-                var jobs = await this.deploymentManager.GetScheduledJobsAsync(procDefId);
+                var jobs = this.deploymentManager.GetScheduledJobs(procDefId);
                 if (jobs.Count > 0)
                     this.session.RemoveRange(jobs);
             }
 
             if (eventSubs.Count > 0)
-                await this.session.SaveRangeAsync(eventSubs);
+                this.session.SaveRange(eventSubs);
 
             if (timerJobs.Count > 0)
-                await this.session.SaveRangeAsync(timerJobs);
+                this.session.SaveRange(timerJobs);
         }
 
         #region Create signal/message/timer event handler.

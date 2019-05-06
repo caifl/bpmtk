@@ -1,24 +1,15 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Variables;
+using System.Threading.Tasks;
 
 namespace Bpmtk.Engine
 {
     public interface IRuntimeManager
-    {
-        //IQueryable<ProcessInstance> ProcessInstances
-        //{
-        //    get;
-        //}
-
-        //IQueryable<Token> Tokens
-        //{
-        //    get;
-        //}
-        
+    {   
         /// <summary>
         /// Create process-instance query.
         /// </summary>
@@ -36,7 +27,15 @@ namespace Bpmtk.Engine
         /// <summary>
         /// Start new process-instance by builder.
         /// </summary>
-        Task<IProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder);
+        IProcessInstance StartProcess(IProcessInstanceBuilder builder);
+
+        /// <summary>
+        /// Start new process-instance by Key of process-definition. 
+        /// </summary>
+        /// <param name="processDefintionKey">The Key of process-definition</param>
+        /// <param name="variables">Initial Variables</param>
+        IProcessInstance StartProcessByKey(string processDefintionKey,
+            IDictionary<string, object> variables = null);
 
         /// <summary>
         /// Start new process-instance by Key of process-definition. 
@@ -46,45 +45,53 @@ namespace Bpmtk.Engine
         Task<IProcessInstance> StartProcessByKeyAsync(string processDefintionKey,
             IDictionary<string, object> variables = null);
 
-        Task<IProcessInstance> StartProcessByMessageAsync(string messageName,
+        IProcessInstance StartProcessByMessage(string messageName,
             IDictionary<string, object> messageData = null);
+
+        IList<string> GetActiveActivityIds(long processInstanceId);
 
         Task<IList<string>> GetActiveActivityIdsAsync(long processInstanceId);
 
-        Task<IList<Token>> GetActiveTokensAsync(long processInstanceId);
+        IList<IToken> GetActiveTokens(long processInstanceId);
+
+        Task<IList<IToken>> GetActiveTokensAsync(long processInstanceId);
+
+        void Trigger(long tokenId, IDictionary<string, object> variables = null);
 
         Task TriggerAsync(long tokenId, IDictionary<string, object> variables = null);
 
-        Task<int> GetActiveTaskCountAsync(long tokenId);
+        int GetActiveTaskCount(long tokenId);
+
+        IProcessInstance Find(long processInstanceId);
 
         Task<IProcessInstance> FindAsync(long processInstanceId);
 
-        Task<IDictionary<string, object>> GetVariablesAsync(long processInstanceId,
-            string[] variableNames = null);
+        IDictionary<string, object> GetVariables(long processInstanceId, string[] variableNames = null);
 
-        Task<IList<Variable>> GetVariableInstancesAsync(long processInstanceId,
-            string[] variableNames = null);
+        Task<IDictionary<string, object>> GetVariablesAsync(long processInstanceId, string[] variableNames = null);
+
+        IList<IVariable> GetVariableInstances(long processInstanceId, string[] variableNames = null);
 
         /// <summary>
         /// Update the specified variables of process-instance.
         /// </summary>
-        Task SetVariablesAsync(long processInstanceId, IDictionary<string, object> variables);
+        void SetVariables(long processInstanceId, IDictionary<string, object> variables);
 
         /// <summary>
         /// Change the Name of process-instance.
         /// </summary>
-        Task SetNameAsync(long processInstanceId, string name);
+        Task<IProcessInstance> SetNameAsync(long processInstanceId, string name);
 
         /// <summary>
         /// Change the Name of process-instance.
         /// </summary>
-        Task SetKeyAsync(long processInstanceId, string key);
+        Task<IProcessInstance> SetKeyAsync(long processInstanceId, string key);
 
         Task<IList<IdentityLink>> GetIdentityLinksAsync(long processInstanceId);
 
-        Task<IList<IdentityLink>> AddUserLinksAsync(long processInstanceId, IEnumerable<int> userIds, string type);
+        Task<IList<IdentityLink>> AddUserLinksAsync(long processInstanceId, IEnumerable<string> userIds, string type);
 
-        Task<IList<IdentityLink>> AddGroupLinksAsync(long processInstanceId, IEnumerable<int> groupIds, string type);
+        Task<IList<IdentityLink>> AddGroupLinksAsync(long processInstanceId, IEnumerable<string> groupIds, string type);
 
         Task RemoveIdentityLinksAsync(long processInstanceId, params long[] identityLinkIds);
 
@@ -92,20 +99,20 @@ namespace Bpmtk.Engine
 
         Task<Comment> AddCommentAsync(long processInstanceId, string comment);
 
-        Task RemoveCommentAsync(long commentId);
+        void RemoveComment(long commentId);
 
-        Task SuspendAsync(long processInstanceId,
+        void Suspend(long processInstanceId,
             string comment = null);
 
-        Task ResumeAsync(long processInstanceId,
+        void Resume(long processInstanceId,
             string comment = null);
 
-        Task AbortAsync(long processInstanceId,
+        void Abort(long processInstanceId,
             string comment = null);
 
-        Task DeleteAsync(long processInstanceId,
+        void Delete(long processInstanceId,
             string comment = null);
 
-        //Task SaveAsync(ProcessInstance processInstance);
+        //void SaveAsync(ProcessInstance processInstance);
     }
 }

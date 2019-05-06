@@ -18,7 +18,7 @@ namespace Bpmtk.Engine.Events
 
         Task<EventSubscription> FindByNameAsync(string eventName, string eventType);
 
-        Task<IList<EventSubscription>> GetByProcessDefinitionAsync(int processDefinitionId);
+        IList<EventSubscription> GetByProcessDefinitionAsync(int processDefinitionId);
 
         Task CreateAsync(params EventSubscription[] eventSubscriptions);
 

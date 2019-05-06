@@ -14,15 +14,19 @@ namespace Bpmtk.Engine.Repository
 
         IDeploymentQuery SetPackageId(int packageId);
 
-        IDeploymentQuery SetUser(int userId);
+        IDeploymentQuery SetUserId(string userId);
 
         IDeploymentQuery SetCreatedFrom(DateTime fromDate);
 
         IDeploymentQuery SetCreatedTo(DateTime toDate);
 
-        IDeploymentQuery FetchUser();
-
         IDeploymentQuery FetchModel();
+
+        IDeployment Single();
+
+        int Count();
+
+        IList<IDeployment> List();
 
         Task<IDeployment> SingleAsync();
 

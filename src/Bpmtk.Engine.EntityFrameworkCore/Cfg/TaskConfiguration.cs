@@ -28,7 +28,8 @@ namespace Bpmtk.Engine.Cfg
                 .HasForeignKey("ActivityInstanceId")
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Property(x => x.AssigneeId);
+            //builder.Property(x => x.Assignee);
+            builder.Property(x => x.Assignee).HasMaxLength(32);
             //builder.Property(x => x.OwnerId).HasColumnName("owner_id");
             //builder.Property(x => x.TokenId).HasColumnName("token_id");
             builder.Property(x => x.Name).HasMaxLength(100).IsRequired(true);

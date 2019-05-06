@@ -11,32 +11,33 @@ namespace Bpmtk.Engine
     {
         ITaskInstanceBuilder CreateBuilder();
 
-        //IQueryable<TaskInstance> Tasks
-        //{
-        //    get;
-        //}
-
         ITaskQuery CreateQuery();
 
-        Task<TaskInstance> FindAsync(long taskId);
+        ITaskInstance Find(long taskId);
 
-        Task<TaskInstance> ClaimAsync(long taskId, string comment = null);
+        Task<ITaskInstance> FindAsync(long taskId);
 
-        Task<TaskInstance> AssignAsync(long taskId, 
-            int assigneeId,
+        ITaskInstance Claim(long taskId, string comment = null);
+
+        ITaskInstance Assign(long taskId, 
+            string assignee,
             string comment = null);
 
-        Task<TaskInstance> SuspendAsync(long taskId, string comment = null);
+        ITaskInstance Suspend(long taskId, string comment = null);
 
-        Task<TaskInstance> ResumeAsync(long taskId, string comment = null);
+        ITaskInstance Resume(long taskId, string comment = null);
 
-        Task CompleteAsync(long taskId, 
+        ITaskInstance Complete(long taskId, 
             IDictionary<string, object> variables = null,
             string comment = null);
 
-        Task SetNameAsync(long taskId, string name);
+        Task<ITaskInstance> CompleteAsync(long taskId,
+            IDictionary<string, object> variables = null,
+            string comment = null);
 
-        Task SetPriorityAsync(long taskId, short priority);
+        ITaskInstance SetName(long taskId, string name);
+
+        ITaskInstance SetPriority(long taskId, short priority);
 
         //Task RemoveAsync(long taskId);
 

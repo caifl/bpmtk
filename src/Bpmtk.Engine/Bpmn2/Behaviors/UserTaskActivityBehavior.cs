@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
 using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Tasks;
@@ -15,7 +14,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         const string Assignee = "assignee";
         const string AssignmentStrategy = "assignmentStrategy";
 
-        public override async Task ExecuteAsync(ExecutionContext executionContext)
+        public override void Execute(ExecutionContext executionContext)
         {
             var context = executionContext.Context;
             var taskManager = context.TaskManager;
@@ -59,11 +58,8 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                         }
 
                     case Assignee:
-                        string userName = evaluator.Evaluate<string>(value);
-                        var assignee = await identityManager.FindUserByNameAsync(userName);
-                        if(assignee != null)
-                            builder.SetAssignee(assignee);
-
+                        string userId = evaluator.Evaluate<string>(value);
+                        builder.SetAssignee(userId);
                         break;
 
                     case AssignmentStrategy:
@@ -73,20 +69,20 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             }
 
             if (assignmentStrategry != null)
-                await assignmentStrategry.ExecuteAsync(builder);
+                assignmentStrategry.ExecuteAsync(builder);
 
-            await builder.BuildAsync();
+            builder.Build();
         }
 
-        public async Task SignalAsync(ExecutionContext executionContext, 
+        public virtual void Signal(ExecutionContext executionContext, 
             string signalEvent, 
             IDictionary<string, object> signalData)
         {
-            var count = await executionContext.GetActiveTaskCountAsync();
+            var count = executionContext.GetActiveTaskCountAsync();
             if (count > 0)
                 throw new RuntimeException($"There are '{count}' tasks need to be completed.");
 
-            await base.LeaveAsync(executionContext);
+            base.Leave(executionContext);
         }
     }
 }

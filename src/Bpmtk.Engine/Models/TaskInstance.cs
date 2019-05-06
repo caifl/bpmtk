@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bpmtk.Engine.Identity;
 using Bpmtk.Engine.Tasks;
 using Bpmtk.Engine.Variables;
 
@@ -128,13 +127,7 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual int? AssigneeId
-        {
-            get;
-            set;
-        }
-
-        public virtual User Assignee
+        public virtual string Assignee
         {
             get;
             set;
@@ -164,10 +157,10 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual void AddIdentityLink(int userId, string type)
+        public virtual void AddIdentityLink(string userId, string type)
         {
             var item = new IdentityLink();
-            item.User = new User() { Id= userId };
+            item.UserId = userId;
             item.Type = type;
 
             //this.identityLinks.Add(item);
@@ -304,8 +297,6 @@ namespace Bpmtk.Engine.Models
 
             return variable;
         }
-
-        IUser ITaskInstance.Assignee => this.Assignee;
 
         IDictionary<string, object> ITaskInstance.ProcessVariables
         {

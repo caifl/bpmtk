@@ -10,7 +10,7 @@ namespace Bpmtk.Engine.WebApi.Models
             this.PageSize = 20;
         }
 
-        public virtual int? AssigneeId
+        public virtual string Assignee
         {
             get;
             set;

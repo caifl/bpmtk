@@ -48,11 +48,11 @@ namespace Bpmtk.Engine
 
         //TService GetService<TService>();
 
-        int UserId
+        string UserId
         {
             get;
         }
 
-        IContext SetAuthenticatedUser(int userId);
+        IContext SetAuthenticatedUser(string userId);
     }
 }

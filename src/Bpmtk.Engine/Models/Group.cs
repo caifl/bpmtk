@@ -5,7 +5,7 @@ namespace Bpmtk.Engine.Models
 {
     public class Group
     {
-        public virtual int Id
+        public virtual string Id
         {
             get;
             set;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
@@ -15,18 +14,18 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             this.innerActivityBehavior.LoopActivityBehavior = this;
         }
 
-        public override Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
+        public override bool EvaluatePreConditions(ExecutionContext executionContext)
         {
             //Mark mi-root.
             var token = executionContext.Token;
             token.IsMIRoot = true;
 
-            return base.EvaluatePreConditionsAsync(executionContext);
+            return base.EvaluatePreConditions(executionContext);
         }
 
-        protected abstract Task<int> CreateInstancesAsync(ExecutionContext executionContext);
+        protected abstract int CreateInstances(ExecutionContext executionContext);
 
-        public override async Task ExecuteAsync(ExecutionContext executionContext)
+        public override void Execute(ExecutionContext executionContext)
         {
             var loopCounter = executionContext.GetVariableLocal("loopCounter");
             if (loopCounter == null)
@@ -35,7 +34,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
                 try
                 {
-                    numberOfInstances = await this.CreateInstancesAsync(executionContext);
+                    numberOfInstances = this.CreateInstances(executionContext);
                 }
                 catch (BpmnError error)
                 {
@@ -45,12 +44,12 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
                 if (numberOfInstances == 0) 
                 {
-                    await base.LeaveAsync(executionContext);
+                    base.Leave(executionContext);
                 }
             }
             else
             {
-                await this.innerActivityBehavior.ExecuteAsync(executionContext);
+                this.innerActivityBehavior.Execute(executionContext);
             }
         }
     }

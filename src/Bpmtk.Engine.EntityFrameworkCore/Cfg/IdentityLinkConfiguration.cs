@@ -14,15 +14,15 @@ namespace Bpmtk.Engine.Cfg
             builder.Property(x => x.Type).HasMaxLength(50);
             builder.Property(x => x.Created).IsRequired(true);
 
-            builder.HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey("UserId")
-                .OnDelete(DeleteBehavior.Restrict);
+            //builder.HasOne(x => x.User)
+            //    .WithMany()
+            //    .HasForeignKey("UserId")
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.Group)
-                .WithMany()
-                .HasForeignKey("GroupId")
-                .OnDelete(DeleteBehavior.Restrict);
+            //builder.HasOne(x => x.Group)
+            //    .WithMany()
+            //    .HasForeignKey("GroupId")
+            //    .OnDelete(DeleteBehavior.Restrict);
 
             builder.ApplyNamingStrategy();
         }

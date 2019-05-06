@@ -32,10 +32,7 @@ namespace Bpmtk.Engine.WebApi.Controllers
                 filter = new TaskInstanceFilter();
 
             var query = this.taskManager.CreateQuery()
-                .FetchAssignee();
-
-            if (filter.AssigneeId != null)
-                query.SetAssignee(filter.AssigneeId.Value);
+                .SetAssignee(filter.Assignee);
 
             var list = await query.ListAsync(filter.Page, filter.PageSize);
 
@@ -77,10 +74,8 @@ namespace Bpmtk.Engine.WebApi.Controllers
                 .Select(x => new IdentityLinkModel
                 {
                     Id = x.Id,
-                    UserId = x.User.Id,
-                    UserName = x.User.UserName,
-                    GroupId = x.Group.Id,
-                    GroupName = x.Group.Name,
+                    UserId = x.UserId,
+                    GroupId = x.GroupId,
                     Type = x.Type
                 }).ToArray();
             
@@ -98,7 +93,7 @@ namespace Bpmtk.Engine.WebApi.Controllers
         {
             try
             {
-                await this.context.TaskManager.CompleteAsync(id, model.Variables);
+                await this.taskManager.CompleteAsync(id, model.Variables, model.Comment);
 
                 return this.Ok();
             }

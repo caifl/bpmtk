@@ -13,10 +13,10 @@ namespace Bpmtk.Engine.Cfg
         {
             builder.HasKey(x => x.Id);
 
-            builder.HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(x => x.User)
+            //    .WithMany()
+            //    .HasForeignKey(x => x.UserId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(x => x.ProcessDefinition)
                 .WithMany()
@@ -33,6 +33,7 @@ namespace Bpmtk.Engine.Cfg
                 .HasForeignKey("ProcessInstanceId")
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Property(x => x.UserId).HasMaxLength(32);
             builder.Property(x => x.Body).HasMaxLength(512).IsRequired();
 
             builder.ApplyNamingStrategy();

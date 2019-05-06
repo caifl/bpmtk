@@ -38,13 +38,7 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public virtual int? InitiatorId
-        {
-            get;
-            set;
-        }
-
-        public virtual string InitiatorName
+        public virtual string Initiator
         {
             get;
             set;
@@ -77,8 +71,7 @@ namespace Bpmtk.Engine.WebApi.Models
             model.Name = instance.Name;
             model.State = (int)instance.State;
             model.StateName = instance.State.ToString();
-            model.InitiatorId = instance.Initiator?.Id;
-            model.InitiatorName = instance.Initiator?.UserName;
+            model.Initiator = instance.Initiator;
             model.StartTime = instance.StartTime;
             model.LastStateTime = instance.LastStateTime;
             model.Description = instance.Description;

@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Bpmtk.Bpmn2;
-using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Runtime;
 
 namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public abstract class FlowNodeActivityBehavior : IFlowNodeActivityBehavior
     {
-        public virtual System.Threading.Tasks.Task<bool> EvaluatePreConditionsAsync(ExecutionContext executionContext)
-            => System.Threading.Tasks.Task.FromResult(true);
+        public virtual bool EvaluatePreConditions(ExecutionContext executionContext)
+            => true;
 
         protected virtual SequenceFlow GetDefaultOutgoing(ExecutionContext executionContext)
         {
@@ -30,24 +28,24 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         //    }
         //}
 
-        public virtual System.Threading.Tasks.Task ExecuteAsync(ExecutionContext executionContext)
+        public virtual void Execute(ExecutionContext executionContext)
         {
-            return this.LeaveAsync(executionContext);
+            this.Leave(executionContext);
         }
 
-        public virtual async System.Threading.Tasks.Task LeaveAsync(ExecutionContext executionContext)
+        public virtual void Leave(ExecutionContext executionContext)
         {
-            await this.LeaveDefaultAsync(executionContext);
+            this.LeaveDefaultAsync(executionContext);
         }
 
-        public virtual async System.Threading.Tasks.Task LeaveAsync(ExecutionContext executionContext, bool ignoreConditions)
+        public virtual void LeaveAsync(ExecutionContext executionContext, bool ignoreConditions)
         {
             var node = executionContext.Node;
             var outgoings = node.Outgoings;
 
             if (outgoings.Count == 0)
             {
-                await executionContext.EndAsync();
+                executionContext.End();
                 return;
             }
 
@@ -81,17 +79,17 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             else
                 transitions = new List<SequenceFlow>(outgoings);
 
-            await executionContext.LeaveNodeAsync(transitions);
+            executionContext.LeaveNode(transitions);
         }
 
-        private async System.Threading.Tasks.Task LeaveDefaultAsync(ExecutionContext executionContext)
+        private void LeaveDefaultAsync(ExecutionContext executionContext)
         {
             var node = executionContext.Node;
             var outgoings = node.Outgoings;
 
             if (outgoings.Count == 0)
             {
-                await executionContext.EndAsync();
+                executionContext.End();
                 return;
             }
 
@@ -119,7 +117,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             if (transition == null)
                 throw new RuntimeException("没有满足条件的分支可走");
 
-            await executionContext.LeaveNodeAsync(transition);
+            executionContext.LeaveNode(transition);
         }
     }
 }

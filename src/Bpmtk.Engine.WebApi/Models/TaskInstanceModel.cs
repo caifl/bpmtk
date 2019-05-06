@@ -47,7 +47,7 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public virtual int State
+        public virtual string State
         {
             get;
             set;
@@ -59,13 +59,7 @@ namespace Bpmtk.Engine.WebApi.Models
             set;
         }
 
-        public virtual int? AssigneeId
-        {
-            get;
-            set;
-        }
-
-        public virtual string AssigneeName
+        public virtual string Assignee
         {
             get;
             set;
@@ -84,11 +78,10 @@ namespace Bpmtk.Engine.WebApi.Models
             model.Id = task.Id;
             model.Name = task.Name;
             model.Created = task.Created;
-            model.State = (int)task.State;
+            model.State = task.State.ToString();
             model.StateName = task.State.ToString();
             model.Priority = task.Priority;
-            model.AssigneeId = task.Assignee?.Id;
-            model.AssigneeName = task.Assignee?.Name;
+            model.Assignee = task.Assignee;
             model.ProcessInstanceId = task.ProcessInstanceId;
             //model.ActivityInstanceId = task.ActivityInstance?.Id;
             

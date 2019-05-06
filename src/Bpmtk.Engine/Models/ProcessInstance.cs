@@ -26,7 +26,7 @@ namespace Bpmtk.Engine.Models
             set;
         }
         
-        public virtual User Initiator
+        public virtual string Initiator
         {
             get;
             set;
@@ -188,8 +188,6 @@ namespace Bpmtk.Engine.Models
 
             return list;
         }
-
-        IUser IProcessInstance.Initiator => this.Initiator;
 
         //public virtual void Start(IContext context,
         //    FlowNode initialNode)

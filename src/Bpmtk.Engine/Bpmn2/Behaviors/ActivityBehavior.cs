@@ -17,15 +17,15 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             return activity.Default;
         }
 
-        public override async System.Threading.Tasks.Task LeaveAsync(ExecutionContext executionContext)
+        public override void Leave(ExecutionContext executionContext)
         {
             if (this.LoopActivityBehavior != null)
             {
-                await this.LoopActivityBehavior.LeaveAsync(executionContext);
+                this.LoopActivityBehavior.Leave(executionContext);
                 return;
             }
 
-            await base.LeaveAsync(executionContext);
+            base.Leave(executionContext);
         }
     }
 }

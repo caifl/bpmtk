@@ -8,7 +8,7 @@ namespace Bpmtk.Engine.Scheduler
 {
     class TimerStartEventJobHandler : IScheduledJobHandler
     {
-        public virtual Task ExecuteAsync(IContext context, ScheduledJob job)
+        public virtual Task Execute(IContext context, ScheduledJob job)
         {
             return Task.CompletedTask;
         }

@@ -16,7 +16,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             this.loopCharacteristics = loopCharacteristics;
         }
 
-        protected override Task<int> CreateInstancesAsync(ExecutionContext executionContext)
+        protected override int CreateInstances(ExecutionContext executionContext)
         {
             throw new NotImplementedException();
         }

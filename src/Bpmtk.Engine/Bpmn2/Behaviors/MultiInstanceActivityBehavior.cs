@@ -17,12 +17,14 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             this.loopCharacteristics = loopCharacteristics;
         }
 
-        protected virtual async System.Threading.Tasks.Task ExecuteOriginalBehaviorAsync(ExecutionContext executionContext, int loopCounter)
+        protected virtual void ExecuteOriginalBehavior(ExecutionContext executionContext, int loopCounter)
         {
             var context = executionContext.Context;
 
             //fire activityReadEvent.
-            await context.ProcessEventListener.ActivityReadyAsync(executionContext);
+            var runtimeManager = context.RuntimeManager;
+            var eventListener = runtimeManager.GetCompositeProcessEventListener();
+            eventListener.ActivityReady(executionContext);
 
             var map = new Dictionary<string, object>();
             //map.Add("loopCounter", loopCounter);
@@ -61,9 +63,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             //}
 
             //fire activityStartEvent.
-            await context.ProcessEventListener.ActivityStartAsync(executionContext);
+            eventListener.ActivityStart(executionContext);
 
-            await this.innerActivityBehavior.ExecuteAsync(executionContext);
+            this.innerActivityBehavior.Execute(executionContext);
         }
 
 

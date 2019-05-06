@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SysTasks = System.Threading.Tasks;
+using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Scripting;
-using Bpmtk.Engine.Tasks;
 using Bpmtk.Engine.Utils;
-using Bpmtk.Engine.Variables;
 using Bpmtk.Engine.Bpmn2.Behaviors;
 using Microsoft.Extensions.Logging;
 
@@ -16,7 +14,7 @@ namespace Bpmtk.Engine.Runtime
     {
         protected ILogger logger;
         private Token token;
-        private Bpmtk.Bpmn2.SequenceFlow transition;
+        private SequenceFlow transition;
 
         protected ExecutionContext(Context context, Token token)
         {
@@ -45,33 +43,32 @@ namespace Bpmtk.Engine.Runtime
             return new ExecutionContext(context, token);
         }
 
-        public virtual async SysTasks.Task StartAsync()
+        public virtual void Start()
         {
-            await this.EnterNodeAsync(this.Node);
+            this.EnterNode(this.Node);
         }
 
-        public virtual async SysTasks.Task StartAsync(Bpmtk.Bpmn2.FlowNode initialNode)
+        public virtual void Start(FlowNode initialNode)
         {
             if (initialNode == null)
                 throw new ArgumentNullException(nameof(initialNode));
 
-            await this.EnterNodeAsync(initialNode);
+            this.EnterNode(initialNode);
         }
 
-        public virtual async SysTasks.Task SignalAsync(string signalEvent, 
-            IDictionary<string, object> signalData)
+        public virtual void Trigger(string signalEvent, IDictionary<string, object> signalData)
         {
             var behavior = this.Node.Tag as ISignallableActivityBehavior;
             if (behavior != null)
             {
-                await behavior.SignalAsync(this, signalEvent, signalData);
+                behavior.Signal(this, signalEvent, signalData);
                 return;
             }
 
             throw new NotSupportedException();
         }
 
-        public virtual async SysTasks.Task<IList<ExecutionContext>> CreateInnerExecutions(int numberOfInstances)
+        public virtual IList<ExecutionContext> CreateInnerExecutions(int numberOfInstances)
         {
             var list = new List<ExecutionContext>();
 
@@ -85,12 +82,12 @@ namespace Bpmtk.Engine.Runtime
                 list.Add(innerExecution);
             }
 
-            await this.Context.DbSession.FlushAsync();
+            this.Context.DbSession.Flush();
 
             return list;
         }
 
-        public virtual async SysTasks.Task<ExecutionContext> StartSubProcessAsync(Bpmtk.Bpmn2.FlowNode initialNode,
+        public virtual ExecutionContext StartSubProcessAsync(FlowNode initialNode,
             IDictionary<string, object> variables)
         {
             //
@@ -103,36 +100,37 @@ namespace Bpmtk.Engine.Runtime
             subToken.Node = initialNode;
 
             //Save changes.
-            await this.Context.DbSession.FlushAsync();
+            this.Context.DbSession.Flush();
 
             var subExecution = Create(this.Context, subToken);
-            await subExecution.EnterNodeAsync(initialNode);
+            subExecution.EnterNode(initialNode);
 
             return subExecution;
         }
 
-        public virtual async SysTasks.Task EndAsync()
+        public virtual void End()
         {
             this.token.IsActive = false;
             this.token.IsEnded = true;
 
             //fire activityEndEvent.
-            var eventListener = this.Context.ProcessEventListener;
-            await eventListener.ActivityEndAsync(this);
+            var runtimeManager = this.Context.RuntimeManager;
+            var eventListener = runtimeManager.GetCompositeProcessEventListener();
+            eventListener.ActivityEnd(this);
 
             var parentToken = this.token.Parent;
             if (parentToken != null)
             {
                 //判断是否在子流程中
                 var container = this.Node.Container;
-                if (container is Bpmtk.Bpmn2.SubProcess)
+                if (container is SubProcess)
                 {
                     this.token.Remove();
 
                     if (parentToken.Children.Count > 0)
                         return;
 
-                    var subProcess = container as Bpmtk.Bpmn2.SubProcess;
+                    var subProcess = container as SubProcess;
 
                     //Try
                     //var p = parentToken;
@@ -147,7 +145,7 @@ namespace Bpmtk.Engine.Runtime
 
                     var subProcessContext = ExecutionContext.Create(this.Context, parentToken);
                     var behavior = subProcess.Tag as IFlowNodeActivityBehavior;
-                    await behavior.LeaveAsync(subProcessContext);
+                    behavior.Leave(subProcessContext);
                     return;
                 }
             }
@@ -166,10 +164,10 @@ namespace Bpmtk.Engine.Runtime
             procInst.State = ExecutionState.Completed;
             procInst.LastStateTime = Clock.Now;
 
-            await this.Context.DbSession.FlushAsync();
+            this.Context.DbSession.Flush();
 
             //fire processEndEvent.
-            await this.Context.ProcessEventListener.ProcessEndAsync(this);
+            eventListener.ProcessEnd(this);
 
             var superToken = procInst.Super;
             if(superToken != null)
@@ -179,9 +177,9 @@ namespace Bpmtk.Engine.Runtime
             }
         }
 
-        public virtual SysTasks.Task<int> GetActiveTaskCountAsync()
+        public virtual int GetActiveTaskCountAsync()
         {
-            return this.Context.RuntimeManager.GetActiveTaskCountAsync(this.token.Id);
+            return this.Context.RuntimeManager.GetActiveTaskCount(this.token.Id);
         }
 
         public virtual ProcessInstance ProcessInstance
@@ -191,7 +189,7 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual Token Token => this.token;
 
-        public virtual Bpmtk.Bpmn2.FlowNode Node
+        public virtual FlowNode Node
         {
             get
             {
@@ -200,9 +198,9 @@ namespace Bpmtk.Engine.Runtime
                 {
                     var processDefinition = this.ProcessInstance.ProcessDefinition;
                     var deploymentId = processDefinition.DeploymentId;
-                    var model = this.Context.DeploymentManager.GetBpmnModelAsync(deploymentId).Result;
+                    var model = this.Context.DeploymentManager.GetBpmnModel(deploymentId);
 
-                    node = model.GetFlowElement(this.token.ActivityId) as Bpmtk.Bpmn2.FlowNode;
+                    node = model.GetFlowElement(this.token.ActivityId) as FlowNode;
                     this.token.Node = node;
                 }
 
@@ -224,7 +222,7 @@ namespace Bpmtk.Engine.Runtime
             this.token.Activate();
         }
 
-        public virtual Bpmtk.Bpmn2.SequenceFlow Transition
+        public virtual SequenceFlow Transition
         {
             get => transition;
             set
@@ -246,7 +244,7 @@ namespace Bpmtk.Engine.Runtime
             set => this.token.ActivityInstance = value;
         }
 
-        protected virtual async SysTasks.Task EnterNodeAsync(Bpmtk.Bpmn2.FlowNode node)
+        protected virtual void EnterNode(FlowNode node)
         {
             this.token.Node = node;
             var behavior = node.Tag as IFlowNodeActivityBehavior;
@@ -255,10 +253,10 @@ namespace Bpmtk.Engine.Runtime
                 var historyManager = this.Context.HistoryManager;
 
                 //fire activityReadyEvent.
-                var eventListener = this.Context.ProcessEventListener;
-                await eventListener.ActivityReadyAsync(this);
+                var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+                eventListener.ActivityReady(this);
 
-                var isPreConditionsSatisfied = await behavior.EvaluatePreConditionsAsync(this);
+                var isPreConditionsSatisfied = behavior.EvaluatePreConditions(this);
                 if (isPreConditionsSatisfied)
                 {
                     //Clear
@@ -266,10 +264,9 @@ namespace Bpmtk.Engine.Runtime
                     this.TransitionSource = null;
 
                     //fire activityStartEvent.
-                    eventListener = this.Context.ProcessEventListener;
-                    await eventListener.ActivityStartAsync(this);
+                    eventListener.ActivityStart(this);
 
-                    await behavior.ExecuteAsync(this);
+                    behavior.Execute(this);
                 }
                 else
                 {
@@ -282,26 +279,26 @@ namespace Bpmtk.Engine.Runtime
             throw new NotSupportedException();
         }
 
-        public virtual async SysTasks.Task LeaveNodeAsync(Bpmtk.Bpmn2.SequenceFlow transition)
+        public virtual void LeaveNode(SequenceFlow transition)
         {
             if (transition == null)
                 throw new ArgumentNullException(nameof(transition));
 
             //fire activityEndEvent.
-            var eventListener = this.Context.ProcessEventListener;
-            await eventListener.ActivityEndAsync(this);
+            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+            eventListener.ActivityEnd(this);
 
-            await this.TakeAsync(transition);
+            this.Take(transition);
         }
 
-        public virtual async SysTasks.Task LeaveNodeAsync(IEnumerable<Bpmtk.Bpmn2.SequenceFlow> transitions)
+        public virtual void LeaveNode(IEnumerable<SequenceFlow> transitions)
         {
             if (transitions == null)
                 throw new ArgumentNullException(nameof(transitions));
 
             //fire activityEndEvent.
-            var eventListener = this.Context.ProcessEventListener;
-            await eventListener.ActivityEndAsync(this);
+            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+            eventListener.ActivityEnd(this);
 
             if (transitions.Count() > 1)
             {
@@ -321,22 +318,22 @@ namespace Bpmtk.Engine.Runtime
 
                 //Ensure all concurrent tokens persisted.
                 var db = this.Context.DbSession;
-                await db.FlushAsync();
+                db.Flush();
 
                 foreach (var execution in outgoingExecutions)
                 {
                     if (!execution.IsEnded) //Check if execution ended.
-                        await execution.ExecuteAsync();
+                        execution.Execute();
                 }
             }
             else
             {
                 this.Transition = transitions.First();
-                await this.TakeAsync(transition);
+                this.Take(transition);
             }
         }
 
-        public virtual async SysTasks.Task JoinAsync()
+        public virtual void Join()
         {
             if (this.JoinedTokens == null)
                 return;
@@ -386,10 +383,10 @@ namespace Bpmtk.Engine.Runtime
                 this.ReplaceToken(current);
 
             var db = this.Context.DbSession;
-            await db.FlushAsync();
+            db.Flush();
         }
 
-        protected virtual async SysTasks.Task TakeAsync(Bpmtk.Bpmn2.SequenceFlow transition)
+        protected virtual void Take(SequenceFlow transition)
         {
             //Store transition source activity instance.
             this.TransitionSource = this.token.ActivityInstance;
@@ -407,11 +404,16 @@ namespace Bpmtk.Engine.Runtime
             this.Transition = transition;
 
             //fire transitionTakenEvent.
-            var eventListener = this.Context.ProcessEventListener;
-            await eventListener.TakeTransitionAsync(this);
+            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+            eventListener.TakeTransition(this);
 
             var targetNode = transition.TargetRef;
-            await this.EnterNodeAsync(targetNode);
+            this.EnterNode(targetNode);
+        }
+
+        public virtual void FireActivityStartEvent()
+        {
+
         }
 
         public virtual bool TryGetVariable(string name, out object value)
@@ -493,9 +495,9 @@ namespace Bpmtk.Engine.Runtime
         class OutgoingExecution
         {
             private readonly ExecutionContext executionContext;
-            private readonly Bpmtk.Bpmn2.SequenceFlow transition;
+            private readonly SequenceFlow transition;
 
-            public OutgoingExecution(ExecutionContext executionContext, Bpmtk.Bpmn2.SequenceFlow transition)
+            public OutgoingExecution(ExecutionContext executionContext, SequenceFlow transition)
             {
                 this.executionContext = executionContext;
                 this.transition = transition;
@@ -506,9 +508,9 @@ namespace Bpmtk.Engine.Runtime
                 get => this.executionContext.Token.IsEnded;
             }
 
-            public SysTasks.Task ExecuteAsync()
+            public virtual void Execute()
             {
-                return executionContext.TakeAsync(this.transition);
+                executionContext.Take(this.transition);
             }
         }
     }

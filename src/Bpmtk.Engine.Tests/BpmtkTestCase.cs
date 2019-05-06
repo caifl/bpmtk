@@ -43,21 +43,21 @@ namespace Bpmtk.Engine.Tests
 
             this.transaction = context.DbSession.BeginTransaction();
 
-            var user = this.identityManager.FindUserByNameAsync("felix").Result;
+            var user = this.identityManager.FindUserById("felix");
             if (user == null)
             {
-                user = new User() { Name = "felix", UserName = "felix" };
-                this.identityManager.CreateUserAsync(user).GetAwaiter().GetResult();
+                user = new User() { Id = "felix", Name = "felix" };
+                this.identityManager.CreateUser(user);
             }
 
-            var group = this.identityManager.FindGroupByNameAsync("tests").Result;
+            var group = this.identityManager.FindGroupById("tests");
             if (group == null)
             {
-                group = new Group() { Name = "tests" };
+                group = new Group() { Id = "tests", Name = "tests" };
                 group.Users = new List<UserGroup>();
                 group.Users.Add(new UserGroup() { User = user });
 
-                this.identityManager.CreateGroupAsync(group).GetAwaiter().GetResult();
+                this.identityManager.CreateGroup(group);
             }
 
             this.context.SetAuthenticatedUser(user.Id);
@@ -70,7 +70,7 @@ namespace Bpmtk.Engine.Tests
             {
                // builder.UseLoggerFactory(loggerFactory);
                 builder.UseLazyLoadingProxies(true);
-                builder.UseMySql("server=localhost;uid=root;pwd=123456;database=bpmtk2");
+                builder.UseMySql("server=localhost;uid=root;pwd=123456;database=bpmtk3");
             });
 
             var engine = new ProcessEngineBuilder()
@@ -86,7 +86,7 @@ namespace Bpmtk.Engine.Tests
             //}).Build();
         }
 
-        protected virtual async Task DeployBpmnModel(string resourceName)
+        protected virtual Task DeployBpmnModel(string resourceName)
         {
             var deploymentBuilder = this.deploymentManager.CreateDeploymentBuilder();
 
@@ -98,16 +98,18 @@ namespace Bpmtk.Engine.Tests
                 stream.CopyTo(ms);
                 stream.Close();
 
-                var deployment = await deploymentBuilder.SetBpmnModel(ms.ToArray())
+                var deployment = deploymentBuilder.SetBpmnModel(ms.ToArray())
                     .SetName("unit-tests")
                     .SetCategory("tests")
-                    .BuildAsync();
+                    .Build();
             }
+
+            return Task.CompletedTask;
         }
 
         protected virtual void AssertProcessEnded(long id)
         {
-            var pi = this.runtimeManager.FindAsync(id).Result;
+            var pi = this.runtimeManager.Find(id);
             Assert.True(pi.State == ExecutionState.Completed);
         }
 

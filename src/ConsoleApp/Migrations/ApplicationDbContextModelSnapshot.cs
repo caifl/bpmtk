@@ -35,6 +35,7 @@ namespace ConsoleApp.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnName("concurrency_stamp")
                         .HasMaxLength(50);
 
@@ -142,6 +143,44 @@ namespace ConsoleApp.Migrations
                     b.ToTable("bpm_byte_array");
                 });
 
+            modelBuilder.Entity("Bpmtk.Engine.Models.Comment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnName("body")
+                        .HasMaxLength(512);
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnName("created");
+
+                    b.Property<int?>("ProcessDefinitionId")
+                        .HasColumnName("proc_def_id");
+
+                    b.Property<long?>("ProcessInstanceId")
+                        .HasColumnName("proc_inst_id");
+
+                    b.Property<long?>("TaskId")
+                        .HasColumnName("task_id");
+
+                    b.Property<string>("UserId")
+                        .HasColumnName("user_id")
+                        .HasMaxLength(32);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessDefinitionId");
+
+                    b.HasIndex("ProcessInstanceId");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("bpm_comment");
+                });
+
             modelBuilder.Entity("Bpmtk.Engine.Models.Deployment", b =>
                 {
                     b.Property<int>("Id")
@@ -172,16 +211,15 @@ namespace ConsoleApp.Migrations
                     b.Property<string>("TenantId")
                         .HasColumnName("tenant_id");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnName("user_id");
+                    b.Property<string>("UserId")
+                        .HasColumnName("user_id")
+                        .HasMaxLength(32);
 
                     b.HasKey("Id");
 
                     b.HasIndex("ModelId");
 
                     b.HasIndex("PackageId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("bpm_deployment");
                 });
@@ -233,7 +271,7 @@ namespace ConsoleApp.Migrations
 
             modelBuilder.Entity("Bpmtk.Engine.Models.Group", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id");
 
@@ -259,7 +297,7 @@ namespace ConsoleApp.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnName("created");
 
-                    b.Property<int?>("GroupId")
+                    b.Property<string>("GroupId")
                         .HasColumnName("group_id");
 
                     b.Property<int?>("ProcessDefinitionId")
@@ -268,29 +306,25 @@ namespace ConsoleApp.Migrations
                     b.Property<long?>("ProcessInstanceId")
                         .HasColumnName("proc_inst_id");
 
-                    b.Property<long?>("TaskInstanceId")
+                    b.Property<long?>("TaskId")
                         .HasColumnName("task_id");
 
                     b.Property<string>("Type")
                         .HasColumnName("type")
                         .HasMaxLength(50);
 
-                    b.Property<int?>("UserId")
+                    b.Property<string>("UserId")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ActivityInstanceId");
 
-                    b.HasIndex("GroupId");
-
                     b.HasIndex("ProcessDefinitionId");
 
                     b.HasIndex("ProcessInstanceId");
 
-                    b.HasIndex("TaskInstanceId");
-
-                    b.HasIndex("UserId");
+                    b.HasIndex("TaskId");
 
                     b.ToTable("bpm_identity_link");
                 });
@@ -321,7 +355,7 @@ namespace ConsoleApp.Migrations
                     b.Property<string>("Name")
                         .HasColumnName("name");
 
-                    b.Property<int?>("OwnerId")
+                    b.Property<string>("OwnerId")
                         .HasColumnName("owner_id");
 
                     b.Property<long?>("SourceId")
@@ -334,8 +368,6 @@ namespace ConsoleApp.Migrations
                         .HasColumnName("version");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
 
                     b.HasIndex("SourceId");
 
@@ -438,8 +470,9 @@ namespace ConsoleApp.Migrations
                         .HasColumnName("end_reason")
                         .HasMaxLength(255);
 
-                    b.Property<int?>("InitiatorId")
-                        .HasColumnName("initiator_id");
+                    b.Property<string>("Initiator")
+                        .HasColumnName("initiator")
+                        .HasMaxLength(32);
 
                     b.Property<string>("Key")
                         .HasColumnName("key")
@@ -472,8 +505,6 @@ namespace ConsoleApp.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CallerId");
-
-                    b.HasIndex("InitiatorId");
 
                     b.HasIndex("ProcessDefinitionId");
 
@@ -559,8 +590,9 @@ namespace ConsoleApp.Migrations
                     b.Property<long?>("ActivityInstanceId")
                         .HasColumnName("act_inst_id");
 
-                    b.Property<int?>("AssigneeId")
-                        .HasColumnName("assignee_id");
+                    b.Property<string>("Assignee")
+                        .HasColumnName("assignee")
+                        .HasMaxLength(32);
 
                     b.Property<DateTime?>("ClaimedTime")
                         .HasColumnName("claimed_time");
@@ -606,8 +638,6 @@ namespace ConsoleApp.Migrations
 
                     b.HasIndex("ActivityInstanceId");
 
-                    b.HasIndex("AssigneeId");
-
                     b.HasIndex("ProcessInstanceId");
 
                     b.HasIndex("TokenId");
@@ -622,7 +652,6 @@ namespace ConsoleApp.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("ActivityId")
-                        .IsRequired()
                         .HasColumnName("activity_id")
                         .HasMaxLength(64);
 
@@ -670,17 +699,12 @@ namespace ConsoleApp.Migrations
 
             modelBuilder.Entity("Bpmtk.Engine.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id");
 
                     b.Property<string>("Name")
-                        .HasColumnName("name")
-                        .HasMaxLength(50);
-
-                    b.Property<string>("UserName")
-                        .HasColumnName("user_name")
-                        .HasMaxLength(100);
+                        .HasColumnName("name");
 
                     b.HasKey("Id");
 
@@ -689,10 +713,10 @@ namespace ConsoleApp.Migrations
 
             modelBuilder.Entity("Bpmtk.Engine.Models.UserGroup", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<string>("UserId")
                         .HasColumnName("user_id");
 
-                    b.Property<int>("GroupId")
+                    b.Property<string>("GroupId")
                         .HasColumnName("group_id");
 
                     b.HasKey("UserId", "GroupId");
@@ -787,6 +811,24 @@ namespace ConsoleApp.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("Bpmtk.Engine.Models.Comment", b =>
+                {
+                    b.HasOne("Bpmtk.Engine.Models.ProcessDefinition", "ProcessDefinition")
+                        .WithMany()
+                        .HasForeignKey("ProcessDefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Bpmtk.Engine.Models.ProcessInstance", "ProcessInstance")
+                        .WithMany()
+                        .HasForeignKey("ProcessInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Bpmtk.Engine.Models.TaskInstance", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Bpmtk.Engine.Models.Deployment", b =>
                 {
                     b.HasOne("Bpmtk.Engine.Models.ByteArray", "Model")
@@ -797,11 +839,6 @@ namespace ConsoleApp.Migrations
                     b.HasOne("Bpmtk.Engine.Models.Package", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Bpmtk.Engine.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
@@ -829,38 +866,24 @@ namespace ConsoleApp.Migrations
                         .HasForeignKey("ActivityInstanceId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Bpmtk.Engine.Models.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Bpmtk.Engine.Models.ProcessDefinition")
+                    b.HasOne("Bpmtk.Engine.Models.ProcessDefinition", "ProcessDefinition")
                         .WithMany("IdentityLinks")
                         .HasForeignKey("ProcessDefinitionId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Bpmtk.Engine.Models.ProcessInstance")
+                    b.HasOne("Bpmtk.Engine.Models.ProcessInstance", "ProcessInstance")
                         .WithMany("IdentityLinks")
                         .HasForeignKey("ProcessInstanceId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Bpmtk.Engine.Models.TaskInstance")
+                    b.HasOne("Bpmtk.Engine.Models.TaskInstance", "Task")
                         .WithMany("IdentityLinks")
-                        .HasForeignKey("TaskInstanceId")
+                        .HasForeignKey("TaskId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Bpmtk.Engine.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Bpmtk.Engine.Models.Package", b =>
                 {
-                    b.HasOne("Bpmtk.Engine.Models.User", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId");
-
                     b.HasOne("Bpmtk.Engine.Models.ByteArray", "Source")
                         .WithMany()
                         .HasForeignKey("SourceId");
@@ -880,11 +903,6 @@ namespace ConsoleApp.Migrations
                         .WithMany()
                         .HasForeignKey("CallerId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Bpmtk.Engine.Models.User", "Initiator")
-                        .WithMany()
-                        .HasForeignKey("InitiatorId")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Bpmtk.Engine.Models.ProcessDefinition", "ProcessDefinition")
                         .WithMany()
@@ -920,10 +938,6 @@ namespace ConsoleApp.Migrations
                         .WithMany()
                         .HasForeignKey("ActivityInstanceId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Bpmtk.Engine.Models.User", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId");
 
                     b.HasOne("Bpmtk.Engine.Models.ProcessInstance", "ProcessInstance")
                         .WithMany()
@@ -979,7 +993,7 @@ namespace ConsoleApp.Migrations
                         .HasForeignKey("ByteArrayId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Bpmtk.Engine.Models.ProcessInstance")
+                    b.HasOne("Bpmtk.Engine.Models.ProcessInstance", "ProcessInstance")
                         .WithMany("Variables")
                         .HasForeignKey("ProcessInstanceId")
                         .OnDelete(DeleteBehavior.Cascade);
