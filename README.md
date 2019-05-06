@@ -4,14 +4,16 @@ BPMTK is a workflow and Business Process Management (BPM) Platform targeted at b
 It's open-source and distributed under the Apache license.
 </p>
 
-<h3><a id="user-content-visual-studio" class="anchor" aria-hidden="true" href="#visual-studio"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Visual Studio</h3>
+<h3>Visual Studio</h3>
+<ul>
+    <li>Download Visual Studio 2017 or 2019 (any edition) from https://www.visualstudio.com/downloads/</li>
+    <li>Open bpmtk.sln and wait for Visual Studio to restore all Nuget packages</li>
+</ul>
 
-1.Requirements:
-
-2.Create database schema:
-
-1). dotnet ef migrations remove
-
-2). dotnet ef migrations add {MigrationName}
-
-3). dotnet ef database update 
+<h3>Create database schema</h3>
+<p>(ConsoleApp project) </p>
+<ul>
+    <li>Remove exists migrations: dotnet ef migrations remove</li>
+    <li>Create migrations: dotnet ef migrations add {MigrationName}</li>
+    <li>Update database: dotnet ef database update</li>
+</ul>
