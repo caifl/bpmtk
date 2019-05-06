@@ -40,7 +40,6 @@ namespace Bpmtk.Engine.Tests.Bpmn.MultiInstance
                 if (i != 3)
                 {
                     //var activeTokens = await this.runtimeManager.GetActiveTokensAsync(pi.Id);
-
                     var activities = await this.runtimeManager.GetActiveActivityIdsAsync(pi.Id);
                     Assert.True(3 == activities.Count);
                 }

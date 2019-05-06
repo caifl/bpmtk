@@ -40,15 +40,11 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             executionContext.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
             executionContext.SetVariableLocal("numberOfActiveInstances", numberOfActiveInstances);
 
-            var childToken = token.CreateToken();
-            childToken.Node = node;
-
             var loopCounter = 0;
+            var innerExecutionContext = executionContext.CreateInnerActivityContexts(1)[0];
+            innerExecutionContext.SetVariableLocal("loopCounter", loopCounter);
 
-            var innerExecutions = executionContext.CreateInnerExecutions(1);
-            innerExecutions[0].SetVariableLocal("loopCounter", loopCounter);
-
-            this.ExecuteOriginalBehavior(innerExecutions[0], loopCounter);
+            this.ExecuteOriginalBehavior(innerExecutionContext, loopCounter);
 
             return numberOfInstances;
         }
@@ -63,7 +59,6 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 throw new RuntimeException("Invalid multiInstance execution.");
 
             //fire inner activityEndEvent.
-            token.Inactivate();
             var eventListener = context.RuntimeManager.GetCompositeProcessEventListener();
             eventListener.ActivityEnd(executionContext);
 
@@ -105,12 +100,14 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 parentExecution.SetVariableLocal("numberOfActiveInstances", 0);
 
                 //Remove token.
+                token.Inactivate();
+                //token.IsEnded = true;
                 token.Remove();
 
                 //exit multi-instance loop activity.
                 parentToken.Activate();
 
-                executionContext.Context.DbSession.FlushAsync();
+                executionContext.Flush();
 
                 //leave without check loop.
                 base.Leave(parentExecution);

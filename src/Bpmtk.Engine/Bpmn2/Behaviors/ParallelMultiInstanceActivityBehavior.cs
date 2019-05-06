@@ -39,7 +39,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             executionContext.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
             executionContext.SetVariableLocal("numberOfActiveInstances", numberOfActiveInstances);
 
-            var innerExecutions = executionContext.CreateInnerExecutions(numberOfInstances);            
+            var innerExecutions = executionContext.CreateInnerActivityContexts(numberOfInstances);            
 
             for(var i = 0; i < numberOfInstances; i ++)
             {

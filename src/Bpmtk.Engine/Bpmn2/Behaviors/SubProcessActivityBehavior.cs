@@ -18,7 +18,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             if (startEvent == null)
                 throw new RuntimeException($"No initial activity found for subProcess '{subProcess.Id}'.");
 
-            executionContext.StartSubProcessAsync(startEvent, null);
+            executionContext.StartSubProcess(startEvent, null);
         }
     }
 }

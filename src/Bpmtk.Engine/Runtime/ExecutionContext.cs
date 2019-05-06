@@ -26,6 +26,11 @@ namespace Bpmtk.Engine.Runtime
             this.logger = engine.LoggerFactory.CreateLogger<ExecutionContext>();
         }
 
+        public virtual void Flush()
+        {
+            this.Context.DbSession.Flush();
+        }
+
         public virtual ILogger Logger => this.logger;
 
         public static ExecutionContext Create(Context context, Token token)
@@ -68,7 +73,7 @@ namespace Bpmtk.Engine.Runtime
             throw new NotSupportedException();
         }
 
-        public virtual IList<ExecutionContext> CreateInnerExecutions(int numberOfInstances)
+        public virtual IList<ExecutionContext> CreateInnerActivityContexts(int numberOfInstances)
         {
             var list = new List<ExecutionContext>();
 
@@ -82,12 +87,12 @@ namespace Bpmtk.Engine.Runtime
                 list.Add(innerExecution);
             }
 
-            this.Context.DbSession.Flush();
+            this.Flush();
 
             return list;
         }
 
-        public virtual ExecutionContext StartSubProcessAsync(FlowNode initialNode,
+        public virtual ExecutionContext StartSubProcess(FlowNode initialNode,
             IDictionary<string, object> variables)
         {
             //
@@ -99,8 +104,7 @@ namespace Bpmtk.Engine.Runtime
             var subToken = this.token.CreateToken();
             subToken.Node = initialNode;
 
-            //Save changes.
-            this.Context.DbSession.Flush();
+            this.Flush();
 
             var subExecution = Create(this.Context, subToken);
             subExecution.EnterNode(initialNode);
@@ -164,7 +168,7 @@ namespace Bpmtk.Engine.Runtime
             procInst.State = ExecutionState.Completed;
             procInst.LastStateTime = Clock.Now;
 
-            this.Context.DbSession.Flush();
+            this.Flush();
 
             //fire processEndEvent.
             eventListener.ProcessEnd(this);
@@ -177,7 +181,7 @@ namespace Bpmtk.Engine.Runtime
             }
         }
 
-        public virtual int GetActiveTaskCountAsync()
+        public virtual int GetActiveTaskCount()
         {
             return this.Context.RuntimeManager.GetActiveTaskCount(this.token.Id);
         }
@@ -317,8 +321,7 @@ namespace Bpmtk.Engine.Runtime
                 }
 
                 //Ensure all concurrent tokens persisted.
-                var db = this.Context.DbSession;
-                db.Flush();
+                this.Flush();
 
                 foreach (var execution in outgoingExecutions)
                 {
@@ -382,8 +385,7 @@ namespace Bpmtk.Engine.Runtime
             if (!current.Equals(token))
                 this.ReplaceToken(current);
 
-            var db = this.Context.DbSession;
-            db.Flush();
+            this.Flush();
         }
 
         protected virtual void Take(SequenceFlow transition)

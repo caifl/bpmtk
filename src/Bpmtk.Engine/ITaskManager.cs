@@ -13,13 +13,17 @@ namespace Bpmtk.Engine
 
         ITaskQuery CreateQuery();
 
+        /// <summary>
+        /// Find the specified task-instance.
+        /// </summary>
+        /// <param name="taskId">task identifier.</param>
         ITaskInstance Find(long taskId);
 
         Task<ITaskInstance> FindAsync(long taskId);
 
         ITaskInstance Claim(long taskId, string comment = null);
 
-        ITaskInstance Assign(long taskId, 
+        ITaskInstance Assign(long taskId,
             string assignee,
             string comment = null);
 
@@ -27,7 +31,7 @@ namespace Bpmtk.Engine
 
         ITaskInstance Resume(long taskId, string comment = null);
 
-        ITaskInstance Complete(long taskId, 
+        ITaskInstance Complete(long taskId,
             IDictionary<string, object> variables = null,
             string comment = null);
 
@@ -35,14 +39,25 @@ namespace Bpmtk.Engine
             IDictionary<string, object> variables = null,
             string comment = null);
 
-        ITaskInstance SetName(long taskId, string name);
+        Task<IList<Comment>> GetCommentsAsync(long taskId);
 
-        ITaskInstance SetPriority(long taskId, short priority);
+        Task RemoveCommentsAsync(params long[] commentIds);
 
-        //Task RemoveAsync(long taskId);
+        Task<ITaskInstance> SetNameAsync(long taskId, string name);
 
+        Task<ITaskInstance> SetPriorityAsync(long taskId, short priority);
+
+        Task<IList<IdentityLink>> GetIdentityLinksAsync(long taskId);
+
+        Task<IList<IdentityLink>> AddUserLinksAsync(long taskId, IEnumerable<string> userIds, string type);
+
+        Task<IList<IdentityLink>> AddGroupLinksAsync(long taskId, IEnumerable<string> groupIds, string type);
+
+        Task RemoveIdentityLinksAsync(long processInstanceId, params long[] identityLinkIds);
+
+        /// <summary>
+        /// Gets registered task assignment strategy entries.
+        /// </summary>
         IReadOnlyList<AssignmentStrategyEntry> GetAssignmentStrategyEntries();
-
-        IAssignmentStrategy GetAssignmentStrategy(string key);
     }
 }

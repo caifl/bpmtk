@@ -78,7 +78,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             string signalEvent, 
             IDictionary<string, object> signalData)
         {
-            var count = executionContext.GetActiveTaskCountAsync();
+            var count = executionContext.GetActiveTaskCount();
             if (count > 0)
                 throw new RuntimeException($"There are '{count}' tasks need to be completed.");
 

@@ -32,7 +32,7 @@ namespace Bpmtk.Engine.Tests.Bpmn.UserTask
 
             this.AssertProcessEnded(pi.Id);
 
-            //this.Commit();
+            this.Commit();
         }
     }
 }

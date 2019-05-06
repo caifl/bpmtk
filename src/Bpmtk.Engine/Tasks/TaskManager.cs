@@ -132,11 +132,11 @@ namespace Bpmtk.Engine.Tasks
             return task;
         }
 
-        public virtual void CreateAsync(TaskInstance task)
-        {
-            this.session.Save(task);
-            this.session.Flush();
-        }
+        //public virtual void CreateAsync(TaskInstance task)
+        //{
+        //    this.session.Save(task);
+        //    this.session.Flush();
+        //}
 
         public virtual ITaskInstanceBuilder CreateBuilder()
             => new TaskInstanceBuilder(this.context);
@@ -193,25 +193,142 @@ namespace Bpmtk.Engine.Tasks
         //    return this.session.RemoveAsync(task);
         //}
 
+        #region Comments
+
+        public virtual async Task<IList<Comment>> GetCommentsAsync(long taskId)
+        {
+            var query = this.session.Query<Comment>()
+                .Where(x => x.Task.Id == taskId)
+                .OrderByDescending(x => x.Created);
+
+            return await this.session.QueryMultipleAsync(query);
+        }
+
+        public virtual async Task RemoveCommentsAsync(params long[] commentIds)
+        {
+            var query = this.session.Query<Comment>()
+                .Where(x => commentIds.Contains(x.Id));
+
+            var items = await this.session.QueryMultipleAsync(query);
+            this.session.RemoveRange(items);
+            await this.session.FlushAsync();
+        }
+
+        #endregion
+
+        #region IdentityLinks Management
+
+        public virtual Task<IList<IdentityLink>> GetIdentityLinksAsync(long taskId)
+        {
+            var query = this.session.IdentityLinks;
+            query = query.Where(x => x.Task.Id == taskId)
+                .OrderByDescending(x => x.Created);
+
+            return this.session.QueryMultipleAsync(query);
+        }
+
+        public virtual async Task<IList<IdentityLink>> AddUserLinksAsync(long taskId, IEnumerable<string> userIds, string type)
+        {
+            if (userIds == null)
+                throw new ArgumentNullException(nameof(userIds));
+
+            if (!userIds.Any())
+                throw new ArgumentException(nameof(userIds));
+
+            var task = await this.FindAsync(taskId);
+            if (task == null)
+                throw new ObjectNotFoundException(nameof(TaskInstance));
+
+            var list = new List<IdentityLink>();
+            foreach (var userId in userIds)
+            {
+                var item = new IdentityLink();
+                item.Task = task;
+                item.UserId = userId;
+                item.Type = type;
+                item.Created = Clock.Now;
+
+                list.Add(item);
+            }
+
+            await this.session.SaveRangeAsync(list);
+            await this.session.FlushAsync();
+
+            return list;
+        }
+
+        public virtual async Task<IList<IdentityLink>> AddGroupLinksAsync(long taskId,
+            IEnumerable<string> groupIds, string type)
+        {
+            if (groupIds == null)
+                throw new ArgumentNullException(nameof(groupIds));
+
+            if (!groupIds.Any())
+                throw new ArgumentException(nameof(groupIds));
+
+            var task = await this.FindAsync(taskId);
+            if (task == null)
+                throw new ObjectNotFoundException(nameof(TaskInstance));
+
+            var list = new List<IdentityLink>();
+            foreach (var group in groupIds)
+            {
+                var item = new IdentityLink();
+                item.Task = task;
+                item.GroupId = group;
+                item.Created = Clock.Now;
+
+                list.Add(item);
+            }
+
+            await this.session.SaveRangeAsync(list);
+            await this.session.FlushAsync();
+
+            return list;
+        }
+
+        public virtual async Task RemoveIdentityLinksAsync(long processInstanceId, params long[] identityLinkIds)
+        {
+            //check process-instance state.
+
+            //fetch items to be deleted.
+            var query = this.session.IdentityLinks
+                .Where(x => x.ProcessInstance.Id == processInstanceId
+                && identityLinkIds.Contains(x.Id));
+
+            var items = query.ToList();
+            if (items.Count > 0)
+            {
+                this.session.RemoveRange(items);
+                await this.session.FlushAsync();
+            }
+        }
+
+        #endregion
+
         public Task<TaskInstance> ResumeAsync(long taskId, string comment = null)
         {
             throw new NotImplementedException();
         }
 
-        public virtual void SetNameAsync(long taskId, string name)
+        public virtual async Task<ITaskInstance> SetNameAsync(long taskId, string name)
         {
-            var task = this.Find(taskId);
+            var task = await this.FindAsync(taskId);
             task.Name = name;
 
-            this.session.Flush();
+            await this.session.FlushAsync();
+
+            return task;
         }
 
-        public virtual void SetPriorityAsync(long taskId, short priority)
+        public virtual async Task<ITaskInstance> SetPriorityAsync(long taskId, short priority)
         {
-            var task = this.Find(taskId);
+            var task = await this.FindAsync(taskId);
             task.Priority = priority;
 
-            this.session.Flush();
+            await this.session.FlushAsync();
+
+            return task;
         }
 
         public Task<TaskInstance> SuspendAsync(long taskId, string comment = null)
@@ -252,22 +369,7 @@ namespace Bpmtk.Engine.Tasks
         ITaskInstance ITaskManager.Complete(long taskId, IDictionary<string, object> variables, string comment)
             => this.Complete(taskId, variables, comment);
 
-        ITaskInstance ITaskManager.SetName(long taskId, string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        ITaskInstance ITaskManager.SetPriority(long taskId, short priority)
-        {
-            throw new NotImplementedException();
-        }
-
         IReadOnlyList<AssignmentStrategyEntry> ITaskManager.GetAssignmentStrategyEntries()
-        {
-            throw new NotImplementedException();
-        }
-
-        IAssignmentStrategy ITaskManager.GetAssignmentStrategy(string key)
         {
             throw new NotImplementedException();
         }

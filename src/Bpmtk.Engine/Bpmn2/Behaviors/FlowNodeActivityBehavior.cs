@@ -35,7 +35,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
         public virtual void Leave(ExecutionContext executionContext)
         {
-            this.LeaveDefaultAsync(executionContext);
+            this.LeaveDefault(executionContext);
         }
 
         public virtual void LeaveAsync(ExecutionContext executionContext, bool ignoreConditions)
@@ -82,7 +82,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             executionContext.LeaveNode(transitions);
         }
 
-        private void LeaveDefaultAsync(ExecutionContext executionContext)
+        private void LeaveDefault(ExecutionContext executionContext)
         {
             var node = executionContext.Node;
             var outgoings = node.Outgoings;
