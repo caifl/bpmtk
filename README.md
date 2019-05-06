@@ -1,7 +1,10 @@
 <h1>BPMTK</h1>
 <p>
-BPMTK is a workflow and Business Process Management (BPM) Platform targeted at business people, developers and system admins, based on .NET Platform(.NET Standard 2.0). 
+BPMTK is a workflow and Business Process Management (BPM) Platform targeted at business people, developers and system admins, based on .NET Platform(.NET Standard 2.0). Port some good ideas and code from Activiti and jBPM.
 It's open-source and distributed under the Apache license.
+</p>
+<p>
+BPMTK 是开源的业务流程平台, 符合BPMN 2.0业务流程语言规范, 一些设计思想、代码来源于Activiti、jBPM， 基于.NET Standard 2.0平台, C#语言开发. 
 </p>
 
 <h3>Visual Studio</h3>
