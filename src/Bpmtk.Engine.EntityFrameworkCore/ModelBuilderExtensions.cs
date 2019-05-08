@@ -19,11 +19,14 @@ namespace Microsoft.EntityFrameworkCore
             var configurations = new IEntityTypeConfiguration[]
             {
                 new ByteArrayConfiguration(),
+                new PackageConfiguration(),
+                new PackageItemConfiguration(),
+                new HistoricModelConfiguration(),
+                new HistoricPackageItemConfiguration(),
                 new IdentityLinkConfiguration(),
                 new UserConfiguration(),
                 new GroupConfiguration(),
                 new UserGroupConfiguration(),
-                new PackageConfiguration(),
                 new DeploymentConfiguration(),
                 new ProcessDefinitionConfiguration(),
                 new ProcessInstanceConfiguration(),

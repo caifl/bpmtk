@@ -141,6 +141,67 @@ namespace MysqlConsoleApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "bpm_hi_model",
+                columns: table => new
+                {
+                    id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    package_id = table.Column<int>(nullable: false),
+                    user_id = table.Column<string>(maxLength: 32, nullable: true),
+                    content_id = table.Column<long>(nullable: false),
+                    created = table.Column<DateTime>(nullable: false),
+                    comment = table.Column<string>(maxLength: 255, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_bpm_hi_model", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_bpm_hi_model_bpm_byte_array_content_id",
+                        column: x => x.content_id,
+                        principalTable: "bpm_byte_array",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_bpm_hi_model_bpm_package_package_id",
+                        column: x => x.package_id,
+                        principalTable: "bpm_package",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "bpm_package_item",
+                columns: table => new
+                {
+                    id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    content_id = table.Column<long>(nullable: true),
+                    package_id = table.Column<int>(nullable: false),
+                    name = table.Column<string>(nullable: true),
+                    type = table.Column<string>(maxLength: 32, nullable: false),
+                    user_id = table.Column<string>(maxLength: 32, nullable: true),
+                    created = table.Column<DateTime>(nullable: false),
+                    modified = table.Column<DateTime>(nullable: false),
+                    description = table.Column<string>(maxLength: 255, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_bpm_package_item", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_bpm_package_item_bpm_byte_array_content_id",
+                        column: x => x.content_id,
+                        principalTable: "bpm_byte_array",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_bpm_package_item_bpm_package_package_id",
+                        column: x => x.package_id,
+                        principalTable: "bpm_package",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "bpm_proc_def",
                 columns: table => new
                 {
@@ -169,6 +230,35 @@ namespace MysqlConsoleApp.Migrations
                         name: "FK_bpm_proc_def_bpm_deployment_deployment_id",
                         column: x => x.deployment_id,
                         principalTable: "bpm_deployment",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "bpm_hi_package_item",
+                columns: table => new
+                {
+                    id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    item_id = table.Column<int>(nullable: false),
+                    user_id = table.Column<string>(maxLength: 32, nullable: true),
+                    content_id = table.Column<long>(nullable: false),
+                    created = table.Column<DateTime>(nullable: false),
+                    comment = table.Column<string>(maxLength: 255, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_bpm_hi_package_item", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_bpm_hi_package_item_bpm_byte_array_content_id",
+                        column: x => x.content_id,
+                        principalTable: "bpm_byte_array",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_bpm_hi_package_item_bpm_package_item_item_id",
+                        column: x => x.item_id,
+                        principalTable: "bpm_package_item",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -672,6 +762,26 @@ namespace MysqlConsoleApp.Migrations
                 column: "token_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_bpm_hi_model_content_id",
+                table: "bpm_hi_model",
+                column: "content_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bpm_hi_model_package_id",
+                table: "bpm_hi_model",
+                column: "package_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bpm_hi_package_item_content_id",
+                table: "bpm_hi_package_item",
+                column: "content_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bpm_hi_package_item_item_id",
+                table: "bpm_hi_package_item",
+                column: "item_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_bpm_identity_link_act_inst_id",
                 table: "bpm_identity_link",
                 column: "act_inst_id");
@@ -715,6 +825,16 @@ namespace MysqlConsoleApp.Migrations
                 name: "IX_bpm_package_source_id",
                 table: "bpm_package",
                 column: "source_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bpm_package_item_content_id",
+                table: "bpm_package_item",
+                column: "content_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bpm_package_item_package_id",
+                table: "bpm_package_item",
+                column: "package_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_bpm_proc_data_byte_array_id",
@@ -931,6 +1051,12 @@ namespace MysqlConsoleApp.Migrations
                 name: "bpm_event_subscr");
 
             migrationBuilder.DropTable(
+                name: "bpm_hi_model");
+
+            migrationBuilder.DropTable(
+                name: "bpm_hi_package_item");
+
+            migrationBuilder.DropTable(
                 name: "bpm_identity_link");
 
             migrationBuilder.DropTable(
@@ -941,6 +1067,9 @@ namespace MysqlConsoleApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "bpm_user_group");
+
+            migrationBuilder.DropTable(
+                name: "bpm_package_item");
 
             migrationBuilder.DropTable(
                 name: "bpm_task");

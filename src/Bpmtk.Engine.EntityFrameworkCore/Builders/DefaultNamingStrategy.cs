@@ -7,6 +7,7 @@ namespace Bpmtk.Engine.Storage.Builders
     public class DefaultNamingStrategy : INamingStrategy
     {
         protected string tableNamePrefix = "bpm_";
+        protected string tableNameSuffix = null;
         protected Dictionary<string, string> tableAlias = new Dictionary<string, string>();
         protected Dictionary<string, string> columnAlias = new Dictionary<string, string>();
 
@@ -19,6 +20,8 @@ namespace Bpmtk.Engine.Storage.Builders
             tableAlias.Add("Variable", "proc_data");
             tableAlias.Add("ActivityVariable", "act_data");
             tableAlias.Add("TaskInstance", "task");
+            tableAlias.Add("HistoricPackageItem", "hi_package_item");
+            tableAlias.Add("HistoricModel", "hi_model");
 
             columnAlias.Add("ProcessDefinitionId", "proc_def_id");
             columnAlias.Add("ActivityInstanceId", "act_inst_id");

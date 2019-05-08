@@ -9,7 +9,7 @@ using MysqlConsoleApp;
 namespace MysqlConsoleApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190508051748_Initial")]
+    [Migration("20190508154614_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -310,6 +310,74 @@ namespace MysqlConsoleApp.Migrations
                     b.ToTable("bpm_group");
                 });
 
+            modelBuilder.Entity("Bpmtk.Engine.Models.HistoricModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("id");
+
+                    b.Property<string>("Comment")
+                        .HasColumnName("comment")
+                        .HasMaxLength(255);
+
+                    b.Property<long?>("ContentId")
+                        .IsRequired()
+                        .HasColumnName("content_id");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnName("created");
+
+                    b.Property<int?>("PackageId")
+                        .IsRequired()
+                        .HasColumnName("package_id");
+
+                    b.Property<string>("UserId")
+                        .HasColumnName("user_id")
+                        .HasMaxLength(32);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentId");
+
+                    b.HasIndex("PackageId");
+
+                    b.ToTable("bpm_hi_model");
+                });
+
+            modelBuilder.Entity("Bpmtk.Engine.Models.HistoricPackageItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("id");
+
+                    b.Property<string>("Comment")
+                        .HasColumnName("comment")
+                        .HasMaxLength(255);
+
+                    b.Property<long?>("ContentId")
+                        .IsRequired()
+                        .HasColumnName("content_id");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnName("created");
+
+                    b.Property<int?>("ItemId")
+                        .IsRequired()
+                        .HasColumnName("item_id");
+
+                    b.Property<string>("UserId")
+                        .HasColumnName("user_id")
+                        .HasMaxLength(32);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("bpm_hi_package_item");
+                });
+
             modelBuilder.Entity("Bpmtk.Engine.Models.IdentityLink", b =>
                 {
                     b.Property<long>("Id")
@@ -413,6 +481,50 @@ namespace MysqlConsoleApp.Migrations
                     b.HasIndex("SourceId");
 
                     b.ToTable("bpm_package");
+                });
+
+            modelBuilder.Entity("Bpmtk.Engine.Models.PackageItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("id");
+
+                    b.Property<long?>("ContentId")
+                        .HasColumnName("content_id");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnName("created");
+
+                    b.Property<string>("Description")
+                        .HasColumnName("description")
+                        .HasMaxLength(255);
+
+                    b.Property<DateTime>("Modified")
+                        .HasColumnName("modified");
+
+                    b.Property<string>("Name")
+                        .HasColumnName("name");
+
+                    b.Property<int?>("PackageId")
+                        .IsRequired()
+                        .HasColumnName("package_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnName("type")
+                        .HasMaxLength(32);
+
+                    b.Property<string>("UserId")
+                        .HasColumnName("user_id")
+                        .HasMaxLength(32);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentId");
+
+                    b.HasIndex("PackageId");
+
+                    b.ToTable("bpm_package_item");
                 });
 
             modelBuilder.Entity("Bpmtk.Engine.Models.ProcessDefinition", b =>
@@ -963,6 +1075,32 @@ namespace MysqlConsoleApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("Bpmtk.Engine.Models.HistoricModel", b =>
+                {
+                    b.HasOne("Bpmtk.Engine.Models.ByteArray", "Content")
+                        .WithMany()
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Bpmtk.Engine.Models.Package", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Bpmtk.Engine.Models.HistoricPackageItem", b =>
+                {
+                    b.HasOne("Bpmtk.Engine.Models.ByteArray", "Content")
+                        .WithMany()
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Bpmtk.Engine.Models.PackageItem", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Bpmtk.Engine.Models.IdentityLink", b =>
                 {
                     b.HasOne("Bpmtk.Engine.Models.ActivityInstance")
@@ -1011,6 +1149,19 @@ namespace MysqlConsoleApp.Migrations
                     b.HasOne("Bpmtk.Engine.Models.ByteArray", "Source")
                         .WithMany()
                         .HasForeignKey("SourceId");
+                });
+
+            modelBuilder.Entity("Bpmtk.Engine.Models.PackageItem", b =>
+                {
+                    b.HasOne("Bpmtk.Engine.Models.ByteArray", "Content")
+                        .WithMany()
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Bpmtk.Engine.Models.Package", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Bpmtk.Engine.Models.ProcessDefinition", b =>

@@ -1,4 +1,5 @@
-﻿using Bpmtk.Engine.WebApi.Models;
+﻿using Bpmtk.Engine.Models;
+using Bpmtk.Engine.WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -40,8 +41,49 @@ namespace Bpmtk.Engine.WebApi.Controllers
         [HttpGet("{id}/bpmn-model/xml")]
         public async Task<ActionResult<string>> GetModelXml(int id)
         {
-            var content = await packageManager.GetBpmnModelContentAsync(id);
+            var content = await packageManager.GetModelContentAsync(id);
             if(content != null)
+                return Encoding.UTF8.GetString(content);
+
+            return null;
+        }
+
+        [HttpGet("{id}/items")]
+        public async Task<ActionResult<IList<PackageItem>>> GetItems(int id)
+        {
+            var items = await packageManager.GetItemsAsync(id);
+            if (items != null)
+                return this.Ok(items);
+
+            return null;
+        }
+
+        [HttpGet("{id}/historic-models")]
+        public async Task<ActionResult<IList<HistoricModel>>> GetHistoricModels(int id)
+        {
+            var items = await packageManager.GetHistoricModelsAsync(id);
+            if (items != null)
+                return this.Ok(items);
+
+            return this.Ok();
+        }
+
+        [HttpGet("historic-items/{itemId}/xml")]
+        public async Task<ActionResult<string>> GetHistoricItemContent(int itemId)
+        {
+            var content = await packageManager.GetHistoricModelContentAsync(itemId);
+            if (content != null)
+                return Encoding.UTF8.GetString(content);
+
+            return null;
+        }
+
+
+        [HttpGet("historic-models/{id}/xml")]
+        public async Task<ActionResult<string>> GetHistoricModelXml(int id)
+        {
+            var content = await packageManager.GetHistoricModelContentAsync(id);
+            if (content != null)
                 return Encoding.UTF8.GetString(content);
 
             return null;
