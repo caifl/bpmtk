@@ -21,7 +21,7 @@ namespace Bpmtk.Engine.Tests.Bpmn
             var map = new Dictionary<string, object>();
             map.Add("a", "a");
 
-            var pi = this.runtimeManager.StartProcessByMessage("newInvoiceMessage", 
+            var pi = this.runtimeManager.StartProcessByMessageAsync("newInvoiceMessage", 
                 map);
 
             var tasks = await this.taskManager.CreateQuery()

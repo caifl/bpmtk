@@ -67,6 +67,9 @@ namespace Bpmtk.Engine.Events
         {
             var contextImpl = executionContext as ExecutionContext;
 
+            var historyManager = executionContext.Context.HistoryManager;
+            historyManager.RecordProcessStart((ExecutionContext)executionContext);
+
             this.ExecuteBpmnInlineScriptsOn(contextImpl, "start");
 
             foreach (var item in this.processEventListeners)

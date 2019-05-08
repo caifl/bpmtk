@@ -15,10 +15,14 @@ namespace Bpmtk.Engine
 
         Task<IList<ActivityInstance>> GetActivityInstancesAsync(long processInstanceId);
 
+        void RecordProcessStart(ExecutionContext executionContext);
+
         void RecordActivityReady(ExecutionContext executionContext);
 
         void RecordActivityStart(ExecutionContext executionContext);
 
         void RecordActivityEnd(ExecutionContext executionContext);
+
+        void RecordProcessEnd(ExecutionContext executionContext);
     }
 }

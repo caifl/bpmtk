@@ -1,14 +1,22 @@
 ﻿using System;
-using System.Threading.Tasks;
+using Bpmtk.Engine.Tasks;
 
 namespace Bpmtk.Engine.Events
 {
     public interface ITaskEventListener
     {
-        Task CreatedAsync();
+        void Created(ITaskEvent taskEvent);
 
-        Task AssignedAsync();
+        void Assigned(ITaskEvent taskEvent);
 
-        Task CompletedAsync();
+        void Claimed(ITaskEvent taskEvent);
+
+        void Suspended(ITaskEvent taskEvent);
+
+        void Resumed(ITaskEvent taskEvent);
+
+        void Completed(ITaskEvent taskEvent);
+
+        void Delegated(ITaskEvent taskEvent);
     }
 }

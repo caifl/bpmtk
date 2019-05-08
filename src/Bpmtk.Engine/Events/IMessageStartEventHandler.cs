@@ -8,7 +8,7 @@ namespace Bpmtk.Engine.Events
 {
     public interface IMessageStartEventHandler
     {
-        IProcessInstance Execute(
+        Task<IProcessInstance> ExecuteAsync(
             IContext context,
             EventSubscription eventSubscription,
             IDictionary<string, object> messasgeData);

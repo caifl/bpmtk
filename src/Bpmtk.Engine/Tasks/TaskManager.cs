@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
-using Bpmtk.Engine.Runtime;
+using Bpmtk.Engine.Events;
 using Bpmtk.Engine.Storage;
 using Bpmtk.Engine.Utils;
 
@@ -13,11 +13,20 @@ namespace Bpmtk.Engine.Tasks
     {
         private readonly Context context;
         private readonly IDbSession session;
+        protected CompositeTaskEventListener taskEventListener;
 
         public TaskManager(Context context)
         {
             this.context = context;
             this.session = context.DbSession;
+
+            var options = this.context.Engine.Options;
+            this.taskEventListener = new CompositeTaskEventListener(options.TaskEventListeners);
+        }
+
+        public virtual CompositeTaskEventListener CompositeTaskEventListener
+        {
+            get => this.taskEventListener;
         }
 
         public virtual IQueryable<TaskInstance> Tasks => this.session.Tasks;
@@ -77,43 +86,46 @@ namespace Bpmtk.Engine.Tasks
             return task;
         }
 
-        public virtual TaskInstance Complete(long taskId, 
-            IDictionary<string, object> variables = null,
-            string comment = null)
-        {
-            var task = this.Find(taskId);
-            if (task.State != TaskState.Active)
-                throw new InvalidOperationException("Invalid state transition.");
+        //public virtual TaskInstance Complete(long taskId, 
+        //    IDictionary<string, object> variables = null,
+        //    string comment = null)
+        //{
+        //    var task = this.Find(taskId);
+        //    if (task.State != TaskState.Active)
+        //        throw new InvalidOperationException("Invalid state transition.");
 
-            var theToken = task.Token;
+        //    var theToken = task.Token;
 
-            task.State = TaskState.Completed;
-            task.LastStateTime = Clock.Now;
-            task.Token = null; //Clear token
+        //    task.State = TaskState.Completed;
+        //    task.LastStateTime = Clock.Now;
+        //    task.Token = null; //Clear token
 
-            if (comment != null)
-                this.CreateComment(task, comment);
+        //    if (comment != null)
+        //        this.CreateComment(task, comment);
 
-            this.session.Flush();
+        //    this.session.Flush();
 
-            if (theToken != null)
-            {
-                var executionContext = ExecutionContext.Create(context, theToken);
-                executionContext.Trigger(null, null);
-            }
+        //    if (theToken != null)
+        //    {
+        //        var ecm = this.context.ExecutionContextManager;
+        //        var executionContext = ecm.GetOrCreate(theToken);
+        //        executionContext.Trigger();
+        //    }
 
-            return task;
-        }
+        //    return task;
+        //}
 
         public virtual async Task<ITaskInstance> CompleteAsync(long taskId,
             IDictionary<string, object> variables = null,
             string comment = null)
         {
             var task = await this.FindAsync(taskId);
-            if (task.State != TaskState.Active)
-                throw new InvalidOperationException("Invalid state transition.");
+            if (task.State != TaskState.Active || task.Token == null)
+                throw new StateTransitionNotAllowedException("Invalid state transition.");
 
-            var theToken = task.Token;
+            var token = task.Token;
+
+            //Change task-state.
             task.State = TaskState.Completed;
             task.LastStateTime = Clock.Now;
             task.Token = null; //Clear token
@@ -121,13 +133,30 @@ namespace Bpmtk.Engine.Tasks
             if (comment != null)
                 this.CreateComment(task, comment);
 
+            //Update variables.
+            if (variables != null && variables.Count > 0)
+            {
+                var em = variables.GetEnumerator();
+                while (em.MoveNext())
+                {
+                    var name = em.Current.Key;
+                    var value = em.Current.Value;
+
+                    task.SetVariable(name, value);
+                }
+            }
+
+            //Save changes.
             await this.session.FlushAsync();
 
-            if (theToken != null)
-            {
-                var executionContext = ExecutionContext.Create(context, theToken);
-                executionContext.Trigger(null, null);
-            }
+            //Fire taskCompletedEvent.
+            this.taskEventListener.Completed(new TaskCompletedEvent(this.context, task));
+
+            var executionContext = this.context.ExecutionContextManager
+                .GetOrCreate(token);
+
+            //Trigger token to leave current node.
+            executionContext.Trigger();
 
             return task;
         }
@@ -362,14 +391,6 @@ namespace Bpmtk.Engine.Tasks
         }
 
         ITaskInstance ITaskManager.Resume(long taskId, string comment)
-        {
-            throw new NotImplementedException();
-        }
-
-        ITaskInstance ITaskManager.Complete(long taskId, IDictionary<string, object> variables, string comment)
-            => this.Complete(taskId, variables, comment);
-
-        IReadOnlyList<AssignmentStrategyEntry> ITaskManager.GetAssignmentStrategyEntries()
         {
             throw new NotImplementedException();
         }

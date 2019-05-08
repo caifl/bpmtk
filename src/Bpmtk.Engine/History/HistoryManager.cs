@@ -44,6 +44,16 @@ namespace Bpmtk.Engine.History
         public virtual IActivityInstanceQuery CreateActivityQuery()
             => new ActivityInstanceQuery(this.session);
 
+        public virtual void RecordProcessStart(ExecutionContext executionContext)
+        {
+            //this.RecordActivityReady(executionContext);
+        }
+
+        public virtual void RecordProcessEnd(ExecutionContext executionContext)
+        {
+            //this.RecordActivityReady(executionContext);
+        }
+
         public virtual void RecordActivityReady(ExecutionContext executionContext)
         {
             if (this.IsActivityRecorderDisabled)
@@ -81,12 +91,14 @@ namespace Bpmtk.Engine.History
 
             act.ActivityId = node.Id;
             act.ActivityType = node.GetType().Name;
-            act.TokenId = executionContext.Token.Id;
+            act.TokenId = token.Id;
+
+            var date = Clock.Now;
 
             //Set initial state.
             act.State = ExecutionState.Ready;
-            act.Created = Bpmtk.Engine.Utils.Clock.Now;
-            act.LastStateTime = act.Created;
+            act.Created = date;
+            act.LastStateTime = date;
 
             act.Name = node.Name;
             if (string.IsNullOrEmpty(act.Name))
@@ -95,7 +107,7 @@ namespace Bpmtk.Engine.History
             if (node.Documentations.Count > 0)
             {
                 var textArray = node.Documentations.Select(x => x.Text).ToArray();
-                act.Description = Bpmtk.Engine.Utils.StringHelper.Join(textArray, "\n", 255);
+                act.Description = StringHelper.Join(textArray, "\n", 255);
             }
 
             //Initialize context.
@@ -123,6 +135,7 @@ namespace Bpmtk.Engine.History
             if (act != null)
             {
                 act.State = ExecutionState.Completed;
+                act.Modified = date;
                 act.LastStateTime = date;
                 hasChanges = true;
             }
@@ -135,6 +148,7 @@ namespace Bpmtk.Engine.History
                     act = token.ActivityInstance;
                     if (act != null)
                     {
+                        act.Modified = date;
                         act.State = ExecutionState.Completed;
                         act.LastStateTime = date;
                         hasChanges = true;
@@ -158,6 +172,7 @@ namespace Bpmtk.Engine.History
             {
                 act.State = ExecutionState.Active;
                 act.StartTime = date;
+                act.Modified = date;
                 act.LastStateTime = date;
 
                 var isMIRoot = executionContext.Token.IsMIRoot;
@@ -177,6 +192,7 @@ namespace Bpmtk.Engine.History
                     {
                         act.State = ExecutionState.Active;
                         act.StartTime = date;
+                        act.Modified = date;
                         act.LastStateTime = date;
                         hasChanges = true;
                     }

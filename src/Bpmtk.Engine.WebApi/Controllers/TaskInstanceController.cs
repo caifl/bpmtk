@@ -53,7 +53,6 @@ namespace Bpmtk.Engine.WebApi.Controllers
         public async Task<ActionResult<TaskInstanceModel>> Get(int id)
         {
             var item = await this.taskManager.CreateQuery()
-                .FetchAssignee()
                 .SetId(id)
                 .SingleAsync();
             if (item != null)

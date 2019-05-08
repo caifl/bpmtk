@@ -82,6 +82,12 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        public virtual DateTime Modified
+        {
+            get;
+            set;
+        }
+
         public virtual string Description
         {
             get;

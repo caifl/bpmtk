@@ -29,7 +29,7 @@ namespace Bpmtk.Engine.WebApi.Controllers
         /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<PagedResult<ProcessDefinitionModel>>> Get(
-            [FromQuery] ProcessDefinitionFilter filter)
+            [FromBody] ProcessDefinitionFilter filter)
         {
             PagedResult<ProcessDefinitionModel> result = new PagedResult<ProcessDefinitionModel>();
 

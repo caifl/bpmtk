@@ -9,7 +9,6 @@ namespace Bpmtk.Engine.Repository
 {
     public class DeploymentQuery : IDeploymentQuery
     {
-        protected bool fetchUser;
         protected bool fetchModel;
 
         protected int? id;
@@ -46,7 +45,7 @@ namespace Bpmtk.Engine.Repository
                 query = query.Where(x => x.UserId == this.userId);
 
             if (this.packageId != null)
-                query = query.Where(x => x.Package.Id == this.packageId);
+                query = query.Where(x => x.PackageId == this.packageId);
 
             if (this.name != null)
                 query = query.Where(x => x.Name.Contains(this.name));

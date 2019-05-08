@@ -43,11 +43,11 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        //public virtual ProcessDefinition ProcessDefinition
-        //{
-        //    get;
-        //    set;
-        //}
+        public virtual ProcessDefinition ProcessDefinition
+        {
+            get;
+            set;
+        }
 
         public virtual ProcessInstance ProcessInstance
         {
@@ -74,6 +74,12 @@ namespace Bpmtk.Engine.Models
         }
 
         public virtual TaskState State
+        {
+            get;
+            set;
+        }
+
+        public virtual DelegationState? DelegationState
         {
             get;
             set;
@@ -128,6 +134,12 @@ namespace Bpmtk.Engine.Models
         }
 
         public virtual string Assignee
+        {
+            get;
+            set;
+        }
+
+        public virtual string Owner
         {
             get;
             set;

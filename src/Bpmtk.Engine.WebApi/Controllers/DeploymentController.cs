@@ -21,7 +21,7 @@ namespace Bpmtk.Engine.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<DeploymentModel>>> Get(DeploymentFilter filter)
+        public async Task<ActionResult<PagedResult<DeploymentModel>>> Get([FromBody] DeploymentFilter filter)
         {
             var result = new PagedResult<DeploymentModel>();
             
@@ -51,7 +51,7 @@ namespace Bpmtk.Engine.WebApi.Controllers
         /// Deploy BPMN 2.0 model.
         /// </summary>
         [HttpPost("deploy")]
-        public ActionResult Deploy(DeployBpmnModel model)
+        public ActionResult Deploy([FromBody] DeployBpmnModel model)
         {
             return this.Ok();
         }

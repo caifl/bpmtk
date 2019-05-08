@@ -1,19 +1,17 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Microsoft.EntityFrameworkCore;
-using Bpmtk.Engine.Cfg;
 
-namespace Bpmtk.Engine
+namespace Bpmtk.Engine.Storage
 {
-    public class BpmDbContext : DbContext
+    public class BpmDbContext : DbContext, IBpmDbContext
     {
         public BpmDbContext(DbContextOptions options) : base(options)
         {
+
         }
 
         #region Properties
@@ -90,7 +88,13 @@ namespace Bpmtk.Engine
             set;
         }
 
-        public virtual DbSet<Bpmtk.Engine.Models.Group> Groups
+        public virtual DbSet<Group> Groups
+        {
+            get;
+            set;
+        }
+
+        public virtual DbSet<UserGroup> UserGroups
         {
             get;
             set;
@@ -102,48 +106,26 @@ namespace Bpmtk.Engine
             set;
         }
 
+        public Task AddRangeAsync(IEnumerable<object> entity)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new ByteArrayConfiguration());
-            modelBuilder.ApplyConfiguration(new IdentityLinkConfiguration());
-            modelBuilder.ApplyConfiguration(new UserConfiguration());
-            modelBuilder.ApplyConfiguration(new GroupConfiguration());
-            modelBuilder.ApplyConfiguration(new UserGroupConfiguration());
-
-            modelBuilder.ApplyConfiguration(new PackageConfiguration());
-            modelBuilder.ApplyConfiguration(new DeploymentConfiguration());
-            modelBuilder.ApplyConfiguration(new ProcessDefinitionConfiguration());
-            modelBuilder.ApplyConfiguration(new ProcessInstanceConfiguration());
-            modelBuilder.ApplyConfiguration(new TokenConfiguration());
-            modelBuilder.ApplyConfiguration(new ActivityInstanceConfiguration());
-            modelBuilder.ApplyConfiguration(new ActivityVariableConfiguration());
-            modelBuilder.ApplyConfiguration(new VariableConfiguration());
-            modelBuilder.ApplyConfiguration(new TaskConfiguration());
-
-            modelBuilder.ApplyConfiguration(new ScheduledJobConfiguration());
-            modelBuilder.ApplyConfiguration(new EventSubscriptionConfiguration());
-
-            modelBuilder.ApplyConfiguration(new CommentConfiguration());
+            modelBuilder.ApplyBpmtkModelConfigurations();
 
             base.OnModelCreating(modelBuilder);
-
-            //var modelTypes = modelBuilder.Model.GetEntityTypes();
-            //foreach (var type in modelTypes)
-            //{
-            //    var props = type.GetProperties();
-            //    var typeBuilder = modelBuilder.Entity(type.Name);
-            //    foreach (var prop in props)
-            //    {
-            //        typeBuilder.Property(prop.Name).ApplyNamingStrategy();
-            //    }
-            //}
-
-            //foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
-            //{
-            //    entityType.Relational().TableName = entityType.;
-            //}
         }
+
+        Task IBpmDbContext.AddAsync(object entity) => this.AddAsync(entity);
+
+        void IBpmDbContext.Add(object entity) => this.Add(entity);
+
+        void IBpmDbContext.Remove(object entity) => this.Remove(entity);
+
+        void IBpmDbContext.Update(object entity) => this.Update(entity);
     }
 }

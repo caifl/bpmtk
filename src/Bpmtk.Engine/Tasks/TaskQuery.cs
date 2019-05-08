@@ -11,8 +11,6 @@ namespace Bpmtk.Engine.Tasks
     {
         protected readonly IDbSession session;
 
-        protected bool fetchAssignee;
-
         protected long? id;
         protected TaskState? state;
         protected string name;
@@ -37,9 +35,6 @@ namespace Bpmtk.Engine.Tasks
         protected virtual IQueryable<TaskInstance> CreateNativeQuery()
         {
             var query = this.session.Tasks;
-
-            if (this.fetchAssignee)
-                query = this.session.Fetch(query, x => x.Assignee);
 
             if (this.id != null)
                 return query = query.Where(x => x.Id == this.id);
@@ -83,13 +78,6 @@ namespace Bpmtk.Engine.Tasks
                 query = query.Where(x => x.Name.Contains(this.name));
              
             return query;
-        }
-
-        public virtual ITaskQuery FetchAssignee()
-        {
-            this.fetchAssignee = true;
-
-            return this;
         }
 
         public virtual ITaskQuery SetId(long id)

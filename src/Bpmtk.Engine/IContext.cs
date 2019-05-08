@@ -11,6 +11,11 @@ namespace Bpmtk.Engine
             get;
         }
 
+        IPackageManager PackageManager
+        {
+            get;
+        }
+
         ITaskManager TaskManager
         {
             get;

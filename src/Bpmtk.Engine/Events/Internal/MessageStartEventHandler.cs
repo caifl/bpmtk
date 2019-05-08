@@ -9,7 +9,7 @@ namespace Bpmtk.Engine.Events
 {
     class MessageStartEventHandler : IMessageStartEventHandler
     {
-        public virtual IProcessInstance Execute(IContext context,
+        public virtual async Task<IProcessInstance> ExecuteAsync(IContext context,
             EventSubscription eventSubscription, 
             IDictionary<string, object> messageData)
         {
@@ -23,8 +23,7 @@ namespace Bpmtk.Engine.Events
             var builder = runtimeManager.CreateInstanceBuilder();
             //builder.SetProcessDefinition(processDefinition);
 
-            var pi = runtimeManager.StartProcess(builder);
-
+            var pi = await runtimeManager.StartProcessAsync(builder);
             return pi;
         }
     }

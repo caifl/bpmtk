@@ -63,13 +63,14 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             eventListener.ActivityEnd(executionContext);
 
             //Get parent-context.
-            var parentExecution = ExecutionContext.Create(context, parentToken);
+            var ecm = context.ExecutionContextManager;
+            var parentContext = ecm.GetOrCreate(parentToken);
 
-            var numberOfInstances = parentExecution.GetVariableLocal<int>("numberOfInstances");
-            var numberOfCompletedInstances = parentExecution.GetVariableLocal<int>("numberOfCompletedInstances") + 1;
-            var numberOfActiveInstances = parentExecution.GetVariableLocal<int>("numberOfActiveInstances");
+            var numberOfInstances = parentContext.GetVariableLocal<int>("numberOfInstances");
+            var numberOfCompletedInstances = parentContext.GetVariableLocal<int>("numberOfCompletedInstances") + 1;
+            var numberOfActiveInstances = parentContext.GetVariableLocal<int>("numberOfActiveInstances");
 
-            parentExecution.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
+            parentContext.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
             
             var loopCounter = executionContext.GetVariableLocal<int>("loopCounter");
 
@@ -95,9 +96,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             }
 
             loopCounter += 1;
-            if (loopCounter >= numberOfInstances || this.IsCompleted(parentExecution))
+            if (loopCounter >= numberOfInstances || this.IsCompleted(parentContext))
             {
-                parentExecution.SetVariableLocal("numberOfActiveInstances", 0);
+                parentContext.SetVariableLocal("numberOfActiveInstances", 0);
 
                 //Remove token.
                 token.Inactivate();
@@ -110,7 +111,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 executionContext.Flush();
 
                 //leave without check loop.
-                base.Leave(parentExecution);
+                base.Leave(parentContext);
             }
             else
             {

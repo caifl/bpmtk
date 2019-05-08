@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
+using Bpmtk.Engine.Storage;
 
 namespace Bpmtk.Engine.WebApi
 {
@@ -33,6 +34,8 @@ namespace Bpmtk.Engine.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var connectionString = this.Configuration.GetConnectionString("mysql");
+
             //允许跨域
             var cors = new CorsPolicyBuilder().AllowAnyHeader()
                 .AllowAnyMethod()
@@ -48,7 +51,7 @@ namespace Bpmtk.Engine.WebApi
             {
                 builder.UseLoggerFactory(LoggerFactory);
                 builder.UseLazyLoadingProxies(true);
-                builder.UseMySql("server=localhost;uid=root;pwd=123456;database=bpmtk2");
+                builder.UseMySql(connectionString);
             });
 
             services

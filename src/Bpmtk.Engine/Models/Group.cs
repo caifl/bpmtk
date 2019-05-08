@@ -17,6 +17,24 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        public virtual string ConcurrencyStamp
+        {
+            get;
+            set;
+        }
+
+        public virtual DateTime Created
+        {
+            get;
+            set;
+        }
+
+        public virtual string Description
+        {
+            get;
+            set;
+        }
+
         public virtual ICollection<UserGroup> Users
         {
             get;

@@ -15,8 +15,9 @@ namespace Bpmtk.Engine.Runtime
         protected ILogger logger;
         private Token token;
         private SequenceFlow transition;
+        private readonly ExecutionContextManager manager;
 
-        protected ExecutionContext(Context context, Token token)
+        public ExecutionContext(Context context, Token token)
         {
             var engine = context.Engine;
 
@@ -26,6 +27,12 @@ namespace Bpmtk.Engine.Runtime
             this.logger = engine.LoggerFactory.CreateLogger<ExecutionContext>();
         }
 
+        public ExecutionContext(ExecutionContextManager manager, Token token)
+        {
+            this.manager = manager;
+            this.Context = manager.Context;
+        }
+
         public virtual void Flush()
         {
             this.Context.DbSession.Flush();
@@ -33,33 +40,67 @@ namespace Bpmtk.Engine.Runtime
 
         public virtual ILogger Logger => this.logger;
 
-        public static ExecutionContext Create(Context context, Token token)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+        //public static ExecutionContext Create(Context context, Token token)
+        //{
+        //    if (context == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(context));
+        //    }
 
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
+        //    if (token == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(token));
+        //    }
 
-            return new ExecutionContext(context, token);
-        }
+        //    return new ExecutionContext(context, token);
+        //}
 
+        /// <summary>
+        /// Start process-instance from initial node.
+        /// </summary>
         public virtual void Start()
         {
-            this.EnterNode(this.Node);
+            this.FireProcessStartEvent();
+
+            this.EnterNode();
         }
 
-        public virtual void Start(FlowNode initialNode)
+        #region fire ProcessEvent
+
+        protected virtual void FireProcessStartEvent()
         {
-            if (initialNode == null)
-                throw new ArgumentNullException(nameof(initialNode));
-
-            this.EnterNode(initialNode);
+            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+            eventListener.ProcessStart(this);
         }
+
+        public virtual void FireActivityReadyEvent()
+        {
+            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+            eventListener.ActivityReady(this);
+        }
+
+        public virtual void FireActivityStartEvent()
+        {
+            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+            eventListener.ActivityStart(this);
+        }
+
+        public virtual void FireActivityEndEvent()
+        {
+            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+            eventListener.ActivityEnd(this);
+        }
+
+        protected virtual void FireProcessEndEvent()
+        {
+            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
+            eventListener.ProcessEnd(this);
+        }
+
+        #endregion
+
+        public virtual void Trigger()
+            => this.Trigger(null, null);
 
         public virtual void Trigger(string signalEvent, IDictionary<string, object> signalData)
         {
@@ -73,18 +114,44 @@ namespace Bpmtk.Engine.Runtime
             throw new NotSupportedException();
         }
 
+        public virtual ExecutionContext CreateCalledElementContext(CallableElement callableElement)
+        {
+            if (callableElement == null)
+                throw new ArgumentNullException(nameof(callableElement));
+
+            var context = this.Context;
+
+            var process = callableElement as Process;
+            var processDefinition = context.DeploymentManager.FindProcessDefinitionByKey(process.Id);
+            if (processDefinition == null)
+                throw new ObjectNotFoundException(nameof(ProcessDefinition));
+
+            var builder = context.RuntimeManager.CreateInstanceBuilder();
+            var subProcessInstance = builder
+                .SetProcessDefinition(processDefinition)
+                .SetSuper(this.token)
+                .BuildAsync().Result;
+
+            var subToken = subProcessInstance.Token;
+
+            //Set subProcessInstance.
+            this.token.SubProcessInstance = subProcessInstance;
+
+            return context.ExecutionContextManager.Create(subToken);
+        }
+
         public virtual IList<ExecutionContext> CreateInnerActivityContexts(int numberOfInstances)
         {
             var list = new List<ExecutionContext>();
+            var ecm = this.Context.ExecutionContextManager;
 
             for (int i = 0; i < numberOfInstances; i++)
             {
                 var childToken = this.token.CreateToken();
                 childToken.Node = this.Node;
 
-                var innerExecution = ExecutionContext.Create(this.Context, childToken);
-
-                list.Add(innerExecution);
+                var innerActivityContext = ecm.Create(childToken);
+                list.Add(innerActivityContext);
             }
 
             this.Flush();
@@ -106,22 +173,21 @@ namespace Bpmtk.Engine.Runtime
 
             this.Flush();
 
-            var subExecution = Create(this.Context, subToken);
+            var subExecution = this.Context.ExecutionContextManager.Create(subToken);
             subExecution.EnterNode(initialNode);
 
             return subExecution;
         }
 
-        public virtual void End()
+        public virtual void End(bool isImplicit = true)
         {
             this.token.IsActive = false;
             this.token.IsEnded = true;
 
             //fire activityEndEvent.
-            var runtimeManager = this.Context.RuntimeManager;
-            var eventListener = runtimeManager.GetCompositeProcessEventListener();
-            eventListener.ActivityEnd(this);
+            this.FireActivityEndEvent();
 
+            var ecm = this.Context.ExecutionContextManager;
             var parentToken = this.token.Parent;
             if (parentToken != null)
             {
@@ -130,6 +196,7 @@ namespace Bpmtk.Engine.Runtime
                 if (container is SubProcess)
                 {
                     this.token.Remove();
+                    ecm.Remove(this.token);
 
                     if (parentToken.Children.Count > 0)
                         return;
@@ -147,38 +214,60 @@ namespace Bpmtk.Engine.Runtime
                     //    p = p.Parent;
                     //}
 
-                    var subProcessContext = ExecutionContext.Create(this.Context, parentToken);
+                    var subProcessContext = ecm.GetOrCreate(parentToken);
                     var behavior = subProcess.Tag as IFlowNodeActivityBehavior;
                     behavior.Leave(subProcessContext);
                     return;
                 }
             }
 
-
-            //结束流程实例
             //this.ProcessInstance.End(context, isImplicit, endReason);
             var procInst = this.ProcessInstance;
 
-            this.token.Remove();
-            var tokens = procInst.Tokens;
-            if (tokens.Count > 0)
+            var rootToken = procInst.Token;
+            if (rootToken != this.token)
+            {
+                this.token.Remove();
+                ecm.Remove(this.token);
+            }
+
+            if (rootToken.Children.Count > 0 || !rootToken.IsEnded)
                 return;
 
             //
+            var date = Clock.Now;
             procInst.State = ExecutionState.Completed;
-            procInst.LastStateTime = Clock.Now;
+            procInst.LastStateTime = date;
+            procInst.Modified = date;
+            procInst.Token = null;
+
+            //Remove root token.
+            this.Context.DbSession.Remove(rootToken);
+            ecm.Remove(rootToken);
 
             this.Flush();
 
             //fire processEndEvent.
-            eventListener.ProcessEnd(this);
+            this.FireProcessEndEvent();
 
             var superToken = procInst.Super;
             if(superToken != null)
             {
-                //to be continued ..
-                throw new NotImplementedException("CallActivity not implemented.");
+                var superExecutionContext = ecm.GetOrCreate(superToken);
+                superExecutionContext.CalledElementEnded(this, isImplicit);
             }
+        }
+
+        protected virtual void CalledElementEnded(ExecutionContext calledElementContext, bool isImplicit)
+        {
+            var behavior = this.Node.Tag as CallActivityBehavior;
+            if (behavior != null)
+            {
+                behavior.CalledElementEnded(this, calledElementContext);
+                return;
+            }
+
+            throw new NotSupportedException();
         }
 
         public virtual int GetActiveTaskCount()
@@ -251,15 +340,26 @@ namespace Bpmtk.Engine.Runtime
         protected virtual void EnterNode(FlowNode node)
         {
             this.token.Node = node;
+
+            this.EnterNode();
+        }
+
+        protected virtual void EnterNode()
+        {
+            var node = this.token.Node;
+            if (node == null)
+                throw new RuntimeException("The token was not placed at any node.");
+
             var behavior = node.Tag as IFlowNodeActivityBehavior;
             if (behavior != null)
             {
-                var historyManager = this.Context.HistoryManager;
+                //init activity-instance.
+                behavior.Ready(this);
 
                 //fire activityReadyEvent.
-                var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
-                eventListener.ActivityReady(this);
+                this.FireActivityReadyEvent();
 
+                //check pre-conditions.
                 var isPreConditionsSatisfied = behavior.EvaluatePreConditions(this);
                 if (isPreConditionsSatisfied)
                 {
@@ -268,8 +368,9 @@ namespace Bpmtk.Engine.Runtime
                     this.TransitionSource = null;
 
                     //fire activityStartEvent.
-                    eventListener.ActivityStart(this);
+                    this.FireActivityStartEvent();
 
+                    //execute activity action.
                     behavior.Execute(this);
                 }
                 else
@@ -289,8 +390,7 @@ namespace Bpmtk.Engine.Runtime
                 throw new ArgumentNullException(nameof(transition));
 
             //fire activityEndEvent.
-            var eventListener = this.Context.RuntimeManager.GetCompositeProcessEventListener();
-            eventListener.ActivityEnd(this);
+            this.FireActivityEndEvent();
 
             this.Take(transition);
         }
@@ -398,6 +498,7 @@ namespace Bpmtk.Engine.Runtime
             this.token.ActivityInstance = null;
             this.token.IsActive = true;
             this.token.IsMIRoot = false;
+            this.token.SubProcessInstance = null;
             this.token.Clear();
 
             this.JoinedTokens = null;
@@ -413,10 +514,7 @@ namespace Bpmtk.Engine.Runtime
             this.EnterNode(targetNode);
         }
 
-        public virtual void FireActivityStartEvent()
-        {
-
-        }
+        
 
         public virtual bool TryGetVariable(string name, out object value)
             => this.token.TryGetVariable(name, out value);

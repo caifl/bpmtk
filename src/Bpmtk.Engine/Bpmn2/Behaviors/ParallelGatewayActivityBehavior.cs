@@ -23,13 +23,14 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 
             //find inactive-tokens in closest scope.
             var processInstance = token.ProcessInstance;
+
             var scope = token.ResolveScope();
             IList<Token> joinedTokens = null;
             var activityId = node.Id;
             if (scope != null)
                  joinedTokens = scope.GetInactiveTokensAt(activityId);
             else
-                joinedTokens = processInstance.GetInactiveTokensAt(activityId);
+                joinedTokens = processInstance.Token.GetInactiveTokensAt(activityId);
 
             
             //Ensure every incoming transitions have at least one token.

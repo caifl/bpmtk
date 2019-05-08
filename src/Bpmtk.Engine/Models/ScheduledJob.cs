@@ -10,6 +10,12 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        public virtual string TenantId
+        {
+            get;
+            set;
+        }
+
         public virtual string Key
         {
             get;
@@ -94,7 +100,7 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual string TenantId
+        public virtual TaskInstance Task
         {
             get;
             set;

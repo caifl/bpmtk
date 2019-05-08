@@ -36,6 +36,11 @@ namespace Bpmtk.Engine.Tasks
             get;
         }
 
+        DelegationState? DelegationState
+        {
+            get;
+        }
+
         DateTime LastStateTime
         {
             get;

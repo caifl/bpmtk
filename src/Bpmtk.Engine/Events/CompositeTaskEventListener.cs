@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Bpmtk.Engine.Tasks;
 
 namespace Bpmtk.Engine.Events
 {
@@ -14,19 +15,32 @@ namespace Bpmtk.Engine.Events
             this.taskEventListeners = taskEventListeners;
         }
 
-        public Task AssignedAsync()
+        public void Assigned(ITaskEvent taskEvent)
         {
-            throw new NotImplementedException();
         }
 
-        public Task CompletedAsync()
+        public void Claimed(ITaskEvent taskEvent)
         {
-            throw new NotImplementedException();
         }
 
-        public Task CreatedAsync()
+        public void Completed(ITaskEvent taskEvent)
         {
-            throw new NotImplementedException();
+        }
+
+        public void Created(ITaskEvent taskEvent)
+        {
+        }
+
+        public void Delegated(ITaskEvent taskEvent)
+        {
+        }
+
+        public void Resumed(ITaskEvent taskEvent)
+        {
+        }
+
+        public void Suspended(ITaskEvent taskEvent)
+        {
         }
     }
 }

@@ -34,6 +34,12 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
+        public virtual Package Package
+        {
+            get;
+            set;
+        }
+
         public virtual ProcessDefinition ProcessDefinition
         {
             get;

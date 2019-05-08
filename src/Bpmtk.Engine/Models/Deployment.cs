@@ -76,11 +76,11 @@ namespace Bpmtk.Engine.Models
         /// <summary>
         /// Gets or sets the source package.
         /// </summary>
-        public virtual Package Package
-        {
-            get;
-            set;
-        }
+        //public virtual Package Package
+        //{
+        //    get;
+        //    set;
+        //}
 
         public virtual ICollection<ProcessDefinition> ProcessDefinitions
         {

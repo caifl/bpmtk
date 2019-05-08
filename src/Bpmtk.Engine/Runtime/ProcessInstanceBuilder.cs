@@ -23,30 +23,21 @@ namespace Bpmtk.Engine.Runtime
         protected IDictionary<string, object> variables;
         protected readonly Context context;
 
-        /// <summary>
-        /// Gets current process of BPMN-Model.
-        /// </summary>
-        public virtual Bpmtk.Bpmn2.Process Process
-        {
-            get;
-            protected set;
-        }
-
         public ProcessInstanceBuilder(Context context)
         {
             this.context = context;
         }
 
-        public virtual ProcessInstance Build()
+        public virtual async Task<ProcessInstance> BuildAsync()
         {
             var deploymentManager = this.context.DeploymentManager;
 
             if (this.processDefinition == null)
             {
                 if (this.processDefinitionId != null)
-                    this.processDefinition = deploymentManager.FindProcessDefinitionById(this.processDefinitionId.Value);
+                    this.processDefinition = await deploymentManager.FindProcessDefinitionByIdAsync(this.processDefinitionId.Value);
                 else if(this.processDefinitionKey != null)
-                    this.processDefinition = deploymentManager.FindProcessDefinitionByKey(this.processDefinitionKey);
+                    this.processDefinition = await deploymentManager.FindProcessDefinitionByKeyAsync(this.processDefinitionKey);
 
                 if (this.processDefinition == null)
                     throw new ArgumentNullException(nameof(processDefinition));
@@ -66,9 +57,10 @@ namespace Bpmtk.Engine.Runtime
             if (initialNode == null)
                 throw new RuntimeException($"The process '{processDefinitionKey}' does not contains any start nodes.");
 
+            var date = Clock.Now;
+
             //init process-instance.
             var pi = new ProcessInstance();
-            pi.Tokens = new List<Token>();
             
             pi.ProcessDefinition = this.processDefinition;
             pi.Super = this.super;
@@ -76,18 +68,17 @@ namespace Bpmtk.Engine.Runtime
             if (pi.Super != null)
                 pi.Caller = super.ActivityInstance;
 
-            pi.State = ExecutionState.Ready;
-
             pi.Name = processDefinition.Name;
             if (string.IsNullOrEmpty(pi.Name))
                 pi.Name = processDefinition.Key;
 
             pi.Key = this.key;
-            pi.Created = Clock.Now;
-            pi.LastStateTime = pi.Created;
+            pi.Created = date;
+            pi.Modified = date;
+            pi.State = ExecutionState.Ready;
+            pi.LastStateTime = date;
             pi.Initiator = this.initiator;
-
-            pi.Description = processDefinition.Description;
+            pi.Description = StringHelper.Get(processDefinition.Description, 255);
 
             if (!string.IsNullOrEmpty(this.name))
                 pi.Name = this.name;
@@ -100,18 +91,23 @@ namespace Bpmtk.Engine.Runtime
 
             var dataObjects = model.GetProcessDataObjects(processDefinitionKey);
 
-            //initialize context.
+            //initialize process-context.
             this.InitializeProcessContext(pi, dataObjects);
 
             var session = this.context.DbSession;
 
-            //save.
-            session.Save(pi);
+            //commit changes.
+            await session.SaveAsync(pi);
+            await session.FlushAsync();
+
+            //Init root-token.
+            var rootToken = new Token(pi);
+            rootToken.Node = initialNode;
+            pi.Token = rootToken;
 
             //commit changes.
-            session.Flush();
-
-            this.Process = process;
+            await session.SaveAsync(rootToken);
+            await session.FlushAsync();
 
             return pi;
         }
@@ -246,6 +242,9 @@ namespace Bpmtk.Engine.Runtime
             => this.SetSuper(super);
 
         IProcessInstance IProcessInstanceBuilder.Build()
-            => this.Build();
+            => this.BuildAsync().Result;
+
+        async Task<IProcessInstance> IProcessInstanceBuilder.BuildAsync()
+            => await this.BuildAsync();
     }
 }

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Bpmtk.Engine.Models;
 
 namespace Bpmtk.Engine.Repository
 {
     public interface IDeploymentBuilder
     {
+        IDeploymentBuilder SetTanentId(string tanentId);
+
         IDeploymentBuilder SetName(string name);
 
         IDeploymentBuilder SetMemo(string memo);
@@ -14,7 +15,10 @@ namespace Bpmtk.Engine.Repository
 
         IDeploymentBuilder SetBpmnModel(byte[] modelData);
 
-        IDeploymentBuilder SetPackage(Package package);
+        /// <summary>
+        /// Set source package identifier.
+        /// </summary>
+        IDeploymentBuilder SetPackageId(int packageId);
 
         IDeployment Build();
 

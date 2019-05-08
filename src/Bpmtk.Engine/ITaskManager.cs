@@ -31,9 +31,9 @@ namespace Bpmtk.Engine
 
         ITaskInstance Resume(long taskId, string comment = null);
 
-        ITaskInstance Complete(long taskId,
-            IDictionary<string, object> variables = null,
-            string comment = null);
+        //ITaskInstance Complete(long taskId,
+        //    IDictionary<string, object> variables = null,
+        //    string comment = null);
 
         Task<ITaskInstance> CompleteAsync(long taskId,
             IDictionary<string, object> variables = null,

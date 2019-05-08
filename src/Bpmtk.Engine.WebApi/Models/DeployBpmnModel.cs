@@ -4,7 +4,10 @@ namespace Bpmtk.Engine.WebApi.Models
 {
     public class DeployBpmnModel
     {
-        public string BpmnModelXml
+        /// <summary>
+        /// BPMN 2.0 model xml content.
+        /// </summary>
+        public string BpmnXml
         {
             get;
             set;

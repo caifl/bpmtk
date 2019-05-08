@@ -7,6 +7,9 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public abstract class FlowNodeActivityBehavior : IFlowNodeActivityBehavior
     {
+        public virtual void Ready(ExecutionContext executionContext)
+        {}
+
         public virtual bool EvaluatePreConditions(ExecutionContext executionContext)
             => true;
 
@@ -14,19 +17,6 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
         {
             return null;
         }
-
-        //protected virtual void ExecuteEventHandlers(string eventName, ExecutionContext executionContext)
-        //{
-        //    var node = executionContext.Node;
-        //    var scripts = node.Scripts;
-
-        //    if (scripts.Count > 0)
-        //    {
-        //        var list = scripts.Where(x => x.On.Equals(eventName)).ToList();
-        //        foreach (var item in list)
-        //            executionContext.ExecutScript(item.Text, item.ScriptFormat);
-        //    }
-        //}
 
         public virtual void Execute(ExecutionContext executionContext)
         {

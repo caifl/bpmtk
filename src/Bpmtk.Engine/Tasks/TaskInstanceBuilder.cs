@@ -55,9 +55,12 @@ namespace Bpmtk.Engine.Tasks
 
             if (this.token != null)
             {
+                var processInstance = this.token.ProcessInstance;
+
                 task.ActivityInstance = this.token.ActivityInstance;
-                task.ProcessInstance = this.token.ProcessInstance;
+                task.ProcessInstance = processInstance;
                 task.Token = this.token;
+                task.ProcessDefinition = processInstance.ProcessDefinition;
             }
 
             this.session.Save(task);

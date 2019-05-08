@@ -99,8 +99,8 @@ namespace Bpmtk.Engine.Models
         {
             if (this.Parent != null)
                 this.Parent.Children.Remove(this);
-            else
-                this.ProcessInstance.Tokens.Remove(this);
+            //else
+            //    this.ProcessInstance.Tokens.Remove(this);
         }
 
         protected void CollectInactiveTokensAt(string activityId, IList<Token> tokens)

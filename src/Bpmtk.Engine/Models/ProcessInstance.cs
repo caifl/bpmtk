@@ -58,11 +58,16 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual ICollection<Token> Tokens
+        public virtual Token Token
         {
             get;
             set;
         }
+        //public virtual ICollection<Token> Tokens
+        //{
+        //    get;
+        //    set;
+        //}
 
         //public ProcessInstance()
         //{
@@ -172,22 +177,23 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        public virtual IList<Token> GetInactiveTokensAt(string activityId)
-        {
-            var rootTokens = this.Tokens.Where(x => x.Parent == null)
-                    .ToList();
+        //public virtual IList<Token> GetInactiveTokensAt(string activityId)
+        //{
+        //    var root = this.to
+        //    //var rootTokens = this.Tokens.Where(x => x.Parent == null)
+        //    //        .ToList();
 
-            var list = new List<Token>();
+        //    var list = new List<Token>();
 
-            foreach(var token in rootTokens)
-            {
-                var items = token.GetInactiveTokensAt(activityId);
-                if(items.Count > 0)
-                    list.AddRange(items);
-            }
+        //    foreach(var token in rootTokens)
+        //    {
+        //        var items = token.GetInactiveTokensAt(activityId);
+        //        if(items.Count > 0)
+        //            list.AddRange(items);
+        //    }
 
-            return list;
-        }
+        //    return list;
+        //}
 
         //public virtual void Start(IContext context,
         //    FlowNode initialNode)

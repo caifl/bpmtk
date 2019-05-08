@@ -24,5 +24,7 @@ namespace Bpmtk.Engine.Runtime
         IProcessInstanceBuilder SetSuper(Token super);
 
         IProcessInstance Build();
+
+        Task<IProcessInstance> BuildAsync();
     }
 }

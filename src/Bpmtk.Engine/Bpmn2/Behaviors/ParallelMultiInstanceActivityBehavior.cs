@@ -66,15 +66,15 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 throw new RuntimeException("Invalid multiInstance execution.");
 
             //Get parent-context.
-            var parentExecution = ExecutionContext.Create(context, parentToken);
+            var ecm = context.ExecutionContextManager;
+            var parentContext = ecm.GetOrCreate(parentToken);
 
-            var numberOfInstances = parentExecution.GetVariableLocal<int>("numberOfInstances");
-            var numberOfCompletedInstances = parentExecution.GetVariableLocal<int>("numberOfCompletedInstances") + 1;
-            var numberOfActiveInstances = parentExecution.GetVariableLocal<int>("numberOfActiveInstances") - 1;
+            var numberOfInstances = parentContext.GetVariableLocal<int>("numberOfInstances");
+            var numberOfCompletedInstances = parentContext.GetVariableLocal<int>("numberOfCompletedInstances") + 1;
+            var numberOfActiveInstances = parentContext.GetVariableLocal<int>("numberOfActiveInstances") - 1;
 
-            parentExecution.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
-            parentExecution.SetVariableLocal("numberOfActiveInstances", numberOfActiveInstances);
-
+            parentContext.SetVariableLocal("numberOfCompletedInstances", numberOfCompletedInstances);
+            parentContext.SetVariableLocal("numberOfActiveInstances", numberOfActiveInstances);
             
             token.Inactivate();
 
@@ -106,10 +106,10 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 }
             }
 
-            if (numberOfCompletedInstances >= numberOfInstances || this.IsCompleted(parentExecution))
+            if (numberOfCompletedInstances >= numberOfInstances || this.IsCompleted(parentContext))
             {
                 if(numberOfActiveInstances > 0)
-                    parentExecution.SetVariableLocal("numberOfActiveInstances", 0);
+                    parentContext.SetVariableLocal("numberOfActiveInstances", 0);
 
                 var tokens = new List<Token>(parentToken.Children);
                 var date = Clock.Now;
@@ -135,7 +135,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
                 executionContext.Context.DbSession.Flush();
 
                 //leave without check loop.
-                base.Leave(parentExecution);
+                base.Leave(parentContext);
             }
         }
     }

@@ -16,11 +16,16 @@ namespace Bpmtk.Engine
         private static AsyncLocal<IContext> current = new AsyncLocal<IContext>();
         private readonly IProcessEngine engine;
 
+        protected ExecutionContextManager executionContextManager;
+
         public Context(IProcessEngine engine, IDbSession dbSession)
         {
+            this.executionContextManager = new ExecutionContextManager(this);
             this.engine = engine;
             this.DbSession = dbSession;
         }
+
+        public virtual ExecutionContextManager ExecutionContextManager => this.executionContextManager;
 
         public virtual IDbSession DbSession
         {
@@ -47,6 +52,8 @@ namespace Bpmtk.Engine
             protected set;
         }
 
+        public virtual PackageManager PackageManager => new PackageManager(this);
+
         public virtual TaskManager TaskManager => new TaskManager(this);
 
         public virtual DeploymentManager DeploymentManager => new DeploymentManager(this);
@@ -58,6 +65,8 @@ namespace Bpmtk.Engine
         public virtual IdentityManager IdentityManager => new IdentityManager(this);
 
         public virtual ScheduledJobManager ScheduledJobManager => new ScheduledJobManager(this);
+
+        IPackageManager IContext.PackageManager => this.PackageManager;
 
         ITaskManager IContext.TaskManager => this.TaskManager;
 

@@ -10,9 +10,9 @@ namespace Bpmtk.Engine.Storage
 {
     public class DbSession : IDbSession
     {
-        private readonly BpmDbContext context;
+        private readonly IBpmDbContext context;
 
-        public DbSession(BpmDbContext context)
+        public DbSession(IBpmDbContext context)
         {
             this.context = context;
         }

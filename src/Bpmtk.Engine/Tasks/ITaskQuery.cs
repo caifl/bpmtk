@@ -6,8 +6,6 @@ namespace Bpmtk.Engine.Tasks
 {
     public interface ITaskQuery
     {
-        ITaskQuery FetchAssignee();
-
         ITaskQuery SetId(long id);
 
         ITaskQuery SetPriority(short priority);

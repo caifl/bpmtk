@@ -27,15 +27,15 @@ namespace Bpmtk.Engine
         /// <summary>
         /// Start new process-instance by builder.
         /// </summary>
-        IProcessInstance StartProcess(IProcessInstanceBuilder builder);
+        Task<IProcessInstance> StartProcessAsync(IProcessInstanceBuilder builder);
 
-        /// <summary>
-        /// Start new process-instance by Key of process-definition. 
-        /// </summary>
-        /// <param name="processDefintionKey">The Key of process-definition</param>
-        /// <param name="variables">Initial Variables</param>
-        IProcessInstance StartProcessByKey(string processDefintionKey,
-            IDictionary<string, object> variables = null);
+        ///// <summary>
+        ///// Start new process-instance by Key of process-definition. 
+        ///// </summary>
+        ///// <param name="processDefintionKey">The Key of process-definition</param>
+        ///// <param name="variables">Initial Variables</param>
+        //Task<IProcessInstance> StartProcessByKeyAs(string processDefintionKey,
+        //    IDictionary<string, object> variables = null);
 
         /// <summary>
         /// Start new process-instance by Key of process-definition. 
@@ -45,7 +45,7 @@ namespace Bpmtk.Engine
         Task<IProcessInstance> StartProcessByKeyAsync(string processDefintionKey,
             IDictionary<string, object> variables = null);
 
-        IProcessInstance StartProcessByMessage(string messageName,
+        Task<IProcessInstance> StartProcessByMessageAsync(string messageName,
             IDictionary<string, object> messageData = null);
 
         IList<string> GetActiveActivityIds(long processInstanceId);

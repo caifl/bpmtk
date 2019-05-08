@@ -4,6 +4,8 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
 {
     public interface IFlowNodeActivityBehavior
     {
+        void Ready(ExecutionContext executionContext);
+
         /// <summary>
         /// When an activity becomes ready this does not mean that the activity immediately starts. Instead, 
         /// it will remain ready to perform until all the defined preconditions (such as data inputs and messages) 

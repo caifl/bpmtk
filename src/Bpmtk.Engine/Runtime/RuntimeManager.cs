@@ -83,13 +83,15 @@ namespace Bpmtk.Engine.Runtime
         async Task<IList<IToken>> IRuntimeManager.GetActiveTokensAsync(long processInstanceId)
             => new List<IToken>(await this.GetActiveTokensAsync(processInstanceId));
 
-        public virtual void Trigger(long tokenId, IDictionary<string, object> variables = null)
+        public virtual void Trigger(long tokenId, 
+            IDictionary<string, object> variables = null)
         {
             var token = this.session.Find<Token>(tokenId);
             if (token == null)
                 throw new ObjectNotFoundException(nameof(Token));
 
-            var executionContext = ExecutionContext.Create(this.context, token);
+            var ecm = this.context.ExecutionContextManager;
+            var executionContext = ecm.GetOrCreate(token);
             executionContext.Trigger(null, variables);
         }
 
@@ -99,7 +101,8 @@ namespace Bpmtk.Engine.Runtime
             if (token == null)
                 throw new ObjectNotFoundException(nameof(Token));
 
-            var executionContext = ExecutionContext.Create(this.context, token);
+            var ecm = this.context.ExecutionContextManager;
+            var executionContext = ecm.GetOrCreate(token);
             executionContext.Trigger(null, variables);
         }
 
@@ -204,35 +207,35 @@ namespace Bpmtk.Engine.Runtime
 
         #region Start new ProcessInstance APIs
 
-        IProcessInstance IRuntimeManager.StartProcess(IProcessInstanceBuilder builder)
-            => this.StartProcess((ProcessInstanceBuilder)builder);
+        async Task<IProcessInstance> IRuntimeManager.StartProcessAsync(IProcessInstanceBuilder builder)
+            => await this.StartProcessAsync((ProcessInstanceBuilder)builder);
 
-        IProcessInstance IRuntimeManager.StartProcessByMessage(string messageName,
+        async Task<IProcessInstance> IRuntimeManager.StartProcessByMessageAsync(string messageName,
             IDictionary<string, object> messageData)
-            => this.StartProcessByMessage(messageName, messageData);
+            => await this.StartProcessByMessageAsync(messageName, messageData);
 
-        IProcessInstance IRuntimeManager.StartProcessByKey(string processDefinitionKey,
-            IDictionary<string, object> variables)
-            => this.StartProcessByKey(processDefinitionKey, variables);
+        //IProcessInstance IRuntimeManager.StartProcessByKey(string processDefinitionKey,
+        //    IDictionary<string, object> variables)
+        //    => this.StartProcessByKey(processDefinitionKey, variables);
 
         async Task<IProcessInstance> IRuntimeManager.StartProcessByKeyAsync(string processDefinitionKey,
             IDictionary<string, object> variables)
             => await this.StartProcessByKeyAsync(processDefinitionKey, variables);
 
-        public virtual ProcessInstance StartProcessByKey(string processDefinitionKey,
-            IDictionary<string, object> variables)
-        {
-            var processDefinition = this.deploymentManager.FindProcessDefinitionByKey(processDefinitionKey);
-            if (processDefinition == null)
-                throw new ObjectNotFoundException(nameof(ProcessDefinition));
+        //public virtual ProcessInstance StartProcessByKey(string processDefinitionKey,
+        //    IDictionary<string, object> variables)
+        //{
+        //    var processDefinition = this.deploymentManager.FindProcessDefinitionByKey(processDefinitionKey);
+        //    if (processDefinition == null)
+        //        throw new ObjectNotFoundException(nameof(ProcessDefinition));
 
-            var builder = this.CreateInstanceBuilder()
-                .SetInitiator(context.UserId)
-                .SetProcessDefinition(processDefinition)
-                .SetVariables(variables);
+        //    var builder = this.CreateInstanceBuilder()
+        //        .SetInitiator(context.UserId)
+        //        .SetProcessDefinition(processDefinition)
+        //        .SetVariables(variables);
 
-            return this.StartProcess(builder);
-        }
+        //    return this.StartProcess(builder);
+        //}
 
         public virtual async Task<ProcessInstance> StartProcessByKeyAsync(string processDefinitionKey,
             IDictionary<string, object> variables)
@@ -249,81 +252,39 @@ namespace Bpmtk.Engine.Runtime
             return await this.StartProcessAsync(builder);
         }
 
-        public virtual ProcessInstance StartProcess(ProcessInstanceBuilder builder)
-        {
-            if (builder == null)
-                throw new ArgumentNullException(nameof(builder));
+        //public virtual ProcessInstance StartProcess(ProcessInstanceBuilder builder)
+        //{
+        //    if (builder == null)
+        //        throw new ArgumentNullException(nameof(builder));
 
-            var pi = builder.Build();
+        //    var pi = builder.Build();
 
-            var process = builder.Process;
-            var initialNode = process.InitialNode;
+        //    var date = pi.Created;
 
-            //if (initialNodes.Count == 0)
-            //    throw new RuntimeException($"The process '{pi.ProcessDefinition.Key}' does not cantains any start nodes.");
+        //    //Update process-instance status.
+        //    pi.StartTime = date;
+        //    pi.State = ExecutionState.Active;
+        //    pi.LastStateTime = date;
 
-            //if (initialNodes.Count > 1)
-            //    throw new NotSupportedException("Multiple startEvents not supported.");
+        //    //Save changes.
+        //    this.session.Flush();
 
-            //var tokens = new List<Token>();
-            //foreach (var initialNode in initialNodes)
-            //{
-            var token = new Token(pi);
-            token.Node = initialNode;
-            pi.Tokens.Add(token);
-            //tokens.Add(token);
-            //}
+        //    //Get root-token.
+        //    var rootToken = pi.Token;
 
-            //Update process-instance status.
-            pi.StartTime = Clock.Now;
-            pi.State = ExecutionState.Active;
-            pi.LastStateTime = pi.StartTime.Value;
+        //    var ecm = this.context.ExecutionContextManager;
+        //    var executionContext = ecm.Create(rootToken);
+        //    executionContext.Start();
 
-            //Save tokens.
-            this.session.Flush();
-
-            //foreach (var token in tokens)
-            //{
-            //    //Check if process-instance isEnded.
-            //    if (pi.IsEnded)
-            //        break;
-
-            var executionContext = ExecutionContext.Create(this.context, token);
-
-            //fire processStartEvent.
-            var eventListener = this.GetCompositeProcessEventListener();
-            eventListener.ProcessStart(executionContext);
-
-            executionContext.Start();
-            //}
-
-            return pi;
-        }
+        //    return pi;
+        //}
 
         public virtual async Task<ProcessInstance> StartProcessAsync(ProcessInstanceBuilder builder)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
-            var pi = builder.Build();
-
-            var process = builder.Process;
-            var initialNode = process.InitialNode;
-
-            //if (initialNodes.Count == 0)
-            //    throw new RuntimeException($"The process '{pi.ProcessDefinition.Key}' does not cantains any start nodes.");
-
-            //if (initialNodes.Count > 1)
-            //    throw new NotSupportedException("Multiple startEvents not supported.");
-
-            //var tokens = new List<Token>();
-            //foreach (var initialNode in initialNodes)
-            //{
-            var token = new Token(pi);
-            token.Node = initialNode;
-            pi.Tokens.Add(token);
-            //tokens.Add(token);
-            //}
+            var pi = await builder.BuildAsync();
 
             //Update process-instance status.
             pi.StartTime = Clock.Now;
@@ -333,20 +294,11 @@ namespace Bpmtk.Engine.Runtime
             //Save tokens.
             await this.session.FlushAsync();
 
-            //foreach (var token in tokens)
-            //{
-            //    //Check if process-instance isEnded.
-            //    if (pi.IsEnded)
-            //        break;
+            var rootToken = pi.Token;
 
-            var executionContext = ExecutionContext.Create(this.context, token);
-
-            //fire processStartEvent.
-            var eventListener = this.GetCompositeProcessEventListener();
-            eventListener.ProcessStart(executionContext);
-
+            var ecm = this.context.ExecutionContextManager;
+            var executionContext = ecm.Create(rootToken);
             executionContext.Start();
-            //}
 
             return pi;
         }
@@ -354,7 +306,7 @@ namespace Bpmtk.Engine.Runtime
         public virtual CompositeProcessEventListener GetCompositeProcessEventListener()
             => this.compositeProcessEventListener;
 
-        public virtual ProcessInstance StartProcessByMessage(string messageName, 
+        public virtual async Task<ProcessInstance> StartProcessByMessageAsync(string messageName, 
             IDictionary<string, object> messageData = null)
         {
             if (string.IsNullOrEmpty(messageName))
@@ -369,7 +321,7 @@ namespace Bpmtk.Engine.Runtime
             {
                 IMessageStartEventHandler handler = new MessageStartEventHandler();
 
-                var procInst = handler.Execute(this.context, 
+                var procInst = await handler.ExecuteAsync(this.context, 
                     eventSubscr, 
                     messageData);
 
@@ -380,18 +332,6 @@ namespace Bpmtk.Engine.Runtime
         }
 
         #endregion
-
-        //public IActivityInstanceQuery CreateActivityQuery()
-        //    => this.instanceStore.CreateActivityQuery();
-
-        //public virtual ITokenQuery CreateTokenQuery()
-        //    => this.instanceStore.CreateTokenQuery();
-
-        //public virtual void Trigger(long tokenId)
-        //{
-        //    var token = this.instanceStore.FindToken(tokenId);
-        //    token.Signal(Context.Current);
-        //}
 
         public virtual ProcessInstanceBuilder CreateInstanceBuilder()
             => new ProcessInstanceBuilder(this.context);

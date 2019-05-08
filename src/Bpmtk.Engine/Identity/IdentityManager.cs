@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bpmtk.Engine.Models;
 using Bpmtk.Engine.Storage;
+using Bpmtk.Engine.Utils;
 
 namespace Bpmtk.Engine.Identity
 {
@@ -33,6 +34,8 @@ namespace Bpmtk.Engine.Identity
 
         public virtual Task CreateUserAsync(User user)
         {
+            user.Created = Clock.Now;
+
             return this.session.SaveAsync(user);
         }
 

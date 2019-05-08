@@ -19,12 +19,13 @@ namespace Bpmtk.Engine.Repository
         private readonly Context context;
         private readonly DeploymentManager deploymentManager;
         private byte[] modelData;
+        protected string tanentId;
         protected string name;
         protected string category;
         protected string memo;
         protected string tenantId;
         protected bool disableModelValidations;
-        protected Package package;
+        protected int? packageId;
         protected DateTime? validFrom;
         protected DateTime? validTo;
 
@@ -114,7 +115,6 @@ namespace Bpmtk.Engine.Repository
             deployment.Category = this.category;
             deployment.Memo = this.memo;
             deployment.TenantId = this.tenantId;
-            deployment.Package = this.package;
 
             ProcessDefinition prevProcessDefinition = null;
 
@@ -309,9 +309,16 @@ namespace Bpmtk.Engine.Repository
             return this;
         }
 
-        public virtual IDeploymentBuilder SetPackage(Package package)
+        public virtual IDeploymentBuilder SetTanentId(string tanentId)
         {
-            this.package = package;
+            this.tanentId = tanentId;
+
+            return this;
+        }
+
+        public virtual IDeploymentBuilder SetPackageId(int packageId)
+        {
+            this.packageId = packageId;
 
             return this;
         }

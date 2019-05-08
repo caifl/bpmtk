@@ -76,10 +76,11 @@ namespace Bpmtk.Engine.Models
             set;
         }
 
-        //public virtual IReadOnlyCollection<PackageResourceLink> ResourceLinks
-        //{
-        //    get => this.resourceLinks.AsReadOnly();
-        //}
+        public virtual ICollection<IdentityLink> IdentityLinks
+        {
+            get;
+            set;
+        }
 
         public virtual void IncreaseVersion()
         {
@@ -105,10 +106,5 @@ namespace Bpmtk.Engine.Models
             get;
             set;
         }
-
-        //public virtual Model Model
-        //{
-        //    get => this.model;
-        //}
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bpmtk.Bpmn2;
 using Bpmtk.Engine.Runtime;
 using Bpmtk.Engine.Tasks;
 
@@ -19,7 +20,7 @@ namespace Bpmtk.Engine.Bpmn2.Behaviors
             var context = executionContext.Context;
             var taskManager = context.TaskManager;
 
-            var taskDef = executionContext.Node as Bpmtk.Bpmn2.UserTask;
+            var taskDef = executionContext.Node as UserTask;
             if (taskDef == null)
                 throw new RuntimeException("Invalid task.");
 
