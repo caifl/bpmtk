@@ -62,6 +62,7 @@ namespace Bpmtk.Engine.WebApi
 
             services.AddSwaggerGen(c =>
             {
+                c.DescribeAllParametersInCamelCase();
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Bpmtk APIs", Version = "v1" });
             });
         }
